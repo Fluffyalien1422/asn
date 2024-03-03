@@ -10,6 +10,8 @@ import { getStorageDriveSerializedData } from "./storage_drive";
 import { StorageSystemItemStack } from "./storage_system_item_stack";
 import { deserialize } from "./serialize";
 
+export type AddItemStackToStorageError = "insufficientStorage";
+
 export class StorageNetwork {
   private static storageNetworks: StorageNetwork[] = [];
 
@@ -66,6 +68,32 @@ export class StorageNetwork {
     StorageNetwork.storageNetworks.push(this);
   }
 
+  private getStoredItemStacksMutable(): StorageSystemItemStack[] {
+    if (this.storedItems) {
+      return this.storedItems;
+    }
+
+    const itemStacks: StorageSystemItemStack[] = [];
+
+    for (const driveLocation of this.connections.storageDrives) {
+      const serialized = getStorageDriveSerializedData(
+        vector3AsDimensionLocation(driveLocation, this.dimension)
+      );
+
+      if (!serialized) {
+        console.warn(
+          `Could not read data from storage drive at (${driveLocation.x}, ${driveLocation.y}, ${driveLocation.z}) in ${this.dimension.id}. Skipping. Some items may be missing.`
+        );
+        continue;
+      }
+
+      itemStacks.push(...deserialize(serialized));
+    }
+
+    this.storedItems = itemStacks;
+    return itemStacks;
+  }
+
   /**
    * Check if a {@link DimensionLocation} is part of this network
    */
@@ -106,45 +134,14 @@ export class StorageNetwork {
     return success(null);
   }
 
-  // getStorageCoreLocation(): Readonly<Vector3> {
-  //   return this.connections.storageCore;
-  // }
-
-  // getCableLocations(): readonly Vector3[] {
-  //   return this.connections.cables;
-  // }
-
-  // getStorageDriveLocations(): readonly Vector3[] {
-  //   return this.connections.storageDrives;
-  // }
-
-  // getStorageInterfaceLocations(): readonly Vector3[] {
-  //   return this.connections.storageInterfaces;
-  // }
-
   getStoredItemStacks(): readonly StorageSystemItemStack[] {
-    if (this.storedItems) {
-      return this.storedItems;
-    }
+    return this.getStoredItemStacksMutable();
+  }
 
-    const itemStacks: StorageSystemItemStack[] = [];
-
-    for (const driveLocation of this.connections.storageDrives) {
-      const serialized = getStorageDriveSerializedData(
-        vector3AsDimensionLocation(driveLocation, this.dimension)
-      );
-
-      if (!serialized) {
-        console.warn(
-          `Could not read data from storage drive at (${driveLocation.x}, ${driveLocation.y}, ${driveLocation.z}) in ${this.dimension.id}. Skipping. Some items may be missing.`
-        );
-        continue;
-      }
-
-      itemStacks.push(...deserialize(serialized));
-    }
-
-    this.storedItems = itemStacks;
-    return itemStacks;
+  addItemStack(
+    itemStack: StorageSystemItemStack
+  ): Result<null, AddItemStackToStorageError> {
+    const storedItems = this.getStoredItemStacksMutable();
+    //todo: finish this
   }
 }

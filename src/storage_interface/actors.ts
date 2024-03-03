@@ -1,5 +1,4 @@
 import { _addBlocksJsonEntry } from "../blocks_json";
-import { _addBlockName } from "../texts";
 
 export const STORAGE_INTERFACE_BLOCK_TYPE_ID =
   "fluffyalien_asn:storage_interface";
@@ -9,7 +8,6 @@ export const STORAGE_INTERFACE_ENTITY_TYPE_ID =
 _: _addBlocksJsonEntry(STORAGE_INTERFACE_BLOCK_TYPE_ID, {
   textures: "furnace_front_off",
 });
-_: _addBlockName(STORAGE_INTERFACE_BLOCK_TYPE_ID, "Storage Interface");
 _.define.block({
   format_version: "1.20.60",
   "minecraft:block": {

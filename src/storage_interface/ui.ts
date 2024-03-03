@@ -8,6 +8,16 @@ import { abbreviateNumber } from "../utils/number";
 
 const ITEMS_PER_PAGE = 10;
 
+function getItemTranslationKey(itemId: string): string {
+  const translationKeyItemId = itemId.startsWith("minecraft:")
+    ? itemId.slice("minecraft:".length)
+    : itemId;
+
+  return isBlock(itemId)
+    ? `tile.${translationKeyItemId}.name`
+    : `item.${translationKeyItemId}`;
+}
+
 export function showEstablishNetworkError(
   player: Player,
   error: DiscoverCableNetworkConnectionsError
@@ -34,7 +44,7 @@ export function showEstablishNetworkError(
  * @param page the zero-based page number
  * @returns the {@link StorageSystemItemStack} that the player requested
  */
-export async function showItemsList(
+export async function showItemsListUi(
   player: Player,
   items: readonly StorageSystemItemStack[],
   page: number
@@ -84,19 +94,13 @@ export async function showItemsList(
   }
 
   for (const item of itemsOnPage) {
-    const translationKeyItemId = item.typeId.startsWith("minecraft:")
-      ? item.typeId.slice("minecraft:".length)
-      : item.typeId;
-
     form.button({
       rawtext: [
         {
           text: `${abbreviateNumber(item.amount)} `,
         },
         {
-          translate: isBlock(item.typeId)
-            ? `tile.${translationKeyItemId}.name`
-            : `item.${translationKeyItemId}`,
+          translate: getItemTranslationKey(item.typeId),
         },
       ],
     });
@@ -140,17 +144,78 @@ export async function showItemsList(
     response.selection === topButtonsCount + itemsOnPage.length;
 
   if (previousPageButtonPressed) {
-    return showItemsList(player, items, Math.max(page - 1, 0));
+    return showItemsListUi(player, items, Math.max(page - 1, 0));
   }
 
   const nextPageButtonPressed =
     response.selection === topButtonsCount + itemsOnPage.length + 1;
 
   if (nextPageButtonPressed) {
-    return showItemsList(player, items, page + 1);
+    return showItemsListUi(player, items, page + 1);
   }
 
   const chosenItemIndex = response.selection - topButtonsCount;
+  const chosenItem = itemsOnPage[chosenItemIndex];
 
-  console.warn(chosenItemIndex);
+  const requestedItem = await showRequestItemUi(player, chosenItem);
+  if (!requestedItem) {
+    return showItemsListUi(player, items, page);
+  }
+
+  return requestedItem;
+}
+
+async function showRequestItemUi(
+  player: Player,
+  item: StorageSystemItemStack
+): Promise<StorageSystemItemStack | undefined> {
+  const form = new $.serverUi.ModalFormData();
+
+  form.title({
+    rawtext: [
+      {
+        translate: "fluffyalien_asn.ui.storageInterface.title",
+      },
+    ],
+  });
+
+  form.textField(
+    {
+      rawtext: [
+        {
+          translate:
+            "fluffyalien_asn.ui.storageInterface.requestItem.itemAmount",
+        },
+      ],
+    },
+    "1",
+    "1"
+  );
+
+  const response = await showForm(form, player);
+
+  if (!response.formValues) {
+    return;
+  }
+
+  const textFieldValue = response.formValues[0] as string;
+
+  const amount = Number(textFieldValue);
+  if (!amount || amount < 0) {
+    await showForm(
+      makeErrorMessageUi({
+        rawtext: [
+          {
+            translate:
+              "fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber",
+          },
+        ],
+      }),
+      player
+    );
+
+    return showRequestItemUi(player, item);
+  }
+
+  return item.withAmount(amount);
 }

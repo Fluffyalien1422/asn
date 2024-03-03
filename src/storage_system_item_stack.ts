@@ -1,12 +1,13 @@
-import { Enchantment, ItemStack } from "@minecraft/server";
+import { Enchantment, EnchantmentType, ItemStack } from "@minecraft/server";
+import { DeepReadonly } from "ts-essentials";
 
 export class StorageSystemItemStack {
   constructor(
-    public typeId: string,
-    public amount = 1,
-    public nameTag?: string,
-    public damage = 0,
-    public enchantments: Enchantment[] = []
+    readonly typeId: string,
+    readonly amount = 1,
+    readonly nameTag?: string,
+    readonly damage = 0,
+    readonly enchantments: DeepReadonly<Enchantment[]> = []
   ) {}
 
   static fromItemStack(itemStack: ItemStack): StorageSystemItemStack {
@@ -38,8 +39,41 @@ export class StorageSystemItemStack {
       }
     }
 
-    result.getComponent("enchantable")?.addEnchantments(this.enchantments);
+    result
+      .getComponent("enchantable")
+      ?.addEnchantments(this.enchantments as Enchantment[]);
 
     return result;
+  }
+
+  withAmount(amount?: number): StorageSystemItemStack {
+    return new StorageSystemItemStack(
+      this.typeId,
+      amount,
+      this.nameTag,
+      this.damage,
+      this.enchantments
+    );
+  }
+
+  matches(other: StorageSystemItemStack): boolean {
+    return (
+      this.typeId === other.typeId &&
+      this.amount === other.amount &&
+      this.damage === other.damage &&
+      this.nameTag === other.nameTag &&
+      this.enchantments.length === other.enchantments.length &&
+      this.enchantments.every((enchantment) =>
+        other.enchantments.some(
+          (otherEnchantment) =>
+            enchantment.level === otherEnchantment.level &&
+            typeof enchantment.type === typeof otherEnchantment.type &&
+            (typeof enchantment.type === "string"
+              ? enchantment.type === otherEnchantment.type
+              : enchantment.type.id ===
+                (otherEnchantment.type as EnchantmentType).id)
+        )
+      )
+    );
   }
 }
