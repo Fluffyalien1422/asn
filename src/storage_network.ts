@@ -1,14 +1,19 @@
-import { Block, Dimension, DimensionLocation } from "@minecraft/server";
+import { Block, Dimension, DimensionLocation, Player } from "@minecraft/server";
 import {
   CableNetworkConnections,
   DiscoverCableNetworkConnectionsError,
   discoverCableNetworkConnections,
 } from "./cable";
 import { vector3AsDimensionLocation, vector3Matches } from "./utils/vector";
-import { Result, success } from "./result";
-import { getStorageDriveSerializedData } from "./storage_drive";
+import { Result, failure, success } from "./result";
+import {
+  MAX_STORAGE_DRIVE_DATA_LENGTH,
+  getStorageDriveSerializedData,
+  setStorageDriveSerializedData,
+} from "./storage_drive";
 import { StorageSystemItemStack } from "./storage_system_item_stack";
-import { deserialize } from "./serialize";
+import { deserialize, serialize } from "./serialize";
+import { STRING_DYNAMIC_PROPERTY_MAX_LENGTH } from "./constants";
 
 export type AddItemStackToStorageError = "insufficientStorage";
 
@@ -80,10 +85,12 @@ export class StorageNetwork {
         vector3AsDimensionLocation(driveLocation, this.dimension)
       );
 
-      if (!serialized) {
+      if (serialized === false) {
         console.warn(
-          `Could not read data from storage drive at (${driveLocation.x}, ${driveLocation.y}, ${driveLocation.z}) in ${this.dimension.id}. Skipping. Some items may be missing.`
+          `(StorageNetwork#getStoredItemStacksMutable) Could not read data from storage drive at (${driveLocation.x}, ${driveLocation.y}, ${driveLocation.z}) in ${this.dimension.id}. Skipping. Some items may be missing.`
         );
+      }
+      if (!serialized) {
         continue;
       }
 
@@ -92,6 +99,63 @@ export class StorageNetwork {
 
     this.storedItems = itemStacks;
     return itemStacks;
+  }
+
+  /**
+   * Writes in-memory data to dynamic properties on drives
+   * @param useRealMaxLength internal argument, do not use
+   */
+  private saveData(useRealMaxLength = false): void {
+    const storedItems = this.getStoredItemStacks();
+    const maxStorageDriveDataLength = useRealMaxLength
+      ? STRING_DYNAMIC_PROPERTY_MAX_LENGTH
+      : MAX_STORAGE_DRIVE_DATA_LENGTH;
+
+    let itemsStored = 0;
+
+    for (const driveLocation of this.connections.storageDrives) {
+      let serializedData = "";
+
+      while (itemsStored < storedItems.length) {
+        const newData = serialize(storedItems[itemsStored]);
+
+        if (
+          serializedData.length + newData.length >
+          maxStorageDriveDataLength
+        ) {
+          break;
+        }
+
+        serializedData += newData;
+        itemsStored++;
+      }
+
+      if (
+        !setStorageDriveSerializedData(
+          vector3AsDimensionLocation(driveLocation, this.dimension),
+          serializedData
+        )
+      ) {
+        console.warn(
+          `(StorageNetwork#saveData) Could not set data in storage drive at (${driveLocation.x}, ${driveLocation.y}, ${driveLocation.z}) in ${this.dimension.id}. Skipping. Some items may be missing or duplicated.`
+        );
+      }
+    }
+
+    if (itemsStored < storedItems.length) {
+      if (useRealMaxLength) {
+        // if the fallback failed as well, throw an error
+        throw new Error(
+          "(StorageNetwork#saveData) Could not save data: reached max storage."
+        );
+      }
+
+      // fall back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH if we could not save everything
+      console.warn(
+        "(StorageNetwork#saveData) Could not save data with default max data length (MAX_STORAGE_DRIVE_DATA_LENGTH). Falling back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH."
+      );
+      this.saveData(true);
+    }
   }
 
   /**
@@ -120,7 +184,7 @@ export class StorageNetwork {
     const coreBlock = this.dimension.getBlock(this.connections.storageCore);
     if (!coreBlock) {
       throw new Error(
-        `Cannot update connections: storage core does not exist at (${this.connections.storageCore.x}, ${this.connections.storageCore.y}, ${this.connections.storageCore.z}).`
+        `(StorageNetwork#updateConnections) Cannot update connections: storage core does not exist at (${this.connections.storageCore.x}, ${this.connections.storageCore.y}, ${this.connections.storageCore.z}).`
       );
     }
 
@@ -138,10 +202,107 @@ export class StorageNetwork {
     return this.getStoredItemStacksMutable();
   }
 
+  getUsedDataLength(): number {
+    let length = 0;
+
+    for (const driveLocation of this.connections.storageDrives) {
+      const serialized = getStorageDriveSerializedData(
+        vector3AsDimensionLocation(driveLocation, this.dimension)
+      );
+
+      if (serialized === false) {
+        console.warn(
+          `(StorageNetwork#getUsedDataLength) Could not read data from storage drive at (${driveLocation.x}, ${driveLocation.y}, ${driveLocation.z}) in ${this.dimension.id}. Skipping. Some items may be missing.`
+        );
+      }
+      if (!serialized) {
+        continue;
+      }
+
+      length += serialized.length;
+    }
+
+    return length;
+  }
+
+  getMaxDataLength(): number {
+    return (
+      MAX_STORAGE_DRIVE_DATA_LENGTH * this.connections.storageDrives.length
+    );
+  }
+
   addItemStack(
     itemStack: StorageSystemItemStack
   ): Result<null, AddItemStackToStorageError> {
     const storedItems = this.getStoredItemStacksMutable();
-    //todo: finish this
+
+    const existingItemStack = storedItems.find((other) =>
+      itemStack.isStackableWith(other)
+    );
+
+    if (existingItemStack) {
+      existingItemStack.amount += itemStack.amount;
+    } else {
+      const length = serialize(itemStack).length;
+
+      if (this.getUsedDataLength() + length > this.getMaxDataLength()) {
+        return failure("insufficientStorage");
+      }
+
+      storedItems.push(itemStack);
+    }
+
+    this.saveData();
+
+    return success(null);
+  }
+
+  /**
+   * Take items out of storage and gives it to the player. Clamps the amount from 1 to the amount available in storage
+   * @throws if a matching item does not exist in the storage
+   */
+  takeOutItemStack(player: Player, itemStack: StorageSystemItemStack): void {
+    const storedItems = this.getStoredItemStacksMutable();
+
+    const storedIndex = storedItems.findIndex((other) =>
+      itemStack.isStackableWith(other)
+    );
+
+    if (storedIndex === -1) {
+      throw new Error(
+        "(StorageNetwork#takeOutItemStack) No matching StorageSystemItemStack was found."
+      );
+    }
+
+    const stored = storedItems[storedIndex];
+
+    const requestAmount = Math.max(
+      Math.min(itemStack.amount, stored.amount),
+      1
+    );
+
+    stored.amount -= requestAmount;
+    if (stored.amount <= 0) {
+      storedItems.splice(storedIndex, 1);
+    }
+
+    // spawn the items
+
+    const mcItemStack = itemStack.toItemStack();
+
+    let amountRemaining = requestAmount;
+
+    while (amountRemaining > 0) {
+      const amount = Math.min(mcItemStack.maxAmount, amountRemaining);
+      amountRemaining -= amount;
+
+      const newItemStack = mcItemStack.clone();
+      newItemStack.amount = amount;
+
+      player.dimension.spawnItem(newItemStack, player.location);
+    }
+
+    // save
+    this.saveData();
   }
 }

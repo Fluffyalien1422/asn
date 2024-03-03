@@ -1,7 +1,7 @@
 import { DimensionLocation, Entity } from "@minecraft/server";
 import { STORAGE_DRIVE_ENTITY_TYPE_ID } from ".";
 
-export const MAX_STORAGE_DRIVE_BYTES = 30_000;
+export const MAX_STORAGE_DRIVE_DATA_LENGTH = 20_000;
 export const STORAGE_DATA_DYNAMIC_PROPERTY_ID = "fluffyalien_asn:storage_data";
 
 /**
@@ -20,14 +20,16 @@ export function getStorageDriveEntity(
 /**
  * Gets the serialized storage data of a storage drive
  * @param location the block location of the storage drive
- * @returns the serialized data or undefined if the operation was not successful
+ * @returns the serialized data, `undefined` if the data does not exist, or `false` if there was an error
  */
 export function getStorageDriveSerializedData(
   location: DimensionLocation
-): string | undefined {
-  return getStorageDriveEntity(location)?.getDynamicProperty(
-    STORAGE_DATA_DYNAMIC_PROPERTY_ID
-  ) as string | undefined;
+): string | undefined | false {
+  const entity = getStorageDriveEntity(location);
+  if (!entity) return false;
+  return entity.getDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID) as
+    | string
+    | undefined;
 }
 
 /**

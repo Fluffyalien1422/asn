@@ -4,7 +4,7 @@ import { DeepReadonly } from "ts-essentials";
 export class StorageSystemItemStack {
   constructor(
     readonly typeId: string,
-    readonly amount = 1,
+    public amount = 1,
     readonly nameTag?: string,
     readonly damage = 0,
     readonly enchantments: DeepReadonly<Enchantment[]> = []
@@ -56,10 +56,9 @@ export class StorageSystemItemStack {
     );
   }
 
-  matches(other: StorageSystemItemStack): boolean {
+  isStackableWith(other: StorageSystemItemStack): boolean {
     return (
       this.typeId === other.typeId &&
-      this.amount === other.amount &&
       this.damage === other.damage &&
       this.nameTag === other.nameTag &&
       this.enchantments.length === other.enchantments.length &&

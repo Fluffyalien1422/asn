@@ -9,12 +9,15 @@ import { abbreviateNumber } from "../utils/number";
 const ITEMS_PER_PAGE = 10;
 
 function getItemTranslationKey(itemId: string): string {
-  const translationKeyItemId = itemId.startsWith("minecraft:")
+  const isMinecraftNamespace = itemId.startsWith("minecraft:");
+  const translationKeyItemId = isMinecraftNamespace
     ? itemId.slice("minecraft:".length)
     : itemId;
 
   return isBlock(itemId)
     ? `tile.${translationKeyItemId}.name`
+    : isMinecraftNamespace
+    ? `item.${translationKeyItemId}.name`
     : `item.${translationKeyItemId}`;
 }
 
@@ -47,7 +50,7 @@ export function showEstablishNetworkError(
 export async function showItemsListUi(
   player: Player,
   items: readonly StorageSystemItemStack[],
-  page: number
+  page = 0
 ): Promise<StorageSystemItemStack | undefined> {
   const form = new $.serverUi.ActionFormData();
 
@@ -208,6 +211,22 @@ async function showRequestItemUi(
           {
             translate:
               "fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber",
+          },
+        ],
+      }),
+      player
+    );
+
+    return showRequestItemUi(player, item);
+  }
+
+  if (amount > item.amount) {
+    await showForm(
+      makeErrorMessageUi({
+        rawtext: [
+          {
+            translate:
+              "fluffyalien_asn.ui.storageInterface.requestItem.error.notEnough",
           },
         ],
       }),

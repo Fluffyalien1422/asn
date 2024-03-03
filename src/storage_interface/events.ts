@@ -4,6 +4,9 @@ import {
   STORAGE_INTERFACE_ENTITY_TYPE_ID,
 } from ".";
 import { StorageNetwork } from "../storage_network";
+import { StorageSystemItemStack } from "../storage_system_item_stack";
+import { getPlayerMainhandSlot } from "../utils/items";
+import { makeErrorMessageUi, showForm } from "../utils/ui";
 import { showEstablishNetworkError, showItemsListUi } from "./ui";
 
 $.server.world.afterEvents.playerPlaceBlock.subscribe((e) => {
@@ -40,17 +43,42 @@ $.server.world.afterEvents.playerInteractWithBlock.subscribe((e) => {
 
   const network = networkResult.value;
 
-  void (async (): Promise<void> => {
-    const requestedItem = await showItemsListUi(
-      e.player,
-      network.getStoredItemStacks(),
-      0
+  const mainhandSlot = getPlayerMainhandSlot(e.player);
+  const heldItem = mainhandSlot?.getItem();
+  if (mainhandSlot && heldItem) {
+    const res = network.addItemStack(
+      StorageSystemItemStack.fromItemStack(heldItem)
     );
+    if (!res.success) {
+      void showForm(
+        makeErrorMessageUi({
+          rawtext: [
+            {
+              translate:
+                "fluffyalien_asn.ui.storageInterface.error.insufficientStorage",
+            },
+          ],
+        }),
+        e.player
+      );
 
-    if (!requestedItem) {
       return;
     }
 
-    console.warn(requestedItem.typeId, requestedItem.amount);
+    mainhandSlot.setItem();
+    return;
+  }
+
+  void (async (): Promise<void> => {
+    const requestedItemStack = await showItemsListUi(
+      e.player,
+      network.getStoredItemStacks()
+    );
+
+    if (!requestedItemStack) {
+      return;
+    }
+
+    network.takeOutItemStack(e.player, requestedItemStack);
   })();
 });

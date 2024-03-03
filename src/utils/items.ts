@@ -1,3 +1,5 @@
+import { ContainerSlot, Player } from "@minecraft/server";
+
 export function isBlock(itemId: string): boolean {
   try {
     $.server.BlockPermutation.resolve(itemId);
@@ -5,4 +7,12 @@ export function isBlock(itemId: string): boolean {
   } catch {
     return false;
   }
+}
+
+export function getPlayerMainhandSlot(
+  player: Player
+): ContainerSlot | undefined {
+  return player
+    .getComponent("equippable")
+    ?.getEquipmentSlot($.server.EquipmentSlot.Mainhand);
 }

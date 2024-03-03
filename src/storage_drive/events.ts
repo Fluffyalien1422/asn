@@ -1,25 +1,14 @@
 import {
   getStorageDriveEntity,
   getStorageDriveSerializedData,
-  STORAGE_DATA_DYNAMIC_PROPERTY_ID,
   STORAGE_DRIVE_BLOCK_TYPE_ID,
   STORAGE_DRIVE_ENTITY_TYPE_ID,
 } from ".";
-import { serialize } from "../serialize";
-import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { showStorageDriveUi } from "./ui";
 
 $.server.world.afterEvents.playerPlaceBlock.subscribe((e) => {
   if (e.block.typeId !== STORAGE_DRIVE_BLOCK_TYPE_ID) return;
-  const entity = e.block.dimension.spawnEntity(
-    STORAGE_DRIVE_ENTITY_TYPE_ID,
-    e.block.location
-  );
-
-  entity.setDynamicProperty(
-    STORAGE_DATA_DYNAMIC_PROPERTY_ID,
-    serialize([StorageSystemItemStack.fromItemStack(e.block.getItemStack()!)])
-  );
+  e.block.dimension.spawnEntity(STORAGE_DRIVE_ENTITY_TYPE_ID, e.block.location);
 });
 
 $.server.world.afterEvents.playerBreakBlock.subscribe((e) => {

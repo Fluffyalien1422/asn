@@ -1,22 +1,12 @@
 import { Enchantment } from "@minecraft/server";
 import { StorageSystemItemStack } from "./storage_system_item_stack";
 
-export function serialize(itemStacks: StorageSystemItemStack[]): string {
-  let s = "";
-
-  for (const itemStack of itemStacks) {
-    s += serializeSingle(itemStack);
-  }
-
-  return s;
-}
-
 export function deserialize(data: string): StorageSystemItemStack[] {
   const parser = new DeserializeParser(data);
   return parser.parse();
 }
 
-function serializeSingle(itemStack: StorageSystemItemStack): string {
+export function serialize(itemStack: StorageSystemItemStack): string {
   const id = itemStack.typeId;
   const amount = itemStack.amount;
   const nameTag = itemStack.nameTag;
@@ -49,7 +39,7 @@ class DeserializeParser {
   private next(): void {
     if (this.isEoi()) {
       throw new Error(
-        "Failed to deserialize data: reached EOI before completing parse."
+        "(DeserializeParser#next) Failed to deserialize data: reached EOI before completing parse."
       );
     }
 
@@ -98,7 +88,7 @@ class DeserializeParser {
     const level = Number(this.read([",", ")"]));
     if (isNaN(level)) {
       throw new Error(
-        "Failed to deserialize data: could not convert enchantment level string to a number."
+        "(DeserializeParser#readEnchantments) Failed to deserialize data: could not convert enchantment level string to a number."
       );
     }
 
@@ -113,7 +103,7 @@ class DeserializeParser {
       if (!this.isEoi()) this.next();
     } else {
       throw new Error(
-        `Failed to deserialize data: could not read enchantments: reached illegal character: '${char}'.`
+        `(DeserializeParser#readEnchantments) Failed to deserialize data: could not read enchantments: reached illegal character: '${char}'.`
       );
     }
 
@@ -130,7 +120,7 @@ class DeserializeParser {
     // amount cannot be zero, so use ! instead of isNaN
     if (!amount) {
       throw new Error(
-        "Failed to deserialize data: could not convert item stack amount string to a number."
+        "(DeserializeParser#parseSingle) Failed to deserialize data: could not convert item stack amount string to a number."
       );
     }
     this.next();
@@ -142,7 +132,7 @@ class DeserializeParser {
     const damage = Number(this.read([" "]));
     if (isNaN(damage)) {
       throw new Error(
-        "Failed to deserialize data: could not convert item stack damage string to a number."
+        "(DeserializeParser#parseSingle) Failed to deserialize data: could not convert item stack damage string to a number."
       );
     }
     this.next();
@@ -166,6 +156,12 @@ class DeserializeParser {
 
     while (!this.isEoi()) {
       itemStacks.push(this.parseSingle());
+
+      if (this.isEoi()) {
+        break;
+      }
+
+      this.next();
     }
 
     return itemStacks;

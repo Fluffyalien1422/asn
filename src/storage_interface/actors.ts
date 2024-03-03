@@ -18,10 +18,16 @@ _.define.block({
       },
     },
     components: {
+      "minecraft:on_interact": {
+        event: "fluffyalien_asn:empty",
+      },
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {
         seconds_to_destroy: 1,
       },
+    },
+    events: {
+      "fluffyalien_asn:empty": {},
     },
   },
 });
