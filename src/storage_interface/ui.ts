@@ -5,10 +5,15 @@ import { makeErrorMessageUi, showForm } from "../utils/ui";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { isBlock } from "../utils/items";
 import { abbreviateNumber } from "../utils/number";
+import { itemTranslationOverrides } from "./item_translation_overrides";
 
 const ITEMS_PER_PAGE = 10;
 
 function getItemTranslationKey(itemId: string): string {
+  if (itemId in itemTranslationOverrides) {
+    return itemTranslationOverrides[itemId];
+  }
+
   const isMinecraftNamespace = itemId.startsWith("minecraft:");
   const translationKeyItemId = isMinecraftNamespace
     ? itemId.slice("minecraft:".length)
