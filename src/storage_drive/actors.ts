@@ -1,12 +1,10 @@
 import { _addBlocksJsonEntry } from "../blocks_json";
-import { _addBlockName } from "../texts";
 
 export const STORAGE_DRIVE_BLOCK_TYPE_ID = "fluffyalien_asn:storage_drive";
 export const STORAGE_DRIVE_ENTITY_TYPE_ID =
   "fluffyalien_asn:storage_drive_entity";
 
 _: _addBlocksJsonEntry(STORAGE_DRIVE_BLOCK_TYPE_ID, { textures: "end_stone" });
-_: _addBlockName(STORAGE_DRIVE_BLOCK_TYPE_ID, "Storage Drive");
 _.define.block({
   format_version: "1.20.60",
   "minecraft:block": {

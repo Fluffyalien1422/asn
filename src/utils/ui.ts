@@ -1,9 +1,5 @@
 import { Player, RawMessage } from "@minecraft/server";
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
-import {
-  TRANSLATION_COMMON_UI_ERROR,
-  TRANSLATION_COMMON_UI_OK,
-} from "../texts";
 
 export function showForm(
   form: ActionFormData,
@@ -19,7 +15,7 @@ export function makeErrorMessageUi(body: RawMessage): ActionFormData {
   form.title({
     rawtext: [
       {
-        translate: TRANSLATION_COMMON_UI_ERROR,
+        translate: "fluffyalien_asn.ui.common.error",
       },
     ],
   });
@@ -29,7 +25,7 @@ export function makeErrorMessageUi(body: RawMessage): ActionFormData {
   form.button({
     rawtext: [
       {
-        translate: TRANSLATION_COMMON_UI_OK,
+        translate: "fluffyalien_asn.ui.common.ok",
       },
     ],
   });

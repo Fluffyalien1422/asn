@@ -1,57 +1,10 @@
 import { Player } from "@minecraft/server";
 import { DiscoverCableNetworkConnectionsError } from "../cable";
-import { _addTranslation } from "../texts";
 import { ActionFormResponse } from "@minecraft/server-ui";
 import { makeErrorMessageUi, showForm } from "../utils/ui";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { isBlock } from "../utils/items";
 import { abbreviateNumber } from "../utils/number";
-
-const TRANSLATION_UI_STORAGE_INTERFACE_TITLE =
-  "fluffyalien_asn.ui.storageInterface.title";
-_: _addTranslation(TRANSLATION_UI_STORAGE_INTERFACE_TITLE, "Storage Interface");
-
-const TRANSLATION_UI_STORAGE_INTERFACE_ITEMS_LIST_SEARCH =
-  "fluffyalien_asn.ui.storageInterface.itemsList.search";
-_: _addTranslation(
-  TRANSLATION_UI_STORAGE_INTERFACE_ITEMS_LIST_SEARCH,
-  "Search"
-);
-
-const TRANSLATION_UI_STORAGE_INTERFACE_ITEMS_LIST_OPTIONS =
-  "fluffyalien_asn.ui.storageInterface.itemsList.options";
-_: _addTranslation(
-  TRANSLATION_UI_STORAGE_INTERFACE_ITEMS_LIST_OPTIONS,
-  "Options"
-);
-
-const TRANSLATION_UI_STORAGE_INTERFACE_ITEMS_LIST_PREVIOUS_PAGE =
-  "fluffyalien_asn.ui.storageInterface.itemsList.previousPage";
-_: _addTranslation(
-  TRANSLATION_UI_STORAGE_INTERFACE_ITEMS_LIST_PREVIOUS_PAGE,
-  "Previous"
-);
-
-const TRANSLATION_UI_STORAGE_INTERFACE_ITEMS_LIST_NEXT_PAGE =
-  "fluffyalien_asn.ui.storageInterface.itemsList.nextPage";
-_: _addTranslation(
-  TRANSLATION_UI_STORAGE_INTERFACE_ITEMS_LIST_NEXT_PAGE,
-  "Next"
-);
-
-const TRANSLATION_UI_STORAGE_INTERFACE_ERROR_MULTIPLE_STORAGE_CORES =
-  "fluffyalien_asn.ui.storageInterface.error.multipleStorageCores";
-_: _addTranslation(
-  TRANSLATION_UI_STORAGE_INTERFACE_ERROR_MULTIPLE_STORAGE_CORES,
-  "Cannot establish a storage network: multiple storage cores found."
-);
-
-const TRANSLATION_UI_STORAGE_INTERFACE_ERROR_NO_STORAGE_CORES =
-  "fluffyalien_asn.ui.storageInterface.error.noStorageCores";
-_: _addTranslation(
-  TRANSLATION_UI_STORAGE_INTERFACE_ERROR_NO_STORAGE_CORES,
-  "Cannot establish a storage network: no storage cores found."
-);
 
 const ITEMS_PER_PAGE = 10;
 
@@ -65,8 +18,8 @@ export function showEstablishNetworkError(
         {
           translate:
             error === "multipleStorageCores"
-              ? TRANSLATION_UI_STORAGE_INTERFACE_ERROR_MULTIPLE_STORAGE_CORES
-              : TRANSLATION_UI_STORAGE_INTERFACE_ERROR_NO_STORAGE_CORES,
+              ? "fluffyalien_asn.ui.storageInterface.error.multipleStorageCores"
+              : "fluffyalien_asn.ui.storageInterface.error.noStorageCores",
         },
       ],
     }),
@@ -91,7 +44,17 @@ export async function showItemsList(
   form.title({
     rawtext: [
       {
-        translate: TRANSLATION_UI_STORAGE_INTERFACE_TITLE,
+        translate: "fluffyalien_asn.ui.storageInterface.title",
+      },
+    ],
+  });
+
+  const topButtonsCount = 2;
+
+  form.button({
+    rawtext: [
+      {
+        translate: "fluffyalien_asn.ui.storageInterface.itemsList.search",
       },
     ],
   });
@@ -99,15 +62,7 @@ export async function showItemsList(
   form.button({
     rawtext: [
       {
-        translate: TRANSLATION_UI_STORAGE_INTERFACE_ITEMS_LIST_SEARCH,
-      },
-    ],
-  });
-
-  form.button({
-    rawtext: [
-      {
-        translate: TRANSLATION_UI_STORAGE_INTERFACE_ITEMS_LIST_OPTIONS,
+        translate: "fluffyalien_asn.ui.storageInterface.itemsList.options",
       },
     ],
   });
@@ -116,6 +71,17 @@ export async function showItemsList(
     page * ITEMS_PER_PAGE,
     (page + 1) * ITEMS_PER_PAGE
   );
+
+  if (!itemsOnPage.length) {
+    form.body({
+      rawtext: [
+        {
+          translate:
+            "fluffyalien_asn.ui.storageInterface.itemsList.body.noItems",
+        },
+      ],
+    });
+  }
 
   for (const item of itemsOnPage) {
     const translationKeyItemId = item.typeId.startsWith("minecraft:")
@@ -139,7 +105,7 @@ export async function showItemsList(
   form.button({
     rawtext: [
       {
-        translate: TRANSLATION_UI_STORAGE_INTERFACE_ITEMS_LIST_PREVIOUS_PAGE,
+        translate: "fluffyalien_asn.ui.storageInterface.itemsList.previousPage",
       },
     ],
   });
@@ -147,7 +113,7 @@ export async function showItemsList(
   form.button({
     rawtext: [
       {
-        translate: TRANSLATION_UI_STORAGE_INTERFACE_ITEMS_LIST_NEXT_PAGE,
+        translate: "fluffyalien_asn.ui.storageInterface.itemsList.nextPage",
       },
     ],
   });
@@ -158,5 +124,33 @@ export async function showItemsList(
     return;
   }
 
-  //todo: finish ui
+  const searchButtonPressed = response.selection === 0;
+  if (searchButtonPressed) {
+    console.warn("search");
+    return;
+  }
+
+  const optionsButtonPressed = response.selection === 1;
+  if (optionsButtonPressed) {
+    console.warn("options");
+    return;
+  }
+
+  const previousPageButtonPressed =
+    response.selection === topButtonsCount + itemsOnPage.length;
+
+  if (previousPageButtonPressed) {
+    return showItemsList(player, items, Math.max(page - 1, 0));
+  }
+
+  const nextPageButtonPressed =
+    response.selection === topButtonsCount + itemsOnPage.length + 1;
+
+  if (nextPageButtonPressed) {
+    return showItemsList(player, items, page + 1);
+  }
+
+  const chosenItemIndex = response.selection - topButtonsCount;
+
+  console.warn(chosenItemIndex);
 }

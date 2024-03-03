@@ -1,18 +1,6 @@
 import { Block, Player } from "@minecraft/server";
-import { TRANSLATION_COMMON_UI_OK, _addTranslation } from "../texts";
 import { STORAGE_DATA_DYNAMIC_PROPERTY_ID, getStorageDriveEntity } from ".";
 import { ActionFormResponse } from "@minecraft/server-ui";
-
-const TRANSLATION_UI_STORAGE_DRIVE_TITLE =
-  "fluffyalien_asn.ui.storageDrive.title";
-_: _addTranslation(TRANSLATION_UI_STORAGE_DRIVE_TITLE, "Storage Drive");
-
-const TRANSLATION_UI_STORAGE_DRIVE_BODY_BYTES_USED =
-  "fluffyalien_asn.ui.storageDrive.body.bytesUsed";
-_: _addTranslation(
-  TRANSLATION_UI_STORAGE_DRIVE_BODY_BYTES_USED,
-  "Bytes used: %s/30000"
-);
 
 export function showStorageDriveUi(
   player: Player,
@@ -23,7 +11,7 @@ export function showStorageDriveUi(
   form.title({
     rawtext: [
       {
-        translate: TRANSLATION_UI_STORAGE_DRIVE_TITLE,
+        translate: "fluffyalien_asn.ui.storageDrive.title",
       },
     ],
   });
@@ -31,7 +19,7 @@ export function showStorageDriveUi(
   form.body({
     rawtext: [
       {
-        translate: TRANSLATION_UI_STORAGE_DRIVE_BODY_BYTES_USED,
+        translate: "fluffyalien_asn.ui.storageDrive.body.bytesUsed",
         with: {
           rawtext: [
             {
@@ -50,7 +38,7 @@ export function showStorageDriveUi(
   form.button({
     rawtext: [
       {
-        translate: TRANSLATION_COMMON_UI_OK,
+        translate: "fluffyalien_asn.ui.common.ok",
       },
     ],
   });
