@@ -1,0 +1,18 @@
+{
+    "include": [
+        "./src"
+    ],
+    "compilerOptions": {
+        "types": [
+            "@hopper-mcbe/hopper-mcbe/types/script_globals",
+            "./types/script_globals"
+        ],
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "target": "es2022",
+        "module": "es2022",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "skipLibCheck": true
+    }
+}
