@@ -113,7 +113,7 @@ class DeserializeParser {
       if (!this.isEoi()) this.next();
     } else {
       throw new Error(
-        `Failed to deserialize data: could not read enchantments: reached illegal character: '${char}'`
+        `Failed to deserialize data: could not read enchantments: reached illegal character: '${char}'.`
       );
     }
 

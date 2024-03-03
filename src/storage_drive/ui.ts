@@ -11,7 +11,7 @@ const TRANSLATION_UI_STORAGE_DRIVE_BODY_BYTES_USED =
   "fluffyalien_asn.ui.storageDrive.body.bytesUsed";
 _: _addTranslation(
   TRANSLATION_UI_STORAGE_DRIVE_BODY_BYTES_USED,
-  "Bytes used: %s/30000+buffer"
+  "Bytes used: %s/30000"
 );
 
 export function showStorageDriveUi(

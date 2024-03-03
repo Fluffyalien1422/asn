@@ -1,11 +1,8 @@
 import { Block, Vector3 } from "@minecraft/server";
 import { Result, failure, success } from "./result";
-import {
-  CABLE_BLOCK_TYPE_ID,
-  STORAGE_CORE_BLOCK_TYPE_ID,
-  STORAGE_DRIVE_BLOCK_TYPE_ID,
-  STORAGE_INTERFACE_BLOCK_TYPE_ID,
-} from "./constants";
+import { CABLE_BLOCK_TYPE_ID, STORAGE_CORE_BLOCK_TYPE_ID } from "./constants";
+import { STORAGE_DRIVE_BLOCK_TYPE_ID } from "./storage_drive";
+import { STORAGE_INTERFACE_BLOCK_TYPE_ID } from "./storage_interface";
 
 export interface CableNetworkConnections {
   cables: Vector3[];
@@ -14,7 +11,7 @@ export interface CableNetworkConnections {
   storageInterfaces: Vector3[];
 }
 
-type DiscoverCableNetworkConnectionsError =
+export type DiscoverCableNetworkConnectionsError =
   | "multipleStorageCores"
   | "noStorageCore";
 
@@ -85,32 +82,32 @@ export function discoverCableNetworkConnections(
 
     {
       const res = handleNextBlock(block.north());
-      if (!res.success) return failure(res.error);
+      if (!res.success) return res;
     }
 
     {
       const res = handleNextBlock(block.east());
-      if (!res.success) return failure(res.error);
+      if (!res.success) return res;
     }
 
     {
       const res = handleNextBlock(block.south());
-      if (!res.success) return failure(res.error);
+      if (!res.success) return res;
     }
 
     {
       const res = handleNextBlock(block.west());
-      if (!res.success) return failure(res.error);
+      if (!res.success) return res;
     }
 
     {
       const res = handleNextBlock(block.above());
-      if (!res.success) return failure(res.error);
+      if (!res.success) return res;
     }
 
     {
       const res = handleNextBlock(block.below());
-      if (!res.success) return failure(res.error);
+      if (!res.success) return res;
     }
   }
 

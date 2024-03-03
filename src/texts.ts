@@ -5,6 +5,9 @@ let texts =
 export const TRANSLATION_COMMON_UI_OK = "fluffyalien_asn.common.ui.ok";
 _: _addTranslation(TRANSLATION_COMMON_UI_OK, "Ok");
 
+export const TRANSLATION_COMMON_UI_ERROR = "fluffyalien_asn.common.ui.error";
+_: _addTranslation(TRANSLATION_COMMON_UI_ERROR, "Error");
+
 export function _addTranslation(key: string, value: string): string {
   texts += `\n${key}=${value}`;
   return key;

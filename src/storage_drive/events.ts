@@ -2,13 +2,11 @@ import {
   getStorageDriveEntity,
   getStorageDriveSerializedData,
   STORAGE_DATA_DYNAMIC_PROPERTY_ID,
+  STORAGE_DRIVE_BLOCK_TYPE_ID,
+  STORAGE_DRIVE_ENTITY_TYPE_ID,
 } from ".";
 import { serialize } from "../serialize";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
-import {
-  STORAGE_DRIVE_BLOCK_TYPE_ID,
-  STORAGE_DRIVE_ENTITY_TYPE_ID,
-} from "./actors";
 import { showStorageDriveUi } from "./ui";
 
 $.server.world.afterEvents.playerPlaceBlock.subscribe((e) => {
