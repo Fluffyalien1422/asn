@@ -4,7 +4,7 @@ import {
   STORAGE_INTERFACE_ENTITY_TYPE_ID,
 } from ".";
 import { StorageNetwork } from "../storage_network";
-import { showEstablishNetworkError } from "./ui";
+import { showEstablishNetworkError, showItemsList } from "./ui";
 
 $.server.world.afterEvents.playerPlaceBlock.subscribe((e) => {
   if (e.block.typeId !== STORAGE_INTERFACE_BLOCK_TYPE_ID) return;
@@ -40,7 +40,5 @@ $.server.world.afterEvents.playerInteractWithBlock.subscribe((e) => {
 
   const network = networkResult.value;
 
-  for (const itemStack of network.getStoredItemStacks()) {
-    console.warn(itemStack.typeId, itemStack.amount);
-  }
+  void showItemsList(e.player, network.getStoredItemStacks(), 0);
 });

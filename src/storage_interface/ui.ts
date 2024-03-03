@@ -5,6 +5,7 @@ import { ActionFormResponse } from "@minecraft/server-ui";
 import { makeErrorMessageUi, showForm } from "../utils/ui";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { isBlock } from "../utils/items";
+import { abbreviateNumber } from "../utils/number";
 
 const TRANSLATION_UI_STORAGE_INTERFACE_TITLE =
   "fluffyalien_asn.ui.storageInterface.title";
@@ -82,7 +83,7 @@ export function showEstablishNetworkError(
  */
 export async function showItemsList(
   player: Player,
-  items: StorageSystemItemStack[],
+  items: readonly StorageSystemItemStack[],
   page: number
 ): Promise<StorageSystemItemStack | undefined> {
   const form = new $.serverUi.ActionFormData();
@@ -123,6 +124,9 @@ export async function showItemsList(
 
     form.button({
       rawtext: [
+        {
+          text: `${abbreviateNumber(item.amount)} `,
+        },
         {
           translate: isBlock(item.typeId)
             ? `tile.${translationKeyItemId}.name`
