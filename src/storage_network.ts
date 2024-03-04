@@ -14,6 +14,7 @@ import {
 import { StorageSystemItemStack } from "./storage_system_item_stack";
 import { deserialize, serialize } from "./serialize";
 import { STRING_DYNAMIC_PROPERTY_MAX_LENGTH } from "./constants";
+import { DeepReadonly } from "ts-essentials";
 
 export type AddItemStackToStorageError = "insufficientStorage";
 
@@ -229,6 +230,10 @@ export class StorageNetwork {
     return (
       MAX_STORAGE_DRIVE_DATA_LENGTH * this.connections.storageDrives.length
     );
+  }
+
+  getConnections(): DeepReadonly<CableNetworkConnections> {
+    return this.connections;
   }
 
   addItemStack(

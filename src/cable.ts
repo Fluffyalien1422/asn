@@ -1,8 +1,9 @@
 import { Block, Vector3 } from "@minecraft/server";
 import { Result, failure, success } from "./result";
-import { CABLE_BLOCK_TYPE_ID, STORAGE_CORE_BLOCK_TYPE_ID } from "./constants";
+import { CABLE_BLOCK_TYPE_ID } from "./constants";
 import { STORAGE_DRIVE_BLOCK_TYPE_ID } from "./storage_drive";
 import { STORAGE_INTERFACE_BLOCK_TYPE_ID } from "./storage_interface";
+import { STORAGE_CORE_BLOCK_TYPE_ID } from "./storage_core";
 
 export interface CableNetworkConnections {
   cables: Vector3[];

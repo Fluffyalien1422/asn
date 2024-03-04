@@ -1,6 +1,5 @@
 import {
   getStorageDriveEntity,
-  getStorageDriveSerializedData,
   STORAGE_DRIVE_BLOCK_TYPE_ID,
   STORAGE_DRIVE_ENTITY_TYPE_ID,
 } from ".";
@@ -8,7 +7,11 @@ import { showStorageDriveUi } from "./ui";
 
 $.server.world.afterEvents.playerPlaceBlock.subscribe((e) => {
   if (e.block.typeId !== STORAGE_DRIVE_BLOCK_TYPE_ID) return;
-  e.block.dimension.spawnEntity(STORAGE_DRIVE_ENTITY_TYPE_ID, e.block.location);
+  e.block.dimension.spawnEntity(STORAGE_DRIVE_ENTITY_TYPE_ID, {
+    x: e.block.x + 0.5,
+    y: e.block.y,
+    z: e.block.z + 0.5,
+  });
 });
 
 $.server.world.afterEvents.playerBreakBlock.subscribe((e) => {
@@ -25,8 +28,6 @@ $.server.world.afterEvents.playerInteractWithBlock.subscribe((e) => {
     return;
 
   lastPlayerInteractWithBlockTriggerTick = $.server.system.currentTick;
-
-  console.warn(getStorageDriveSerializedData(e.block));
 
   void showStorageDriveUi(e.player, e.block);
 });

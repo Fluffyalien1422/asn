@@ -1,5 +1,6 @@
 import { Block, Player } from "@minecraft/server";
 import { STORAGE_DATA_DYNAMIC_PROPERTY_ID, getStorageDriveEntity } from ".";
+import { showForm } from "../utils/ui";
 import { ActionFormResponse } from "@minecraft/server-ui";
 
 export function showStorageDriveUi(
@@ -23,11 +24,12 @@ export function showStorageDriveUi(
         with: {
           rawtext: [
             {
-              text: (
-                getStorageDriveEntity(storageDrive)?.getDynamicProperty(
-                  STORAGE_DATA_DYNAMIC_PROPERTY_ID
-                ) as string | undefined
-              )?.length.toString(),
+              text:
+                (
+                  getStorageDriveEntity(storageDrive)?.getDynamicProperty(
+                    STORAGE_DATA_DYNAMIC_PROPERTY_ID
+                  ) as string | undefined
+                )?.length.toString() ?? "0",
             },
           ],
         },
@@ -43,6 +45,5 @@ export function showStorageDriveUi(
     ],
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-  return form.show(player as any);
+  return showForm(form, player);
 }

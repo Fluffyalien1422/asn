@@ -1,14 +1,16 @@
-pack.name=Advanced Storage Network 2
-pack.description=Advanced Storage Network 2
+pack.name=Advanced Storage Network
+pack.description=Advanced Storage Network v2.0.0
 
 tile.fluffyalien_asn:storage_drive.name=Storage Drive §9Advanced Storage Network
 tile.fluffyalien_asn:storage_interface.name=Storage Interface §9Advanced Storage Network
+tile.fluffyalien_asn:storage_core.name=Storage Core §9Advanced Storage Network
 
 fluffyalien_asn.ui.common.ok=Ok
 fluffyalien_asn.ui.common.error=Error
+fluffyalien_asn.ui.common.close=Close
 
 fluffyalien_asn.ui.storageDrive.title=Storage Drive
-fluffyalien_asn.ui.storageDrive.body.bytesUsed=Bytes used: %s/20000
+fluffyalien_asn.ui.storageDrive.body.bytesUsed=Bytes used (drive): %s/20000
 
 fluffyalien_asn.ui.storageInterface.title=Storage Interface
 fluffyalien_asn.ui.storageInterface.itemsList.body.noItems=There are no items on this page.
@@ -21,4 +23,9 @@ fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber=Cannot take 
 fluffyalien_asn.ui.storageInterface.requestItem.error.notEnough=There is not enough of this item stored to take out this amount.
 fluffyalien_asn.ui.storageInterface.error.multipleStorageCores=Cannot establish a storage network: multiple storage cores found.
 fluffyalien_asn.ui.storageInterface.error.noStorageCores=Cannot establish a storage network: no storage cores found.
-fluffyalien_asn.ui.storageInterface.error.insufficientStorage=Cannot add this item due to insufficient storage. Try connecting more Storage Drives.
+fluffyalien_asn.ui.storageInterface.error.insufficientStorage=Cannot add this item due to insufficient storage. Try connecting more storage drives.
+
+fluffyalien_asn.ui.storageCore.title=Storage Core
+fluffyalien_asn.ui.storageCore.body.bytesUsed=Bytes used (network): %s/%s
+fluffyalien_asn.ui.storageCore.body.connectedInterfaces=Connected interfaces: %s
+fluffyalien_asn.ui.storageCore.body.connectedDrives=Connected drives: %s
