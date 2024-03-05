@@ -1,5 +1,5 @@
 import { Player } from "@minecraft/server";
-import { DiscoverCableNetworkConnectionsError } from "../cable";
+import { DiscoverCableNetworkConnectionsError } from "../cable_network";
 import { ActionFormResponse } from "@minecraft/server-ui";
 import { makeErrorMessageUi, showForm } from "../utils/ui";
 import { StorageSystemItemStack } from "../storage_system_item_stack";

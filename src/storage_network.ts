@@ -3,7 +3,7 @@ import {
   CableNetworkConnections,
   DiscoverCableNetworkConnectionsError,
   discoverCableNetworkConnections,
-} from "./cable";
+} from "./cable_network";
 import { vector3AsDimensionLocation, vector3Matches } from "./utils/vector";
 import { Result, failure, success } from "./result";
 import {
@@ -15,11 +15,12 @@ import { StorageSystemItemStack } from "./storage_system_item_stack";
 import { deserialize, serialize } from "./serialize";
 import { STRING_DYNAMIC_PROPERTY_MAX_LENGTH } from "./constants";
 import { DeepReadonly } from "ts-essentials";
+import { CABLE_BLOCK_TYPE_ID } from "./cable";
 
 export type AddItemStackToStorageError = "insufficientStorage";
 
 export class StorageNetwork {
-  private static storageNetworks: StorageNetwork[] = [];
+  private static readonly storageNetworks: StorageNetwork[] = [];
 
   /**
    * Establish a network from any starting position inside of the network
@@ -47,6 +48,60 @@ export class StorageNetwork {
     return StorageNetwork.storageNetworks.find((network) =>
       network.isPartOfNetwork(location)
     );
+  }
+
+  /**
+   * Get a {@link StorageNetwork} that the {@link Block} can be connected to
+   * @returns a {@link StorageNetwork} if one was found or undefined
+   */
+  static getConnectableNetwork(block: Block): StorageNetwork | undefined {
+    {
+      const north = block.north();
+      if (north && north.typeId === CABLE_BLOCK_TYPE_ID) {
+        const network = StorageNetwork.getNetwork(north);
+        if (network) return network;
+      }
+    }
+
+    {
+      const east = block.east();
+      if (east && east.typeId === CABLE_BLOCK_TYPE_ID) {
+        const network = StorageNetwork.getNetwork(east);
+        if (network) return network;
+      }
+    }
+
+    {
+      const south = block.south();
+      if (south && south.typeId === CABLE_BLOCK_TYPE_ID) {
+        const network = StorageNetwork.getNetwork(south);
+        if (network) return network;
+      }
+    }
+
+    {
+      const west = block.west();
+      if (west && west.typeId === CABLE_BLOCK_TYPE_ID) {
+        const network = StorageNetwork.getNetwork(west);
+        if (network) return network;
+      }
+    }
+
+    {
+      const above = block.above();
+      if (above && above.typeId === CABLE_BLOCK_TYPE_ID) {
+        const network = StorageNetwork.getNetwork(above);
+        if (network) return network;
+      }
+    }
+
+    {
+      const below = block.below();
+      if (below && below.typeId === CABLE_BLOCK_TYPE_ID) {
+        const network = StorageNetwork.getNetwork(below);
+        if (network) return network;
+      }
+    }
   }
 
   /**
@@ -160,6 +215,15 @@ export class StorageNetwork {
   }
 
   /**
+   * Removes this network
+   */
+  remove(): void {
+    const i = StorageNetwork.storageNetworks.indexOf(this);
+    if (i === -1) return;
+    StorageNetwork.storageNetworks.splice(i, 1);
+  }
+
+  /**
    * Check if a {@link DimensionLocation} is part of this network
    */
   isPartOfNetwork(location: DimensionLocation): boolean {
@@ -178,14 +242,14 @@ export class StorageNetwork {
 
   /**
    * Update the connections to this network
-   * @throws if the storage core has been moved
+   * @throws if the storage core position is unloaded
    * @returns a result containing an error or null
    */
   updateConnections(): Result<null, DiscoverCableNetworkConnectionsError> {
     const coreBlock = this.dimension.getBlock(this.connections.storageCore);
     if (!coreBlock) {
       throw new Error(
-        `(StorageNetwork#updateConnections) Cannot update connections: storage core does not exist at (${this.connections.storageCore.x}, ${this.connections.storageCore.y}, ${this.connections.storageCore.z}).`
+        `(StorageNetwork#updateConnections) Cannot update connections: location (${this.connections.storageCore.x}, ${this.connections.storageCore.y}, ${this.connections.storageCore.z}) in ${this.dimension.id} is not loaded.`
       );
     }
 

@@ -19,6 +19,7 @@ module.exports = {
     "no-unused-labels": "off",
     "@typescript-eslint/explicit-function-return-type": "error",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/prefer-readonly": "error",
   },
   ignorePatterns: ["/*", "!/src"],
 };

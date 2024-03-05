@@ -1,3 +1,27 @@
+/*
+
+serialization format info:
+
+type_id(amount "name tag" damage enchant@level,enchant2@level)
+
+- damage refers to ItemDurabilityComponent#damage
+  (https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/itemdurabilitycomponent?view=minecraft-bedrock-experimental#damage)
+
+- space is the separator
+
+- enchantments and name tag are optional, others are expected
+  to have a value even if they're is not used (for example,
+  damage is still required for items that have no durability)
+
+- name tag is a string, only double quotes are allowed,
+  double quotes inside must be escaped with backslashes \"
+
+examples:
+minecraft:dirt(1 "my dirt" 0 )
+minecraft:dirt(1  0 )
+minecraft:wooden_sword(1  0 sharpness@1,unbreaking@2)
+*/
+
 import { Enchantment } from "@minecraft/server";
 import { StorageSystemItemStack } from "./storage_system_item_stack";
 
@@ -13,7 +37,6 @@ export function serialize(itemStack: StorageSystemItemStack): string {
   const damage = itemStack.damage;
   const enchantments = itemStack.enchantments;
 
-  // id(amount "name tag" damage enchant@level,enchant2@level)
   return `${id}(${amount} ${
     nameTag ? `"${nameTag.replaceAll('"', '\\"')}"` : ""
   } ${damage} ${enchantments
@@ -30,8 +53,11 @@ export function serialize(itemStack: StorageSystemItemStack): string {
 
 class DeserializeParser {
   private index = 0;
-  constructor(private data: string) {}
+  constructor(private readonly data: string) {}
 
+  /**
+   * @returns `true` if the current character is the last character, otherwise `false`
+   */
   private isEoi(): boolean {
     return this.index + 1 >= this.data.length;
   }

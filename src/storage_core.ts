@@ -5,6 +5,11 @@ import { showForm } from "./utils/ui";
 import { ActionFormResponse } from "@minecraft/server-ui";
 
 export const STORAGE_CORE_BLOCK_TYPE_ID = "fluffyalien_asn:storage_core";
+$.server.world.afterEvents.playerBreakBlock.subscribe((e) => {
+  if (e.brokenBlockPermutation.type.id !== STORAGE_CORE_BLOCK_TYPE_ID) return;
+
+  StorageNetwork.getNetwork(e.block)?.remove();
+});
 
 function showStorageCoreUi(
   player: Player,
@@ -23,7 +28,7 @@ function showStorageCoreUi(
   form.body({
     rawtext: [
       {
-        translate: "fluffyalien_asn.ui.storageCore.body.bytesUsed",
+        translate: "fluffyalien_asn.ui.storageCore.body.storageUsed",
         with: {
           rawtext: [
             {

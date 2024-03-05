@@ -20,7 +20,7 @@ export function showStorageDriveUi(
   form.body({
     rawtext: [
       {
-        translate: "fluffyalien_asn.ui.storageDrive.body.bytesUsed",
+        translate: "fluffyalien_asn.ui.storageDrive.body.storageUsed",
         with: {
           rawtext: [
             {

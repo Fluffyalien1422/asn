@@ -5,6 +5,19 @@ import { getPlayerMainhandSlot } from "../utils/items";
 import { makeErrorMessageUi, showForm } from "../utils/ui";
 import { showEstablishNetworkError, showItemsListUi } from "./ui";
 
+$.server.world.afterEvents.playerPlaceBlock.subscribe((e) => {
+  if (e.block.typeId !== STORAGE_INTERFACE_BLOCK_TYPE_ID) return;
+
+  StorageNetwork.getConnectableNetwork(e.block)?.updateConnections();
+});
+
+$.server.world.afterEvents.playerBreakBlock.subscribe((e) => {
+  if (e.brokenBlockPermutation.type.id !== STORAGE_INTERFACE_BLOCK_TYPE_ID)
+    return;
+
+  StorageNetwork.getNetwork(e.block)?.updateConnections();
+});
+
 let lastPlayerInteractWithBlockTriggerTick = 0;
 $.server.world.afterEvents.playerInteractWithBlock.subscribe((e) => {
   if (

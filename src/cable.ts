@@ -1,125 +1,37 @@
-import { Block, Vector3 } from "@minecraft/server";
-import { Result, failure, success } from "./result";
-import { CABLE_BLOCK_TYPE_ID } from "./constants";
-import { STORAGE_DRIVE_BLOCK_TYPE_ID } from "./storage_drive";
-import { STORAGE_INTERFACE_BLOCK_TYPE_ID } from "./storage_interface";
-import { STORAGE_CORE_BLOCK_TYPE_ID } from "./storage_core";
+import { _addBlocksJsonEntry } from "./blocks_json";
+import { StorageNetwork } from "./storage_network";
 
-export interface CableNetworkConnections {
-  cables: Vector3[];
-  storageCore: Vector3;
-  storageDrives: Vector3[];
-  storageInterfaces: Vector3[];
-}
+export const CABLE_BLOCK_TYPE_ID = "fluffyalien_asn:storage_cable";
 
-export type DiscoverCableNetworkConnectionsError =
-  | "multipleStorageCores"
-  | "noStorageCore";
+$.server.world.afterEvents.playerPlaceBlock.subscribe((e) => {
+  if (e.block.typeId !== CABLE_BLOCK_TYPE_ID) return;
 
-export function discoverCableNetworkConnections(
-  origin: Block
-): Result<CableNetworkConnections, DiscoverCableNetworkConnectionsError> {
-  const visitedLocations: Vector3[] = [];
-  const stack: Block[] = [];
+  StorageNetwork.getConnectableNetwork(e.block)?.updateConnections();
+});
 
-  const cables: Vector3[] = [];
-  const storageDrives: Vector3[] = [];
-  const storageInterfaces: Vector3[] = [];
-  let storageCore: Vector3 | undefined;
+$.server.world.afterEvents.playerBreakBlock.subscribe((e) => {
+  if (e.brokenBlockPermutation.type.id !== CABLE_BLOCK_TYPE_ID) return;
 
-  function handleNextBlock(
-    block?: Block
-  ): Result<null, DiscoverCableNetworkConnectionsError> {
-    if (
-      !block ||
-      ![
-        CABLE_BLOCK_TYPE_ID,
-        STORAGE_CORE_BLOCK_TYPE_ID,
-        STORAGE_DRIVE_BLOCK_TYPE_ID,
-        STORAGE_INTERFACE_BLOCK_TYPE_ID,
-      ].includes(block.typeId) ||
-      visitedLocations.some(
-        (vector) =>
-          block.x === vector.x && block.y === vector.y && block.z === vector.z
-      )
-    ) {
-      return success(null);
-    }
+  StorageNetwork.getNetwork(e.block)?.updateConnections();
+});
 
-    visitedLocations.push(block.location);
-
-    if (block.typeId === STORAGE_DRIVE_BLOCK_TYPE_ID) {
-      storageDrives.push(block.location);
-      return success(null);
-    }
-
-    if (block.typeId === STORAGE_INTERFACE_BLOCK_TYPE_ID) {
-      storageInterfaces.push(block.location);
-      return success(null);
-    }
-
-    if (block.typeId === STORAGE_CORE_BLOCK_TYPE_ID) {
-      if (storageCore) {
-        return failure("multipleStorageCores");
-      }
-
-      storageCore = block.location;
-      return success(null);
-    }
-
-    cables.push(block.location);
-    stack.push(block);
-
-    return success(null);
-  }
-
-  handleNextBlock(origin);
-  if (origin.typeId !== CABLE_BLOCK_TYPE_ID) {
-    stack.push(origin);
-  }
-
-  while (stack.length) {
-    const block = stack.pop()!;
-
-    {
-      const res = handleNextBlock(block.north());
-      if (!res.success) return res;
-    }
-
-    {
-      const res = handleNextBlock(block.east());
-      if (!res.success) return res;
-    }
-
-    {
-      const res = handleNextBlock(block.south());
-      if (!res.success) return res;
-    }
-
-    {
-      const res = handleNextBlock(block.west());
-      if (!res.success) return res;
-    }
-
-    {
-      const res = handleNextBlock(block.above());
-      if (!res.success) return res;
-    }
-
-    {
-      const res = handleNextBlock(block.below());
-      if (!res.success) return res;
-    }
-  }
-
-  if (!storageCore) {
-    return failure("noStorageCore");
-  }
-
-  return success({
-    cables,
-    storageCore,
-    storageDrives,
-    storageInterfaces,
-  });
-}
+_: _addBlocksJsonEntry(CABLE_BLOCK_TYPE_ID, {
+  textures: "gilded_blackstone",
+});
+_.define.block({
+  format_version: "1.20.60",
+  "minecraft:block": {
+    description: {
+      identifier: CABLE_BLOCK_TYPE_ID,
+      menu_category: {
+        category: "items",
+      },
+    },
+    components: {
+      "minecraft:destructible_by_explosion": false,
+      "minecraft:destructible_by_mining": {
+        seconds_to_destroy: 1,
+      },
+    },
+  },
+});
