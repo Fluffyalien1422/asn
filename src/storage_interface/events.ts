@@ -8,7 +8,7 @@ import { showEstablishNetworkError, showItemsListUi } from "./ui";
 $.server.world.afterEvents.playerPlaceBlock.subscribe((e) => {
   if (e.block.typeId !== STORAGE_INTERFACE_BLOCK_TYPE_ID) return;
 
-  StorageNetwork.getConnectableNetwork(e.block)?.updateConnections();
+  StorageNetwork.updateConnectableNetworks(e.block);
 });
 
 $.server.world.afterEvents.playerBreakBlock.subscribe((e) => {

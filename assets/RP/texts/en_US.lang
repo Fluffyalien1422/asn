@@ -1,7 +1,8 @@
 pack.name=Advanced Storage Network
 pack.description=Advanced Storage Network v2.0.0
 
-tile.fluffyalien_asn:storage_drive.name=Storage Drive §9Advanced Storage Network
+item.fluffyalien_asn:storage_drive_placer=Storage Drive §9Advanced Storage Network
+
 tile.fluffyalien_asn:storage_interface.name=Storage Interface §9Advanced Storage Network
 tile.fluffyalien_asn:storage_core.name=Storage Core §9Advanced Storage Network
 tile.fluffyalien_asn:storage_cable.name=Storage Cable §9Advanced Storage Network

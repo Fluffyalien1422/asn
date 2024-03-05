@@ -3,6 +3,8 @@ import { _addBlocksJsonEntry } from "../blocks_json";
 export const STORAGE_DRIVE_BLOCK_TYPE_ID = "fluffyalien_asn:storage_drive";
 export const STORAGE_DRIVE_ENTITY_TYPE_ID =
   "fluffyalien_asn:storage_drive_entity";
+export const STORAGE_DRIVE_PLACER_TYPE_ID =
+  "fluffyalien_asn:storage_drive_placer";
 
 _: _addBlocksJsonEntry(STORAGE_DRIVE_BLOCK_TYPE_ID, { textures: "end_stone" });
 _.define.block({
@@ -10,11 +12,9 @@ _.define.block({
   "minecraft:block": {
     description: {
       identifier: STORAGE_DRIVE_BLOCK_TYPE_ID,
-      menu_category: {
-        category: "items",
-      },
     },
     components: {
+      "minecraft:loot": "loot_tables/empty.json",
       "minecraft:on_interact": {
         event: "fluffyalien_asn:empty",
       },
@@ -25,6 +25,27 @@ _.define.block({
     },
     events: {
       "fluffyalien_asn:empty": {},
+    },
+  },
+});
+
+_.define.item({
+  format_version: "1.20.80",
+  "minecraft:item": {
+    description: {
+      identifier: STORAGE_DRIVE_PLACER_TYPE_ID,
+    },
+    components: {
+      "minecraft:max_stack_size": 1,
+      "minecraft:icon": {
+        //@ts-expect-error no textures property
+        textures: {
+          default: "apple",
+        },
+      },
+      "minecraft:block_placer": {
+        block: STORAGE_DRIVE_BLOCK_TYPE_ID,
+      },
     },
   },
 });

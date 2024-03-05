@@ -5,10 +5,17 @@ import { showForm } from "./utils/ui";
 import { ActionFormResponse } from "@minecraft/server-ui";
 
 export const STORAGE_CORE_BLOCK_TYPE_ID = "fluffyalien_asn:storage_core";
+
+$.server.world.afterEvents.playerPlaceBlock.subscribe((e) => {
+  if (e.block.typeId !== STORAGE_CORE_BLOCK_TYPE_ID) return;
+
+  StorageNetwork.updateConnectableNetworks(e.block);
+});
+
 $.server.world.afterEvents.playerBreakBlock.subscribe((e) => {
   if (e.brokenBlockPermutation.type.id !== STORAGE_CORE_BLOCK_TYPE_ID) return;
 
-  StorageNetwork.getNetwork(e.block)?.remove();
+  StorageNetwork.getNetwork(e.block)?.destroy();
 });
 
 function showStorageCoreUi(

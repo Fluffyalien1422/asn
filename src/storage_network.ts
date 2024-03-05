@@ -21,6 +21,7 @@ export type AddItemStackToStorageError = "insufficientStorage";
 
 export class StorageNetwork {
   private static readonly storageNetworks: StorageNetwork[] = [];
+  private internalIsValid = true;
 
   /**
    * Establish a network from any starting position inside of the network
@@ -51,15 +52,17 @@ export class StorageNetwork {
   }
 
   /**
-   * Get a {@link StorageNetwork} that the {@link Block} can be connected to
-   * @returns a {@link StorageNetwork} if one was found or undefined
+   * Get the {@link StorageNetwork}s that the {@link Block} can connect to
+   * @returns the {@link StorageNetwork}s that were found
    */
-  static getConnectableNetwork(block: Block): StorageNetwork | undefined {
+  static getConnectableNetworks(block: Block): StorageNetwork[] {
+    const networks: StorageNetwork[] = [];
+
     {
       const north = block.north();
       if (north && north.typeId === CABLE_BLOCK_TYPE_ID) {
         const network = StorageNetwork.getNetwork(north);
-        if (network) return network;
+        if (network) networks.push(network);
       }
     }
 
@@ -67,7 +70,7 @@ export class StorageNetwork {
       const east = block.east();
       if (east && east.typeId === CABLE_BLOCK_TYPE_ID) {
         const network = StorageNetwork.getNetwork(east);
-        if (network) return network;
+        if (network) networks.push(network);
       }
     }
 
@@ -75,7 +78,7 @@ export class StorageNetwork {
       const south = block.south();
       if (south && south.typeId === CABLE_BLOCK_TYPE_ID) {
         const network = StorageNetwork.getNetwork(south);
-        if (network) return network;
+        if (network) networks.push(network);
       }
     }
 
@@ -83,7 +86,7 @@ export class StorageNetwork {
       const west = block.west();
       if (west && west.typeId === CABLE_BLOCK_TYPE_ID) {
         const network = StorageNetwork.getNetwork(west);
-        if (network) return network;
+        if (network) networks.push(network);
       }
     }
 
@@ -91,7 +94,7 @@ export class StorageNetwork {
       const above = block.above();
       if (above && above.typeId === CABLE_BLOCK_TYPE_ID) {
         const network = StorageNetwork.getNetwork(above);
-        if (network) return network;
+        if (network) networks.push(network);
       }
     }
 
@@ -99,8 +102,20 @@ export class StorageNetwork {
       const below = block.below();
       if (below && below.typeId === CABLE_BLOCK_TYPE_ID) {
         const network = StorageNetwork.getNetwork(below);
-        if (network) return network;
+        if (network) networks.push(network);
       }
+    }
+
+    return networks;
+  }
+
+  /**
+   * Call `updateConnections` on the {@link StorageNetwork}s that the {@link Block} can connect to
+   * @see {@link StorageNetwork.getConnectableNetworks}, {@link StorageNetwork.updateConnections}
+   */
+  static updateConnectableNetworks(block: Block): void {
+    for (const network of StorageNetwork.getConnectableNetworks(block)) {
+      network.updateConnections();
     }
   }
 
@@ -127,6 +142,18 @@ export class StorageNetwork {
     private connections: CableNetworkConnections
   ) {
     StorageNetwork.storageNetworks.push(this);
+  }
+
+  /**
+   * @throws if this object is not valid (if it has been destroyed)
+   * @see {@link StorageNetwork.isValid}, {@link StorageNetwork.destroy}
+   */
+  private ensureValidity(): void {
+    if (!this.internalIsValid) {
+      throw new Error(
+        `(StorageNetwork#ensureValidity) This object has been destroyed and is no longer valid`
+      );
+    }
   }
 
   private getStoredItemStacksMutable(): StorageSystemItemStack[] {
@@ -215,18 +242,32 @@ export class StorageNetwork {
   }
 
   /**
-   * Removes this network
+   * @returns `true` if this object is valid (has not been destroyed), otherwise `false`
    */
-  remove(): void {
+  isValid(): boolean {
+    return this.internalIsValid;
+  }
+
+  /**
+   * Destroy this object
+   * @see {@link StorageNetwork.isValid}
+   */
+  destroy(): void {
+    this.internalIsValid = false;
+
     const i = StorageNetwork.storageNetworks.indexOf(this);
     if (i === -1) return;
+
     StorageNetwork.storageNetworks.splice(i, 1);
   }
 
   /**
    * Check if a {@link DimensionLocation} is part of this network
+   * @throws if this object is not valid
    */
   isPartOfNetwork(location: DimensionLocation): boolean {
+    this.ensureValidity();
+
     return (
       location.dimension.id === this.dimension.id &&
       (vector3Matches(location, this.connections.storageCore) ||
@@ -241,11 +282,15 @@ export class StorageNetwork {
   }
 
   /**
-   * Update the connections to this network
+   * Update the connections to this network. If an error occurs, the object will be destroyed
+   * @see {@link StorageNetwork.destroy}, {@link StorageNetwork.isValid}
    * @throws if the storage core position is unloaded
+   * @throws if this object is not valid
    * @returns a result containing an error or null
    */
   updateConnections(): Result<null, DiscoverCableNetworkConnectionsError> {
+    this.ensureValidity();
+
     const coreBlock = this.dimension.getBlock(this.connections.storageCore);
     if (!coreBlock) {
       throw new Error(
@@ -255,19 +300,34 @@ export class StorageNetwork {
 
     const result = discoverCableNetworkConnections(coreBlock);
     if (!result.success) {
+      this.destroy();
       return result;
     }
 
     this.connections = result.value;
 
+    // we need to clear stored items because a drive may have been removed
+    // the next time getStoredItemsMutable is called, storedItems will be updated
+    this.storedItems = undefined;
+
     return success(null);
   }
 
+  /**
+   * @throws if this object is not valid
+   */
   getStoredItemStacks(): readonly StorageSystemItemStack[] {
+    this.ensureValidity();
+
     return this.getStoredItemStacksMutable();
   }
 
+  /**
+   * @throws if this object is not valid
+   */
   getUsedDataLength(): number {
+    this.ensureValidity();
+
     let length = 0;
 
     for (const driveLocation of this.connections.storageDrives) {
@@ -290,19 +350,34 @@ export class StorageNetwork {
     return length;
   }
 
+  /**
+   * @throws if this object is not valid
+   */
   getMaxDataLength(): number {
+    this.ensureValidity();
+
     return (
       MAX_STORAGE_DRIVE_DATA_LENGTH * this.connections.storageDrives.length
     );
   }
 
+  /**
+   * @throws if this object is not valid
+   */
   getConnections(): DeepReadonly<CableNetworkConnections> {
+    this.ensureValidity();
+
     return this.connections;
   }
 
+  /**
+   * @throws if this object is not valid
+   */
   addItemStack(
     itemStack: StorageSystemItemStack
   ): Result<null, AddItemStackToStorageError> {
+    this.ensureValidity();
+
     const storedItems = this.getStoredItemStacksMutable();
 
     const existingItemStack = storedItems.find((other) =>
@@ -329,8 +404,11 @@ export class StorageNetwork {
   /**
    * Take items out of storage and gives it to the player. Clamps the amount from 1 to the amount available in storage
    * @throws if a matching item does not exist in the storage
+   * @throws if this object is not valid
    */
   takeOutItemStack(player: Player, itemStack: StorageSystemItemStack): void {
+    this.ensureValidity();
+
     const storedItems = this.getStoredItemStacksMutable();
 
     const storedIndex = storedItems.findIndex((other) =>

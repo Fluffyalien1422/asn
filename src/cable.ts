@@ -6,7 +6,7 @@ export const CABLE_BLOCK_TYPE_ID = "fluffyalien_asn:storage_cable";
 $.server.world.afterEvents.playerPlaceBlock.subscribe((e) => {
   if (e.block.typeId !== CABLE_BLOCK_TYPE_ID) return;
 
-  StorageNetwork.getConnectableNetwork(e.block)?.updateConnections();
+  StorageNetwork.updateConnectableNetworks(e.block);
 });
 
 $.server.world.afterEvents.playerBreakBlock.subscribe((e) => {
