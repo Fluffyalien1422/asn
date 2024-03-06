@@ -1,4 +1,4 @@
-import { _addBlocksJsonEntry } from "../blocks_json";
+import { _addTerrainTexture } from "../terrain_texture";
 
 export const STORAGE_DRIVE_BLOCK_TYPE_ID = "fluffyalien_asn:storage_drive";
 export const STORAGE_DRIVE_ENTITY_TYPE_ID =
@@ -6,18 +6,61 @@ export const STORAGE_DRIVE_ENTITY_TYPE_ID =
 export const STORAGE_DRIVE_PLACER_TYPE_ID =
   "fluffyalien_asn:storage_drive_placer";
 
-_: _addBlocksJsonEntry(STORAGE_DRIVE_BLOCK_TYPE_ID, { textures: "end_stone" });
+_: {
+  _addTerrainTexture(
+    "fluffyalien_asn:storage_drive_front",
+    "textures/fluffyalien/asn/storage_drive_front"
+  );
+  _addTerrainTexture(
+    "fluffyalien_asn:storage_drive_side",
+    "textures/fluffyalien/asn/storage_drive_side"
+  );
+  _addTerrainTexture(
+    "fluffyalien_asn:storage_drive_top",
+    "textures/fluffyalien/asn/storage_drive_top"
+  );
+}
+
 _.define.block({
-  format_version: "1.20.60",
+  format_version: "1.20.80",
   "minecraft:block": {
     description: {
       identifier: STORAGE_DRIVE_BLOCK_TYPE_ID,
+      //@ts-expect-error traits does not exist
+      traits: {
+        "minecraft:placement_direction": {
+          enabled_states: ["minecraft:cardinal_direction"],
+        },
+      },
     },
     components: {
+      //@ts-expect-error no tag
+      "tag:fluffyalien_asn:storage_cable_connectable": {},
+
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        north: {
+          ambient_occlusion: false,
+          texture: "fluffyalien_asn:storage_drive_side",
+        },
+        south: {
+          ambient_occlusion: false,
+          texture: "fluffyalien_asn:storage_drive_front",
+        },
+        up: {
+          ambient_occlusion: false,
+          texture: "fluffyalien_asn:storage_drive_top",
+        },
+        east: "north",
+        west: "north",
+        down: "up",
+      },
+
       "minecraft:loot": "loot_tables/empty.json",
       "minecraft:on_interact": {
         event: "fluffyalien_asn:empty",
       },
+      "minecraft:light_emission": 3,
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {
         seconds_to_destroy: 1,
@@ -26,6 +69,40 @@ _.define.block({
     events: {
       "fluffyalien_asn:empty": {},
     },
+    permutations: [
+      {
+        condition: "q.block_state('minecraft:cardinal_direction') == 'north'",
+        components: {
+          "minecraft:transformation": {
+            rotation: [0, 0, 0],
+          },
+        },
+      },
+      {
+        condition: "q.block_state('minecraft:cardinal_direction') == 'south'",
+        components: {
+          "minecraft:transformation": {
+            rotation: [0, 180, 0],
+          },
+        },
+      },
+      {
+        condition: "q.block_state('minecraft:cardinal_direction') == 'west'",
+        components: {
+          "minecraft:transformation": {
+            rotation: [0, 90, 0],
+          },
+        },
+      },
+      {
+        condition: "q.block_state('minecraft:cardinal_direction') == 'east'",
+        components: {
+          "minecraft:transformation": {
+            rotation: [0, -90, 0],
+          },
+        },
+      },
+    ],
   },
 });
 

@@ -1,8 +1,8 @@
 import { Player } from "@minecraft/server";
-import { _addBlocksJsonEntry } from "./blocks_json";
 import { StorageNetwork } from "./storage_network";
 import { showForm } from "./utils/ui";
 import { ActionFormResponse } from "@minecraft/server-ui";
+import { _addTerrainTexture } from "./terrain_texture";
 
 export const STORAGE_CORE_BLOCK_TYPE_ID = "fluffyalien_asn:storage_core";
 
@@ -111,11 +111,12 @@ $.server.world.afterEvents.playerInteractWithBlock.subscribe((e) => {
   void showStorageCoreUi(e.player, network);
 });
 
-_: _addBlocksJsonEntry(STORAGE_CORE_BLOCK_TYPE_ID, {
-  textures: "furnace_front_on",
-});
+_: _addTerrainTexture(
+  "fluffyalien_asn:storage_core",
+  "textures/fluffyalien/asn/storage_core"
+);
 _.define.block({
-  format_version: "1.20.60",
+  format_version: "1.20.80",
   "minecraft:block": {
     description: {
       identifier: STORAGE_CORE_BLOCK_TYPE_ID,
@@ -124,9 +125,20 @@ _.define.block({
       },
     },
     components: {
+      //@ts-expect-error no tag
+      "tag:fluffyalien_asn:storage_cable_connectable": {},
+
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          ambient_occlusion: false,
+          texture: "fluffyalien_asn:storage_core",
+        },
+      },
       "minecraft:on_interact": {
         event: "fluffyalien_asn:empty",
       },
+      "minecraft:light_emission": 5,
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {
         seconds_to_destroy: 1,
