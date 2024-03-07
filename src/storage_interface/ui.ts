@@ -153,7 +153,7 @@ export async function showItemsListUi(
   if (body.length) form.body({ rawtext: body });
 
   for (const item of itemsOnPage) {
-    const icons = ["apple", "beef", "sword", "ingot"];
+    const icons = ["apple", "beef", "sword", "ingot", "flower"];
     const icon = icons[Math.floor(Math.random() * icons.length)];
 
     form.button(

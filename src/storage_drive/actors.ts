@@ -1,3 +1,4 @@
+import { _addItemTexture } from "../item_texture";
 import { _addTerrainTexture } from "../terrain_texture";
 
 export const STORAGE_DRIVE_BLOCK_TYPE_ID = "fluffyalien_asn:storage_drive";
@@ -102,6 +103,10 @@ _.define.block({
   },
 });
 
+_: _addItemTexture(
+  "fluffyalien_asn:storage_drive_placer",
+  "textures/fluffyalien/asn/blocks/storage_drive_front"
+);
 _.define.item({
   format_version: "1.20.80",
   "minecraft:item": {
@@ -113,7 +118,7 @@ _.define.item({
       "minecraft:icon": {
         //@ts-expect-error no textures property
         textures: {
-          default: "apple",
+          default: "fluffyalien_asn:storage_drive_placer",
         },
       },
       "minecraft:block_placer": {
