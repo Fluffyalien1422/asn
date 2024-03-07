@@ -40,15 +40,12 @@ _.define.block({
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {
         north: {
-          ambient_occlusion: false,
           texture: "fluffyalien_asn:storage_drive_side",
         },
         south: {
-          ambient_occlusion: false,
           texture: "fluffyalien_asn:storage_drive_front",
         },
         up: {
-          ambient_occlusion: false,
           texture: "fluffyalien_asn:storage_drive_top",
         },
         east: "north",
@@ -60,7 +57,6 @@ _.define.block({
       "minecraft:on_interact": {
         event: "fluffyalien_asn:empty",
       },
-      "minecraft:light_emission": 3,
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {
         seconds_to_destroy: 1,

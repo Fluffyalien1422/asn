@@ -93,6 +93,7 @@ let lastPlayerInteractWithBlockTriggerTick = 0;
 $.server.world.afterEvents.playerInteractWithBlock.subscribe((e) => {
   if (
     e.block.typeId !== STORAGE_CORE_BLOCK_TYPE_ID ||
+    e.player.isSneaking ||
     lastPlayerInteractWithBlockTriggerTick + 5 > $.server.system.currentTick
   )
     return;
@@ -131,14 +132,12 @@ _.define.block({
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {
         "*": {
-          ambient_occlusion: false,
           texture: "fluffyalien_asn:storage_core",
         },
       },
       "minecraft:on_interact": {
         event: "fluffyalien_asn:empty",
       },
-      "minecraft:light_emission": 5,
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {
         seconds_to_destroy: 1,

@@ -70,6 +70,7 @@ _.define.block({
         origin: [-3, 5, -3],
         size: [6, 6, 6],
       },
+      "minecraft:light_dampening": 0,
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {
         seconds_to_destroy: 1,

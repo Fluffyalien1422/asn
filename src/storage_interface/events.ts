@@ -22,6 +22,7 @@ let lastPlayerInteractWithBlockTriggerTick = 0;
 $.server.world.afterEvents.playerInteractWithBlock.subscribe((e) => {
   if (
     e.block.typeId !== STORAGE_INTERFACE_BLOCK_TYPE_ID ||
+    e.player.isSneaking ||
     lastPlayerInteractWithBlockTriggerTick + 5 > $.server.system.currentTick
   )
     return;
