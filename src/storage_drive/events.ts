@@ -7,16 +7,27 @@ import {
   STORAGE_DRIVE_PLACER_TYPE_ID,
 } from ".";
 import { StorageNetwork } from "../storage_network";
+import { getBlockInDirection } from "../utils/block";
 import { showStorageDriveUi } from "./ui";
 
 $.server.world.afterEvents.itemUseOn.subscribe((e) => {
   if (e.itemStack.typeId !== STORAGE_DRIVE_PLACER_TYPE_ID) return;
 
-  const entity = e.block.dimension.spawnEntity(STORAGE_DRIVE_ENTITY_TYPE_ID, {
-    x: e.block.x + Math.floor(e.faceLocation.x) + 0.5,
-    y: e.block.y + Math.floor(e.faceLocation.y),
-    z: e.block.z + Math.floor(e.faceLocation.z) + 0.5,
-  });
+  const targetBlock = getBlockInDirection(e.block, e.blockFace);
+  if (!targetBlock) {
+    throw new Error(
+      "(storage_drive/events.ts:itemUseOn) Could not get target block to spawn drive entity."
+    );
+  }
+
+  const entity = targetBlock.dimension.spawnEntity(
+    STORAGE_DRIVE_ENTITY_TYPE_ID,
+    {
+      x: targetBlock.x + 0.5,
+      y: targetBlock.y,
+      z: targetBlock.z + 0.5,
+    }
+  );
 
   entity.setDynamicProperty(
     STORAGE_DATA_DYNAMIC_PROPERTY_ID,
@@ -59,6 +70,8 @@ $.server.world.afterEvents.playerInteractWithBlock.subscribe((e) => {
     return;
 
   lastPlayerInteractWithBlockTriggerTick = $.server.system.currentTick;
+
+  console.warn(getStorageDriveSerializedData(e.block));
 
   void showStorageDriveUi(e.player, e.block);
 });

@@ -1,5 +1,6 @@
-import { Enchantment, EnchantmentType, ItemStack } from "@minecraft/server";
+import { Enchantment, ItemStack } from "@minecraft/server";
 import { DeepReadonly } from "ts-essentials";
+import { getEnchantmentTypeId } from "./utils/item";
 
 export class StorageSystemItemStack {
   constructor(
@@ -66,11 +67,8 @@ export class StorageSystemItemStack {
         other.enchantments.some(
           (otherEnchantment) =>
             enchantment.level === otherEnchantment.level &&
-            typeof enchantment.type === typeof otherEnchantment.type &&
-            (typeof enchantment.type === "string"
-              ? enchantment.type === otherEnchantment.type
-              : enchantment.type.id ===
-                (otherEnchantment.type as EnchantmentType).id)
+            getEnchantmentTypeId(enchantment) ===
+              getEnchantmentTypeId(otherEnchantment)
         )
       )
     );

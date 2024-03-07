@@ -24,6 +24,7 @@ minecraft:wooden_sword(1  0 sharpness@1,unbreaking@2)
 
 import { Enchantment } from "@minecraft/server";
 import { StorageSystemItemStack } from "./storage_system_item_stack";
+import { getEnchantmentTypeId } from "./utils/item";
 
 export function deserialize(data: string): StorageSystemItemStack[] {
   const parser = new DeserializeParser(data);
@@ -42,11 +43,7 @@ export function serialize(itemStack: StorageSystemItemStack): string {
   } ${damage} ${enchantments
     .map(
       (enchantment) =>
-        `${
-          typeof enchantment.type === "string"
-            ? enchantment.type
-            : enchantment.type.id
-        }@${enchantment.level}`
+        `${getEnchantmentTypeId(enchantment)}@${enchantment.level}`
     )
     .join(",")})`;
 }
@@ -125,9 +122,7 @@ class DeserializeParser {
     if (char === ",") {
       this.next();
       this.readEnchantments(enchantments);
-    } else if (char === ")") {
-      if (!this.isEoi()) this.next();
-    } else {
+    } else if (char !== ")") {
       throw new Error(
         `(DeserializeParser#readEnchantments) Failed to deserialize data: could not read enchantments: reached illegal character: '${char}'.`
       );

@@ -1,4 +1,4 @@
-import { ContainerSlot, Player } from "@minecraft/server";
+import { ContainerSlot, Enchantment, Player } from "@minecraft/server";
 
 export function isBlock(itemId: string): boolean {
   try {
@@ -15,4 +15,10 @@ export function getPlayerMainhandSlot(
   return player
     .getComponent("equippable")
     ?.getEquipmentSlot($.server.EquipmentSlot.Mainhand);
+}
+
+export function getEnchantmentTypeId(enchantment: Enchantment): string {
+  return typeof enchantment.type === "string"
+    ? enchantment.type
+    : enchantment.type.id;
 }

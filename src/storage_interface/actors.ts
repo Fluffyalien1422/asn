@@ -5,7 +5,7 @@ export const STORAGE_INTERFACE_BLOCK_TYPE_ID =
 
 _: _addTerrainTexture(
   "fluffyalien_asn:storage_interface",
-  "textures/fluffyalien/asn/storage_interface"
+  "textures/fluffyalien/asn/blocks/storage_interface"
 );
 _.define.block({
   format_version: "1.20.80",

@@ -114,7 +114,7 @@ $.server.world.afterEvents.playerInteractWithBlock.subscribe((e) => {
 
 _: _addTerrainTexture(
   "fluffyalien_asn:storage_core",
-  "textures/fluffyalien/asn/storage_core"
+  "textures/fluffyalien/asn/blocks/storage_core"
 );
 _.define.block({
   format_version: "1.20.80",

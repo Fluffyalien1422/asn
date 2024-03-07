@@ -1,17 +1,59 @@
-import { Player } from "@minecraft/server";
+import { Player, RawMessage } from "@minecraft/server";
 import { DiscoverCableNetworkConnectionsError } from "../cable_network";
 import { ActionFormResponse } from "@minecraft/server-ui";
 import { makeErrorMessageUi, showForm } from "../utils/ui";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
-import { isBlock } from "../utils/items";
+import { getEnchantmentTypeId, isBlock } from "../utils/item";
 import { abbreviateNumber } from "../utils/number";
-import { itemTranslationOverrides } from "./item_translation_overrides";
+import { ITEM_TRANSLATION_OVERRIDES } from "./item_translation_overrides";
+import { typeIdWithoutNamespace } from "../utils/string";
+
+const ENCHANTMENT_TRANSLATION_KEYS: Record<string, string> = {
+  protection: "enchantment.protect.all",
+  fire_protection: "enchantment.protect.fire",
+  feather_falling: "enchantment.protect.fall",
+  blast_protection: "enchantment.protect.explosion",
+  projectile_protection: "enchantment.protect.projectile",
+  thorns: "enchantment.thorns",
+  respiration: "enchantment.oxygen",
+  depth_strider: "enchantment.waterWalker",
+  aqua_affinity: "enchantment.waterWorker",
+  sharpness: "enchantment.damage.all",
+  smite: "enchantment.damage.undead",
+  bane_of_arthropods: "enchantment.damage.arthropods",
+  knockback: "enchantment.knockback",
+  fire_aspect: "enchantment.fire",
+  looting: "enchantment.lootBonus",
+  efficiency: "enchantment.digging",
+  silk_touch: "enchantment.untouching",
+  unbreaking: "enchantment.durability",
+  fortune: "enchantment.lootBonusDigger",
+  power: "enchantment.arrowDamage",
+  punch: "enchantment.arrowKnockback",
+  flame: "enchantment.arrowFire",
+  infinity: "enchantment.arrowInfinite",
+  luck_of_the_sea: "enchantment.lootBonusFishing",
+  lure: "enchantment.fishingSpeed",
+  frost_walker: "enchantment.frostwalker",
+  mending: "enchantment.mending",
+  binding: "enchantment.curse.binding",
+  vanishing: "enchantment.curse.vanishing",
+  impaling: "enchantment.tridentImpaling",
+  riptide: "enchantment.tridentRiptide",
+  loyalty: "enchantment.tridentLoyalty",
+  channeling: "enchantment.tridentChanneling",
+  multishot: "enchantment.crossbowMultishot",
+  piercing: "enchantment.crossbowPiercing",
+  quick_charge: "enchantment.crossbowQuickCharge",
+  soul_speed: "enchantment.soul_speed",
+  swift_sneak: "enchantment.swift_sneak",
+};
 
 const ITEMS_PER_PAGE = 10;
 
 function getItemTranslationKey(itemId: string): string {
-  if (itemId in itemTranslationOverrides) {
-    return itemTranslationOverrides[itemId];
+  if (itemId in ITEM_TRANSLATION_OVERRIDES) {
+    return ITEM_TRANSLATION_OVERRIDES[itemId];
   }
 
   const isMinecraftNamespace = itemId.startsWith("minecraft:");
@@ -55,7 +97,8 @@ export function showEstablishNetworkError(
 export async function showItemsListUi(
   player: Player,
   items: readonly StorageSystemItemStack[],
-  page = 0
+  page = 0,
+  query?: string
 ): Promise<StorageSystemItemStack | undefined> {
   const form = new $.serverUi.ActionFormData();
 
@@ -67,23 +110,34 @@ export async function showItemsListUi(
     ],
   });
 
-  const topButtonsCount = 2;
+  const body: RawMessage[] = [];
 
-  form.button({
-    rawtext: [
-      {
-        translate: "fluffyalien_asn.ui.storageInterface.itemsList.search",
+  if (query) {
+    body.push({
+      translate:
+        "fluffyalien_asn.ui.storageInterface.itemsList.body.searchResults",
+      with: {
+        rawtext: [
+          {
+            text: query,
+          },
+        ],
       },
-    ],
-  });
+    });
+  }
 
-  form.button({
-    rawtext: [
-      {
-        translate: "fluffyalien_asn.ui.storageInterface.itemsList.options",
-      },
-    ],
-  });
+  const topButtonsCount = 1;
+
+  form.button(
+    {
+      rawtext: [
+        {
+          translate: "fluffyalien_asn.ui.storageInterface.itemsList.search",
+        },
+      ],
+    },
+    "textures/fluffyalien/asn/ui/search"
+  );
 
   const itemsOnPage = items.slice(
     page * ITEMS_PER_PAGE,
@@ -91,44 +145,77 @@ export async function showItemsListUi(
   );
 
   if (!itemsOnPage.length) {
-    form.body({
+    body.push({
+      translate: "fluffyalien_asn.ui.storageInterface.itemsList.body.noItems",
+    });
+  }
+
+  if (body.length) form.body({ rawtext: body });
+
+  for (const item of itemsOnPage) {
+    const icons = ["apple", "beef", "sword", "ingot"];
+    const icon = icons[Math.floor(Math.random() * icons.length)];
+
+    form.button(
+      {
+        rawtext: [
+          {
+            text: `${abbreviateNumber(item.amount)} `,
+          },
+          {
+            translate: getItemTranslationKey(item.typeId),
+          },
+          {
+            text: item.nameTag ? ` §o${item.nameTag}§r` : "",
+          },
+          ...(item.enchantments.length
+            ? [
+                { text: " [§b" },
+                {
+                  translate:
+                    "fluffyalien_asn.ui.storageInterface.itemsList.item.enchanted",
+                },
+                { text: "§r]" },
+              ]
+            : []),
+          ...(item.damage
+            ? [
+                { text: " [§c" },
+                {
+                  translate:
+                    "fluffyalien_asn.ui.storageInterface.itemsList.item.damaged",
+                },
+                { text: "§r]" },
+              ]
+            : []),
+        ],
+      },
+      `textures/fluffyalien/asn/ui/${icon}_outline`
+    );
+  }
+
+  form.button(
+    {
       rawtext: [
         {
           translate:
-            "fluffyalien_asn.ui.storageInterface.itemsList.body.noItems",
+            "fluffyalien_asn.ui.storageInterface.itemsList.previousPage",
         },
       ],
-    });
-  }
+    },
+    "textures/fluffyalien/asn/ui/previous_page"
+  );
 
-  for (const item of itemsOnPage) {
-    form.button({
+  form.button(
+    {
       rawtext: [
         {
-          text: `${abbreviateNumber(item.amount)} `,
-        },
-        {
-          translate: getItemTranslationKey(item.typeId),
+          translate: "fluffyalien_asn.ui.storageInterface.itemsList.nextPage",
         },
       ],
-    });
-  }
-
-  form.button({
-    rawtext: [
-      {
-        translate: "fluffyalien_asn.ui.storageInterface.itemsList.previousPage",
-      },
-    ],
-  });
-
-  form.button({
-    rawtext: [
-      {
-        translate: "fluffyalien_asn.ui.storageInterface.itemsList.nextPage",
-      },
-    ],
-  });
+    },
+    "textures/fluffyalien/asn/ui/next_page"
+  );
 
   const response = await showForm(form, player);
 
@@ -138,14 +225,24 @@ export async function showItemsListUi(
 
   const searchButtonPressed = response.selection === 0;
   if (searchButtonPressed) {
-    console.warn("search");
-    return;
-  }
+    const originalQuery = await showSearchUi(player);
+    if (!originalQuery) {
+      return showItemsListUi(player, items, page);
+    }
 
-  const optionsButtonPressed = response.selection === 1;
-  if (optionsButtonPressed) {
-    console.warn("options");
-    return;
+    const query = originalQuery.toLowerCase();
+
+    const matchingItems = items
+      .filter((item) => item.typeId.includes(query))
+      .sort(
+        (a, b) =>
+          (b.typeId.startsWith(query) ? 1 : 0) -
+          (a.typeId.startsWith(query) ? 1 : 0) +
+          ((typeIdWithoutNamespace(b.typeId).startsWith(query) ? 1 : 0) -
+            (typeIdWithoutNamespace(a.typeId).startsWith(query) ? 1 : 0))
+      );
+
+    return showItemsListUi(player, matchingItems, 0, query);
   }
 
   const previousPageButtonPressed =
@@ -190,6 +287,50 @@ async function showRequestItemUi(
   form.textField(
     {
       rawtext: [
+        {
+          text: "§l",
+        },
+        {
+          translate: getItemTranslationKey(item.typeId),
+        },
+        {
+          text: "§r" + (item.nameTag ? ` §o${item.nameTag}§r` : ""),
+        },
+        ...(item.damage
+          ? [
+              { text: "\n" },
+              {
+                translate:
+                  "fluffyalien_asn.ui.storageInterface.requestItem.itemDamage",
+                with: { rawtext: [{ text: item.damage.toString() }] },
+              },
+            ]
+          : []),
+        ...(item.enchantments.length
+          ? [
+              { text: "\n" },
+              {
+                translate:
+                  "fluffyalien_asn.ui.storageInterface.requestItem.itemEnchantments",
+              },
+            ]
+          : []),
+        ...item.enchantments.flatMap((enchantment) => {
+          const enchantmentTypeId = getEnchantmentTypeId(enchantment);
+          const name: RawMessage =
+            enchantmentTypeId in ENCHANTMENT_TRANSLATION_KEYS
+              ? { translate: ENCHANTMENT_TRANSLATION_KEYS[enchantmentTypeId] }
+              : { text: enchantmentTypeId };
+          return [
+            { text: "\n§r- §7" },
+            name,
+            { text: " " },
+            { translate: `enchantment.level.${enchantment.level}` },
+          ];
+        }),
+        {
+          text: "§r\n\n",
+        },
         {
           translate:
             "fluffyalien_asn.ui.storageInterface.requestItem.itemAmount",
@@ -242,4 +383,35 @@ async function showRequestItemUi(
   }
 
   return item.withAmount(amount);
+}
+
+async function showSearchUi(player: Player): Promise<string | undefined> {
+  const form = new $.serverUi.ModalFormData();
+
+  form.title({
+    rawtext: [
+      {
+        translate: "fluffyalien_asn.ui.storageInterface.title",
+      },
+    ],
+  });
+
+  form.textField(
+    {
+      rawtext: [
+        {
+          translate: "fluffyalien_asn.ui.storageInterface.search.label",
+        },
+      ],
+    },
+    "Query"
+  );
+
+  const response = await showForm(form, player);
+  if (!response.formValues) {
+    return;
+  }
+
+  const query = response.formValues[0] as string;
+  return query;
 }

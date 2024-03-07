@@ -1,7 +1,7 @@
 import { STORAGE_INTERFACE_BLOCK_TYPE_ID } from ".";
 import { StorageNetwork } from "../storage_network";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
-import { getPlayerMainhandSlot } from "../utils/items";
+import { getPlayerMainhandSlot } from "../utils/item";
 import { makeErrorMessageUi, showForm } from "../utils/ui";
 import { showEstablishNetworkError, showItemsListUi } from "./ui";
 

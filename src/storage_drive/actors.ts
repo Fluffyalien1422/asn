@@ -9,15 +9,15 @@ export const STORAGE_DRIVE_PLACER_TYPE_ID =
 _: {
   _addTerrainTexture(
     "fluffyalien_asn:storage_drive_front",
-    "textures/fluffyalien/asn/storage_drive_front"
+    "textures/fluffyalien/asn/blocks/storage_drive_front"
   );
   _addTerrainTexture(
     "fluffyalien_asn:storage_drive_side",
-    "textures/fluffyalien/asn/storage_drive_side"
+    "textures/fluffyalien/asn/blocks/storage_drive_side"
   );
   _addTerrainTexture(
     "fluffyalien_asn:storage_drive_top",
-    "textures/fluffyalien/asn/storage_drive_top"
+    "textures/fluffyalien/asn/blocks/storage_drive_top"
   );
 }
 

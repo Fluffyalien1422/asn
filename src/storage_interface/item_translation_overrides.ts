@@ -1,4 +1,4 @@
-export const itemTranslationOverrides: Record<string, string> = {
+export const ITEM_TRANSLATION_OVERRIDES: Record<string, string> = {
   "minecraft:grass_block": "tile.grass.name",
   // wool
   "minecraft:black_wool": "tile.wool.black.name",

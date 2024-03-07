@@ -17,7 +17,7 @@ $.server.world.afterEvents.playerBreakBlock.subscribe((e) => {
 
 _: _addTerrainTexture(
   "fluffyalien_asn:storage_cable",
-  "textures/fluffyalien/asn/storage_cable"
+  "textures/fluffyalien/asn/blocks/storage_cable"
 );
 _.define.block({
   format_version: "1.20.80",
