@@ -6,7 +6,6 @@ import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { getEnchantmentTypeId, isBlock } from "../utils/item";
 import { abbreviateNumber } from "../utils/number";
 import { ITEM_TRANSLATION_OVERRIDES } from "./item_translation_overrides";
-import { typeIdWithoutNamespace } from "../utils/string";
 
 const ENCHANTMENT_TRANSLATION_KEYS: Record<string, string> = {
   protection: "enchantment.protect.all",
@@ -225,21 +224,22 @@ export async function showItemsListUi(
 
   const searchButtonPressed = response.selection === 0;
   if (searchButtonPressed) {
-    const originalQuery = await showSearchUi(player);
-    if (!originalQuery) {
+    const query = await showSearchUi(player);
+    if (!query) {
       return showItemsListUi(player, items, page);
     }
 
-    const query = originalQuery.toLowerCase();
+    const keywords = query.toLowerCase().split(" ");
 
     const matchingItems = items
-      .filter((item) => item.typeId.includes(query))
-      .sort(
-        (a, b) =>
-          (b.typeId.startsWith(query) ? 1 : 0) -
-          (a.typeId.startsWith(query) ? 1 : 0) +
-          ((typeIdWithoutNamespace(b.typeId).startsWith(query) ? 1 : 0) -
-            (typeIdWithoutNamespace(a.typeId).startsWith(query) ? 1 : 0))
+      .filter((item) =>
+        keywords.some((keyword) => item.typeId.includes(keyword))
+      )
+      .sort((a, b) =>
+        keywords.filter((keyword) => b.typeId.includes(keyword)).length >
+        keywords.filter((keyword) => a.typeId.includes(keyword)).length
+          ? 1
+          : 0
       );
 
     return showItemsListUi(player, matchingItems, 0, query);
@@ -284,6 +284,10 @@ async function showRequestItemUi(
     ],
   });
 
+  const mcItemStack = item.toItemStack();
+  const maxDurability =
+    mcItemStack.getComponent("durability")?.maxDurability ?? 0;
+
   form.textField(
     {
       rawtext: [
@@ -301,8 +305,13 @@ async function showRequestItemUi(
               { text: "\n" },
               {
                 translate:
-                  "fluffyalien_asn.ui.storageInterface.requestItem.itemDamage",
-                with: { rawtext: [{ text: item.damage.toString() }] },
+                  "fluffyalien_asn.ui.storageInterface.requestItem.itemDurability",
+                with: {
+                  rawtext: [
+                    { text: (maxDurability - item.damage).toString() },
+                    { text: maxDurability.toString() },
+                  ],
+                },
               },
             ]
           : []),
@@ -313,21 +322,24 @@ async function showRequestItemUi(
                 translate:
                   "fluffyalien_asn.ui.storageInterface.requestItem.itemEnchantments",
               },
+              ...item.enchantments.flatMap((enchantment) => {
+                const enchantmentTypeId = getEnchantmentTypeId(enchantment);
+                const name: RawMessage =
+                  enchantmentTypeId in ENCHANTMENT_TRANSLATION_KEYS
+                    ? {
+                        translate:
+                          ENCHANTMENT_TRANSLATION_KEYS[enchantmentTypeId],
+                      }
+                    : { text: enchantmentTypeId };
+                return [
+                  { text: "\n§r- §7" },
+                  name,
+                  { text: " " },
+                  { translate: `enchantment.level.${enchantment.level}` },
+                ];
+              }),
             ]
           : []),
-        ...item.enchantments.flatMap((enchantment) => {
-          const enchantmentTypeId = getEnchantmentTypeId(enchantment);
-          const name: RawMessage =
-            enchantmentTypeId in ENCHANTMENT_TRANSLATION_KEYS
-              ? { translate: ENCHANTMENT_TRANSLATION_KEYS[enchantmentTypeId] }
-              : { text: enchantmentTypeId };
-          return [
-            { text: "\n§r- §7" },
-            name,
-            { text: " " },
-            { translate: `enchantment.level.${enchantment.level}` },
-          ];
-        }),
         {
           text: "§r\n\n",
         },
