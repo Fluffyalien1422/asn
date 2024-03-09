@@ -1,8 +1,14 @@
 pack.name=Advanced Storage Network
 pack.description=Advanced Storage Network v2.0.0
 
-item.fluffyalien_asn:storage_drive_placer=Storage Drive §9Advanced Storage Network
+item.fluffyalien_asn:storage_disk=Storage Disk §9Advanced Storage Network
+item.fluffyalien_asn:storage_disk_casing=Storage Disk Casing §9Advanced Storage Network
+item.fluffyalien_asn:storage_disk_core=Storage Disk Core §9Advanced Storage Network
+item.fluffyalien_asn:storage_crystal=Storage Crystal §9Advanced Storage Network
+item.fluffyalien_asn:raw_storage_crystal=Raw Storage Crystal §9Advanced Storage Network
+item.fluffyalien_asn:used_storage_disk=Storage Disk (With Data) §9Advanced Storage Network
 
+tile.fluffyalien_asn:storage_drive.name=Storage Drive §9Advanced Storage Network
 tile.fluffyalien_asn:storage_interface.name=Storage Interface §9Advanced Storage Network
 tile.fluffyalien_asn:storage_core.name=Storage Core §9Advanced Storage Network
 tile.fluffyalien_asn:storage_cable.name=Storage Cable §9Advanced Storage Network
@@ -13,6 +19,7 @@ fluffyalien_asn.ui.common.close=Close
 
 fluffyalien_asn.ui.storageDrive.title=Storage Drive
 fluffyalien_asn.ui.storageDrive.body.storageUsed=Storage used (drive): %s/1000u
+fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk=Cannot add a disk to a non-empty storage drive.
 
 fluffyalien_asn.ui.storageInterface.title=Storage Interface
 fluffyalien_asn.ui.storageInterface.itemsList.body.noItems=There are no items on this page.

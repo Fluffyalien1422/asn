@@ -104,3 +104,38 @@ _.define.block({
     },
   },
 });
+
+_.define.recipe({
+  format_version: "1.20.80",
+  "minecraft:recipe_shaped": {
+    description: {
+      identifier: CABLE_BLOCK_TYPE_ID,
+    },
+    tags: ["crafting_table"],
+    //prettier-ignore
+    pattern: [
+      "IRI",
+      "RER",
+      "IRI"
+    ],
+    key: {
+      R: {
+        item: "redstone",
+      },
+      E: {
+        item: "emerald",
+      },
+      I: {
+        item: "iron_ingot",
+      },
+    },
+    result: {
+      item: CABLE_BLOCK_TYPE_ID,
+    },
+    unlock: [
+      {
+        item: "diamond",
+      },
+    ],
+  },
+});

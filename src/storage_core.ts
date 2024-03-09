@@ -148,3 +148,47 @@ _.define.block({
     },
   },
 });
+
+_.define.recipe({
+  format_version: "1.20.80",
+  "minecraft:recipe_shaped": {
+    description: {
+      identifier: STORAGE_CORE_BLOCK_TYPE_ID,
+    },
+    tags: ["crafting_table"],
+    //prettier-ignore
+    pattern: [
+      "DDD",
+      "REC",
+      "ISI"
+    ],
+    key: {
+      D: {
+        item: "diamond",
+      },
+      R: {
+        item: "repeater",
+      },
+      E: {
+        item: "emerald",
+      },
+      C: {
+        item: "comparator",
+      },
+      S: {
+        item: "smooth_stone",
+      },
+      I: {
+        item: "iron_block",
+      },
+    },
+    result: {
+      item: STORAGE_CORE_BLOCK_TYPE_ID,
+    },
+    unlock: [
+      {
+        item: "diamond",
+      },
+    ],
+  },
+});

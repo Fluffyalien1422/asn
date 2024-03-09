@@ -1,11 +1,11 @@
-import { _addItemTexture } from "../item_texture";
+import { STORAGE_DISK_ITEM_ID } from "../crafting_items";
 import { _addTerrainTexture } from "../terrain_texture";
 
 export const STORAGE_DRIVE_BLOCK_TYPE_ID = "fluffyalien_asn:storage_drive";
 export const STORAGE_DRIVE_ENTITY_TYPE_ID =
   "fluffyalien_asn:storage_drive_entity";
-export const STORAGE_DRIVE_PLACER_TYPE_ID =
-  "fluffyalien_asn:storage_drive_placer";
+export const USED_STORAGE_DISK_ITEM_TYPE_ID =
+  "fluffyalien_asn:used_storage_disk";
 
 _: {
   _addTerrainTexture(
@@ -27,6 +27,9 @@ _.define.block({
   "minecraft:block": {
     description: {
       identifier: STORAGE_DRIVE_BLOCK_TYPE_ID,
+      menu_category: {
+        category: "items",
+      },
       //@ts-expect-error traits does not exist
       traits: {
         "minecraft:placement_direction": {
@@ -53,8 +56,6 @@ _.define.block({
         west: "north",
         down: "up",
       },
-
-      "minecraft:loot": "loot_tables/empty.json",
       "minecraft:on_interact": {
         event: "fluffyalien_asn:empty",
       },
@@ -100,31 +101,6 @@ _.define.block({
         },
       },
     ],
-  },
-});
-
-_: _addItemTexture(
-  "fluffyalien_asn:storage_drive_placer",
-  "textures/fluffyalien/asn/blocks/storage_drive_front"
-);
-_.define.item({
-  format_version: "1.20.80",
-  "minecraft:item": {
-    description: {
-      identifier: STORAGE_DRIVE_PLACER_TYPE_ID,
-    },
-    components: {
-      "minecraft:max_stack_size": 1,
-      "minecraft:icon": {
-        //@ts-expect-error no textures property
-        textures: {
-          default: "fluffyalien_asn:storage_drive_placer",
-        },
-      },
-      "minecraft:block_placer": {
-        block: STORAGE_DRIVE_BLOCK_TYPE_ID,
-      },
-    },
   },
 });
 
@@ -177,6 +153,64 @@ _.define.entity({
       "fluffyalien_asn:despawn": {
         add: {
           component_groups: ["fluffyalien_asn:despawn"],
+        },
+      },
+    },
+  },
+});
+
+_.define.recipe({
+  format_version: "1.20.80",
+  "minecraft:recipe_shaped": {
+    description: {
+      identifier: STORAGE_DRIVE_BLOCK_TYPE_ID,
+    },
+    tags: ["crafting_table"],
+    //prettier-ignore
+    pattern: [
+      "INI",
+      "SSS",
+      "INI"
+    ],
+    key: {
+      I: {
+        item: "iron_block",
+      },
+      S: {
+        item: STORAGE_DISK_ITEM_ID,
+      },
+      N: {
+        item: "smooth_stone",
+      },
+    },
+    result: {
+      item: STORAGE_DRIVE_BLOCK_TYPE_ID,
+    },
+    unlock: [
+      {
+        item: "diamond",
+      },
+    ],
+  },
+});
+
+_.define.item({
+  format_version: "1.20.80",
+  "minecraft:item": {
+    description: {
+      identifier: USED_STORAGE_DISK_ITEM_TYPE_ID,
+      //@ts-expect-error no menu_category
+      menu_category: {
+        category: "none",
+      },
+    },
+    components: {
+      "minecraft:glint": true,
+      "minecraft:max_stack_size": 1,
+      "minecraft:icon": {
+        //@ts-expect-error no textures property
+        textures: {
+          default: STORAGE_DISK_ITEM_ID,
         },
       },
     },

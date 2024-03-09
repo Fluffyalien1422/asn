@@ -1,17 +1,20 @@
 import {
   getStorageDriveEntity,
   getStorageDriveSerializedData,
+  setStorageDriveSerializedData,
   STORAGE_DATA_DYNAMIC_PROPERTY_ID,
   STORAGE_DRIVE_BLOCK_TYPE_ID,
   STORAGE_DRIVE_ENTITY_TYPE_ID,
-  STORAGE_DRIVE_PLACER_TYPE_ID,
+  USED_STORAGE_DISK_ITEM_TYPE_ID,
 } from ".";
 import { StorageNetwork } from "../storage_network";
 import { getBlockInDirection } from "../utils/block";
+import { getPlayerMainhandSlot } from "../utils/item";
+import { makeErrorMessageUi, showForm } from "../utils/ui";
 import { showStorageDriveUi } from "./ui";
 
 $.server.world.afterEvents.itemUseOn.subscribe((e) => {
-  if (e.itemStack.typeId !== STORAGE_DRIVE_PLACER_TYPE_ID) return;
+  if (e.itemStack.typeId !== STORAGE_DRIVE_BLOCK_TYPE_ID) return;
 
   const targetBlock = getBlockInDirection(e.block, e.blockFace);
   if (!targetBlock) {
@@ -51,9 +54,11 @@ $.server.world.afterEvents.playerBreakBlock.subscribe((e) => {
     );
   }
 
-  const itemStack = new $.server.ItemStack(STORAGE_DRIVE_PLACER_TYPE_ID);
-  itemStack.setDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID, data);
-  e.block.dimension.spawnItem(itemStack, e.block.location);
+  if (data) {
+    const itemStack = new $.server.ItemStack(USED_STORAGE_DISK_ITEM_TYPE_ID);
+    itemStack.setDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID, data);
+    e.block.dimension.spawnItem(itemStack, e.block.location);
+  }
 
   getStorageDriveEntity(e.block)?.triggerEvent("fluffyalien_asn:despawn");
 
@@ -71,7 +76,40 @@ $.server.world.afterEvents.playerInteractWithBlock.subscribe((e) => {
 
   lastPlayerInteractWithBlockTriggerTick = $.server.system.currentTick;
 
-  console.warn(getStorageDriveSerializedData(e.block));
+  const mainHandSlot = getPlayerMainhandSlot(e.player);
+  const heldItem = mainHandSlot?.getItem();
+
+  if (heldItem?.typeId === USED_STORAGE_DISK_ITEM_TYPE_ID) {
+    const existingData = getStorageDriveSerializedData(e.block);
+    if (existingData !== undefined) {
+      void showForm(
+        makeErrorMessageUi({
+          rawtext: [
+            {
+              translate:
+                "fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk",
+            },
+          ],
+        }),
+        e.player
+      );
+
+      return;
+    }
+
+    const data = heldItem.getDynamicProperty(
+      STORAGE_DATA_DYNAMIC_PROPERTY_ID
+    ) as string | undefined;
+
+    if (data) {
+      setStorageDriveSerializedData(e.block, data);
+      // clear the cache so the items will be forced to update
+      StorageNetwork.getNetwork(e.block)?.clearStoredItemsCache();
+    }
+
+    mainHandSlot?.setItem();
+    return;
+  }
 
   void showStorageDriveUi(e.player, e.block);
 });

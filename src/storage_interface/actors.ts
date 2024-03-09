@@ -1,3 +1,4 @@
+import { CABLE_BLOCK_TYPE_ID } from "../cable";
 import { _addTerrainTexture } from "../terrain_texture";
 
 export const STORAGE_INTERFACE_BLOCK_TYPE_ID =
@@ -172,6 +173,44 @@ _.define.block({
             rotation: [0, -90, 0],
           },
         },
+      },
+    ],
+  },
+});
+
+_.define.recipe({
+  format_version: "1.20.80",
+  "minecraft:recipe_shaped": {
+    description: {
+      identifier: STORAGE_INTERFACE_BLOCK_TYPE_ID,
+    },
+    tags: ["crafting_table"],
+    //prettier-ignore
+    pattern: [
+      "ECD",
+      "CLC",
+      "DCE"
+    ],
+    key: {
+      D: {
+        item: "diamond",
+      },
+      E: {
+        item: "emerald",
+      },
+      L: {
+        item: "redstone_lamp",
+      },
+      C: {
+        item: CABLE_BLOCK_TYPE_ID,
+      },
+    },
+    result: {
+      item: STORAGE_INTERFACE_BLOCK_TYPE_ID,
+    },
+    unlock: [
+      {
+        item: "diamond",
       },
     ],
   },

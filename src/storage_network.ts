@@ -314,6 +314,16 @@ export class StorageNetwork {
   }
 
   /**
+   * Clear the stored items cache. The cache will be created again when {@link StorageNetwork.getStoredItemStacksMutable} or {@link StorageNetwork.getStoredItemStacks} is called.
+   * @see {@link StorageNetwork.getStoredItemStacks} and {@link StorageNetwork.getStoredItemStacksMutable}
+   * @throws if this object is invalid
+   */
+  clearStoredItemsCache(): void {
+    this.ensureValidity();
+    this.storedItems = undefined;
+  }
+
+  /**
    * @throws if this object is not valid
    */
   getStoredItemStacks(): readonly StorageSystemItemStack[] {
