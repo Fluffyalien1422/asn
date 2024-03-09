@@ -8,6 +8,7 @@ export class StorageSystemItemStack {
     public amount = 1,
     readonly nameTag?: string,
     readonly damage = 0,
+    readonly lore: readonly string[] = [],
     readonly enchantments: DeepReadonly<Enchantment[]> = []
   ) {}
 
@@ -16,6 +17,7 @@ export class StorageSystemItemStack {
     const amount = itemStack.amount;
     const nameTag = itemStack.nameTag;
     const damage = itemStack.getComponent("durability")?.damage ?? 0;
+    const lore = itemStack.getLore();
     const enchantments =
       itemStack.getComponent("enchantable")?.getEnchantments() ?? [];
 
@@ -24,6 +26,7 @@ export class StorageSystemItemStack {
       amount,
       nameTag,
       damage,
+      lore,
       enchantments
     );
   }
@@ -40,6 +43,8 @@ export class StorageSystemItemStack {
       }
     }
 
+    result.setLore(this.lore as string[]);
+
     result
       .getComponent("enchantable")
       ?.addEnchantments(this.enchantments as Enchantment[]);
@@ -53,6 +58,7 @@ export class StorageSystemItemStack {
       amount,
       this.nameTag,
       this.damage,
+      this.lore,
       this.enchantments
     );
   }
@@ -62,6 +68,10 @@ export class StorageSystemItemStack {
       this.typeId === other.typeId &&
       this.damage === other.damage &&
       this.nameTag === other.nameTag &&
+      // lore
+      this.lore.length === other.lore.length &&
+      this.lore.every((v, i) => other.lore[i] === v) &&
+      // enchantments
       this.enchantments.length === other.enchantments.length &&
       this.enchantments.every((enchantment) =>
         other.enchantments.some(

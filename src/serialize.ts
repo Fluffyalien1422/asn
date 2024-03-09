@@ -2,24 +2,26 @@
 
 serialization format info:
 
-type_id(amount "name tag" damage enchant@level,enchant2@level)
+type_id(amount "name tag" damage "lore line 1","lore line 2" enchant@level,enchant2@level)
 
 - damage refers to ItemDurabilityComponent#damage
   (https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/itemdurabilitycomponent?view=minecraft-bedrock-experimental#damage)
 
 - space is the separator
 
-- enchantments and name tag are optional, others are expected
+- enchantments, lore, and name tag are optional, others are expected
   to have a value even if they're is not used (for example,
   damage is still required for items that have no durability)
 
 - name tag is a string, only double quotes are allowed,
   double quotes inside must be escaped with backslashes \"
 
+- \" and \n are the only valid escape codes in strings
+
 examples:
-minecraft:dirt(1 "my dirt" 0 )
-minecraft:dirt(1  0 )
-minecraft:wooden_sword(1  0 sharpness@1,unbreaking@2)
+minecraft:dirt(1 "my dirt" 0  )
+minecraft:dirt(1  0  )
+minecraft:wooden_sword(1  0  sharpness@1,unbreaking@2)
 */
 
 import { Enchantment } from "@minecraft/server";
@@ -31,16 +33,23 @@ export function deserialize(data: string): StorageSystemItemStack[] {
   return parser.parse();
 }
 
+function serializeString(str: string): string {
+  return str.replaceAll('"', '\\"').replaceAll("\n", "\\n");
+}
+
 export function serialize(itemStack: StorageSystemItemStack): string {
   const id = itemStack.typeId;
   const amount = itemStack.amount;
   const nameTag = itemStack.nameTag;
   const damage = itemStack.damage;
+  const lore = itemStack.lore;
   const enchantments = itemStack.enchantments;
 
   return `${id}(${amount} ${
-    nameTag ? `"${nameTag.replaceAll('"', '\\"')}"` : ""
-  } ${damage} ${enchantments
+    nameTag ? `"${serializeString(nameTag)}"` : ""
+  } ${damage} ${
+    lore.length ? `"${lore.map((s) => serializeString(s)).join('","')}"` : ""
+  } ${enchantments
     .map(
       (enchantment) =>
         `${getEnchantmentTypeId(enchantment)}@${enchantment.level}`
@@ -91,7 +100,18 @@ class DeserializeParser {
 
       if (char === "\\") {
         this.next();
-        s += this.getCurrentChar();
+
+        const char = this.getCurrentChar();
+        if (char === '"') {
+          s += '"';
+        } else if (char === "n") {
+          s += "\n";
+        } else {
+          throw new Error(
+            `(DeserializeParser#readString) Could not read string: illegal escape code: '\\${char}'`
+          );
+        }
+
         this.next();
         continue;
       }
@@ -131,6 +151,25 @@ class DeserializeParser {
     return enchantments;
   }
 
+  private readLore(lore: string[] = []): string[] {
+    const str = this.readString();
+
+    lore.push(str);
+
+    const char = this.getCurrentChar();
+
+    if (char === ",") {
+      this.next();
+      this.readLore(lore);
+    } else if (char !== " ") {
+      throw new Error(
+        `(DeserializeParser#readEnchantments) Failed to deserialize data: could not read enchantments: reached illegal character: '${char}'.`
+      );
+    }
+
+    return lore;
+  }
+
   private parseSingle(): StorageSystemItemStack {
     // parse
 
@@ -158,6 +197,9 @@ class DeserializeParser {
     }
     this.next();
 
+    const lore = this.getCurrentChar() === '"' ? this.readLore() : [];
+    this.next();
+
     const enchantments =
       this.getCurrentChar() === ")" ? [] : this.readEnchantments();
 
@@ -168,6 +210,7 @@ class DeserializeParser {
       amount,
       nameTag,
       damage,
+      lore,
       enchantments
     );
   }

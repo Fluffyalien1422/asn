@@ -6,47 +6,7 @@ import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { getEnchantmentTypeId, isBlock } from "../utils/item";
 import { abbreviateNumber } from "../utils/number";
 import { ITEM_TRANSLATION_OVERRIDES } from "./item_translation_overrides";
-
-const ENCHANTMENT_TRANSLATION_KEYS: Record<string, string> = {
-  protection: "enchantment.protect.all",
-  fire_protection: "enchantment.protect.fire",
-  feather_falling: "enchantment.protect.fall",
-  blast_protection: "enchantment.protect.explosion",
-  projectile_protection: "enchantment.protect.projectile",
-  thorns: "enchantment.thorns",
-  respiration: "enchantment.oxygen",
-  depth_strider: "enchantment.waterWalker",
-  aqua_affinity: "enchantment.waterWorker",
-  sharpness: "enchantment.damage.all",
-  smite: "enchantment.damage.undead",
-  bane_of_arthropods: "enchantment.damage.arthropods",
-  knockback: "enchantment.knockback",
-  fire_aspect: "enchantment.fire",
-  looting: "enchantment.lootBonus",
-  efficiency: "enchantment.digging",
-  silk_touch: "enchantment.untouching",
-  unbreaking: "enchantment.durability",
-  fortune: "enchantment.lootBonusDigger",
-  power: "enchantment.arrowDamage",
-  punch: "enchantment.arrowKnockback",
-  flame: "enchantment.arrowFire",
-  infinity: "enchantment.arrowInfinite",
-  luck_of_the_sea: "enchantment.lootBonusFishing",
-  lure: "enchantment.fishingSpeed",
-  frost_walker: "enchantment.frostwalker",
-  mending: "enchantment.mending",
-  binding: "enchantment.curse.binding",
-  vanishing: "enchantment.curse.vanishing",
-  impaling: "enchantment.tridentImpaling",
-  riptide: "enchantment.tridentRiptide",
-  loyalty: "enchantment.tridentLoyalty",
-  channeling: "enchantment.tridentChanneling",
-  multishot: "enchantment.crossbowMultishot",
-  piercing: "enchantment.crossbowPiercing",
-  quick_charge: "enchantment.crossbowQuickCharge",
-  soul_speed: "enchantment.soul_speed",
-  swift_sneak: "enchantment.swift_sneak",
-};
+import { ENCHANTMENT_TRANSLATION_KEYS } from "./enchantment_translations";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -338,6 +298,18 @@ async function showRequestItemUi(
                   { translate: `enchantment.level.${enchantment.level}` },
                 ];
               }),
+            ]
+          : []),
+        ...(item.lore.length
+          ? [
+              { text: "§r\n" },
+              {
+                translate:
+                  "fluffyalien_asn.ui.storageInterface.requestItem.itemLore",
+              },
+              ...item.lore.flatMap((lore) =>
+                lore.split("\n").map((line) => ({ text: "\n§r- §5§o" + line }))
+              ),
             ]
           : []),
         {
