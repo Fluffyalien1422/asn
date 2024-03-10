@@ -63,7 +63,7 @@ _.define.block({
         },
       },
       "minecraft:collision_box": {
-        origin: [-3, 5, -3],
+        origin: [-4, 4, -4],
         size: [8, 8, 8],
       },
       "minecraft:selection_box": {

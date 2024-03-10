@@ -12,6 +12,7 @@ tile.fluffyalien_asn:storage_drive.name=Storage Drive §9Advanced Storage Networ
 tile.fluffyalien_asn:storage_interface.name=Storage Interface §9Advanced Storage Network
 tile.fluffyalien_asn:storage_core.name=Storage Core §9Advanced Storage Network
 tile.fluffyalien_asn:storage_cable.name=Storage Cable §9Advanced Storage Network
+tile.fluffyalien_asn:import_bus.name=Storage Import Bus §9Advanced Storage Network
 
 fluffyalien_asn.ui.common.ok=Ok
 fluffyalien_asn.ui.common.error=Error

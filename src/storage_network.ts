@@ -1,4 +1,4 @@
-import { Block, Dimension, DimensionLocation, Player } from "@minecraft/server";
+import { Block, Dimension, Player } from "@minecraft/server";
 import {
   CableNetworkConnections,
   DiscoverCableNetworkConnectionsError,
@@ -8,6 +8,7 @@ import { vector3AsDimensionLocation, vector3Matches } from "./utils/vector";
 import { Result, failure, success } from "./result";
 import {
   MAX_STORAGE_DRIVE_DATA_LENGTH,
+  STORAGE_DRIVE_BLOCK_TYPE_ID,
   getStorageDriveSerializedData,
   setStorageDriveSerializedData,
 } from "./storage_drive";
@@ -16,6 +17,8 @@ import { deserialize, serialize } from "./serialize";
 import { STRING_DYNAMIC_PROPERTY_MAX_LENGTH } from "./constants";
 import { DeepReadonly } from "ts-essentials";
 import { CABLE_BLOCK_TYPE_ID } from "./cable";
+import { STORAGE_CORE_BLOCK_TYPE_ID } from "./storage_core";
+import { STORAGE_INTERFACE_BLOCK_TYPE_ID } from "./storage_interface";
 
 export type AddItemStackToStorageError = "insufficientStorage";
 
@@ -42,12 +45,12 @@ export class StorageNetwork {
   }
 
   /**
-   * Get the {@link StorageNetwork} that the {@link DimensionLocation} belongs to
+   * Get the {@link StorageNetwork} that the {@link Block} belongs to
    * @returns the {@link StorageNetwork} if it was found or undefined
    */
-  static getNetwork(location: DimensionLocation): StorageNetwork | undefined {
+  static getNetwork(block: Block): StorageNetwork | undefined {
     return StorageNetwork.storageNetworks.find((network) =>
-      network.isPartOfNetwork(location)
+      network.isPartOfNetwork(block)
     );
   }
 
@@ -262,23 +265,34 @@ export class StorageNetwork {
   }
 
   /**
-   * Check if a {@link DimensionLocation} is part of this network
+   * Check if a {@link Block} is part of this network
    * @throws if this object is not valid
    */
-  isPartOfNetwork(location: DimensionLocation): boolean {
+  isPartOfNetwork(block: Block): boolean {
     this.ensureValidity();
 
-    return (
-      location.dimension.id === this.dimension.id &&
-      (vector3Matches(location, this.connections.storageCore) ||
-        this.connections.storageDrives.some((v) =>
-          vector3Matches(v, location)
-        ) ||
-        this.connections.storageInterfaces.some((v) =>
-          vector3Matches(v, location)
-        ) ||
-        this.connections.cables.some((v) => vector3Matches(v, location)))
-    );
+    if (block.dimension.id !== this.dimension.id) {
+      return false;
+    }
+
+    switch (block.typeId) {
+      case CABLE_BLOCK_TYPE_ID:
+        return this.connections.cables.some((v) =>
+          vector3Matches(v, block.location)
+        );
+      case STORAGE_CORE_BLOCK_TYPE_ID:
+        return vector3Matches(block.location, this.connections.storageCore);
+      case STORAGE_DRIVE_BLOCK_TYPE_ID:
+        return this.connections.storageDrives.some((v) =>
+          vector3Matches(v, block.location)
+        );
+      case STORAGE_INTERFACE_BLOCK_TYPE_ID:
+        return this.connections.storageInterfaces.some((v) =>
+          vector3Matches(v, block.location)
+        );
+      default:
+        return false;
+    }
   }
 
   /**
