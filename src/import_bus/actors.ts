@@ -1,3 +1,4 @@
+import { CABLE_BLOCK_TYPE_ID } from "../cable";
 import { _addTerrainTexture } from "../terrain_texture";
 
 export const IMPORT_BUS_BLOCK_TYPE_ID = "fluffyalien_asn:import_bus";
@@ -167,6 +168,47 @@ _.define.block({
             rotation: [0, -90, 0],
           },
         },
+      },
+    ],
+  },
+});
+
+_.define.recipe({
+  format_version: "1.20.80",
+  "minecraft:recipe_shaped": {
+    description: {
+      identifier: IMPORT_BUS_BLOCK_TYPE_ID,
+    },
+    tags: ["crafting_table"],
+    //prettier-ignore
+    pattern: [
+        "D#R",
+        "#H#",
+        "C#D"
+      ],
+    key: {
+      R: {
+        item: "repeater",
+      },
+      C: {
+        item: "comparator",
+      },
+      D: {
+        item: "redstone",
+      },
+      "#": {
+        item: CABLE_BLOCK_TYPE_ID,
+      },
+      H: {
+        item: "hopper",
+      },
+    },
+    result: {
+      item: IMPORT_BUS_BLOCK_TYPE_ID,
+    },
+    unlock: [
+      {
+        item: "diamond",
       },
     ],
   },

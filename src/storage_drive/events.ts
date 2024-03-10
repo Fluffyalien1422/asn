@@ -8,9 +8,12 @@ import {
   USED_STORAGE_DISK_ITEM_TYPE_ID,
 } from ".";
 import { StorageNetwork } from "../storage_network";
-import { getBlockInDirection } from "../utils/block";
-import { getPlayerMainhandSlot } from "../utils/item";
-import { makeErrorMessageUi, showForm } from "../utils/ui";
+import {
+  getBlockInDirection,
+  getPlayerMainhandSlot,
+  makeErrorMessageUi,
+  showForm,
+} from "../utils";
 import { showStorageDriveUi } from "./ui";
 
 $.server.world.afterEvents.itemUseOn.subscribe((e) => {

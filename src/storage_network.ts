@@ -4,7 +4,7 @@ import {
   DiscoverCableNetworkConnectionsError,
   discoverCableNetworkConnections,
 } from "./cable_network";
-import { vector3AsDimensionLocation, vector3Matches } from "./utils/vector";
+import { vector3AsDimensionLocation } from "./utils";
 import { Result, failure, success } from "./result";
 import {
   MAX_STORAGE_DRIVE_DATA_LENGTH,
@@ -19,7 +19,8 @@ import { DeepReadonly } from "ts-essentials";
 import { CABLE_BLOCK_TYPE_ID } from "./cable";
 import { STORAGE_CORE_BLOCK_TYPE_ID } from "./storage_core";
 import { STORAGE_INTERFACE_BLOCK_TYPE_ID } from "./storage_interface";
-import { IMPORT_BUS_BLOCK_TYPE_ID } from "./import_bus";
+import { IMPORT_BUS_BLOCK_TYPE_ID, updateImportBus } from "./import_bus";
+import { Vector3Utils } from "@minecraft/math";
 
 export type AddItemStackToStorageError = "insufficientStorage";
 
@@ -140,12 +141,26 @@ export class StorageNetwork {
   }
 
   private storedItems?: StorageSystemItemStack[];
+  private readonly updateIntervalRunId: number;
 
   private constructor(
     private readonly dimension: Dimension,
     private connections: CableNetworkConnections
   ) {
     StorageNetwork.storageNetworks.push(this);
+
+    this.updateIntervalRunId = $.server.system.runInterval(() => {
+      for (const connection of this.connections.updateConnections) {
+        const block = this.dimension.getBlock(connection);
+        if (!block) continue;
+
+        switch (block.typeId) {
+          case IMPORT_BUS_BLOCK_TYPE_ID:
+            updateImportBus(block, this);
+            break;
+        }
+      }
+    }, 10);
   }
 
   /**
@@ -259,6 +274,8 @@ export class StorageNetwork {
   destroy(): void {
     this.internalIsValid = false;
 
+    $.server.system.clearRun(this.updateIntervalRunId);
+
     const i = StorageNetwork.storageNetworks.indexOf(this);
     if (i === -1) return;
 
@@ -279,21 +296,24 @@ export class StorageNetwork {
     switch (block.typeId) {
       case CABLE_BLOCK_TYPE_ID:
         return this.connections.cables.some((v) =>
-          vector3Matches(v, block.location)
+          Vector3Utils.equals(v, block.location)
         );
       case STORAGE_CORE_BLOCK_TYPE_ID:
-        return vector3Matches(block.location, this.connections.storageCore);
+        return Vector3Utils.equals(
+          block.location,
+          this.connections.storageCore
+        );
       case STORAGE_DRIVE_BLOCK_TYPE_ID:
         return this.connections.storageDrives.some((v) =>
-          vector3Matches(v, block.location)
+          Vector3Utils.equals(v, block.location)
         );
       case STORAGE_INTERFACE_BLOCK_TYPE_ID:
         return this.connections.storageInterfaces.some((v) =>
-          vector3Matches(v, block.location)
+          Vector3Utils.equals(v, block.location)
         );
       case IMPORT_BUS_BLOCK_TYPE_ID:
-        return this.connections.other.some((v) =>
-          vector3Matches(v, block.location)
+        return this.connections.updateConnections.some((v) =>
+          Vector3Utils.equals(v, block.location)
         );
       default:
         return false;

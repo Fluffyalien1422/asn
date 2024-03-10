@@ -1,6 +1,6 @@
 import { Block, Player } from "@minecraft/server";
 import { STORAGE_DATA_DYNAMIC_PROPERTY_ID, getStorageDriveEntity } from ".";
-import { showForm } from "../utils/ui";
+import { showForm } from "../utils";
 import { ActionFormResponse } from "@minecraft/server-ui";
 
 export function showStorageDriveUi(

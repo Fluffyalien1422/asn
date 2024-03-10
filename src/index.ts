@@ -1,13 +1,13 @@
 import "./import_bus";
+import "./storage_core";
 import "./storage_drive";
 import "./storage_interface";
 import "./cable";
 import "./crafting_items";
-import "./storage_core";
 
 import { _finishTerrainTexture } from "./terrain_texture";
 import { _finishItemTexture } from "./item_texture";
-import { getPlayerMainhandSlot } from "./utils/item";
+import { getPlayerMainhandSlot } from "./utils";
 import {
   STORAGE_DATA_DYNAMIC_PROPERTY_ID,
   USED_STORAGE_DISK_ITEM_TYPE_ID,

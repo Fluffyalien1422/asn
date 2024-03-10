@@ -5,6 +5,7 @@ import { STORAGE_INTERFACE_BLOCK_TYPE_ID } from "./storage_interface";
 import { STORAGE_CORE_BLOCK_TYPE_ID } from "./storage_core";
 import { CABLE_BLOCK_TYPE_ID } from "./cable";
 import { IMPORT_BUS_BLOCK_TYPE_ID } from "./import_bus";
+import { Vector3Utils } from "@minecraft/math";
 
 export interface CableNetworkConnections {
   cables: Vector3[];
@@ -12,9 +13,9 @@ export interface CableNetworkConnections {
   storageDrives: Vector3[];
   storageInterfaces: Vector3[];
   /**
-   * Other connections: import bus, export bus, level emitter
+   * Connections that should be updated on interval (import buses, export buses, level emitter, etc)
    */
-  other: Vector3[];
+  updateConnections: Vector3[];
 }
 
 export type DiscoverCableNetworkConnectionsError =
@@ -30,7 +31,7 @@ export function discoverCableNetworkConnections(
   const cables: Vector3[] = [];
   const storageDrives: Vector3[] = [];
   const storageInterfaces: Vector3[] = [];
-  const otherConnections: Vector3[] = [];
+  const updateConnections: Vector3[] = [];
   let storageCore: Vector3 | undefined;
 
   function handleNextBlock(
@@ -45,9 +46,8 @@ export function discoverCableNetworkConnections(
         STORAGE_INTERFACE_BLOCK_TYPE_ID,
         IMPORT_BUS_BLOCK_TYPE_ID,
       ].includes(block.typeId) ||
-      visitedLocations.some(
-        (vector) =>
-          block.x === vector.x && block.y === vector.y && block.z === vector.z
+      visitedLocations.some((vector) =>
+        Vector3Utils.equals(block.location, vector)
       )
     ) {
       return success(null);
@@ -81,7 +81,7 @@ export function discoverCableNetworkConnections(
       return success(null);
     }
 
-    otherConnections.push(block.location);
+    updateConnections.push(block.location);
     return success(null);
   }
 
@@ -133,6 +133,6 @@ export function discoverCableNetworkConnections(
     storageCore,
     storageDrives,
     storageInterfaces,
-    other: otherConnections,
+    updateConnections,
   });
 }

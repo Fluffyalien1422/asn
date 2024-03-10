@@ -1,10 +1,14 @@
 import { Player, RawMessage } from "@minecraft/server";
 import { DiscoverCableNetworkConnectionsError } from "../cable_network";
 import { ActionFormResponse } from "@minecraft/server-ui";
-import { makeErrorMessageUi, showForm } from "../utils/ui";
+import {
+  makeErrorMessageUi,
+  showForm,
+  getEnchantmentTypeId,
+  isBlock,
+  abbreviateNumber,
+} from "../utils";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
-import { getEnchantmentTypeId, isBlock } from "../utils/item";
-import { abbreviateNumber } from "../utils/number";
 import { ITEM_TRANSLATION_OVERRIDES } from "./item_translation_overrides";
 import { ENCHANTMENT_TRANSLATION_KEYS } from "./enchantment_translations";
 

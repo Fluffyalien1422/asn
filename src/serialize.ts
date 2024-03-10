@@ -26,7 +26,7 @@ minecraft:wooden_sword(1  0  sharpness@1,unbreaking@2)
 
 import { Enchantment } from "@minecraft/server";
 import { StorageSystemItemStack } from "./storage_system_item_stack";
-import { getEnchantmentTypeId } from "./utils/item";
+import { getEnchantmentTypeId } from "./utils";
 
 export function deserialize(data: string): StorageSystemItemStack[] {
   const parser = new DeserializeParser(data);

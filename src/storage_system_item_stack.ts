@@ -1,6 +1,6 @@
 import { Enchantment, ItemStack } from "@minecraft/server";
 import { DeepReadonly } from "ts-essentials";
-import { getEnchantmentTypeId } from "./utils/item";
+import { getEnchantmentTypeId } from "./utils";
 
 export class StorageSystemItemStack {
   constructor(
