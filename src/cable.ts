@@ -12,7 +12,10 @@ $.server.world.afterEvents.playerPlaceBlock.subscribe((e) => {
 $.server.world.afterEvents.playerBreakBlock.subscribe((e) => {
   if (e.brokenBlockPermutation.type.id !== CABLE_BLOCK_TYPE_ID) return;
 
-  StorageNetwork.getNetwork(e.block)?.updateConnections();
+  StorageNetwork.getNetwork(
+    e.block,
+    e.brokenBlockPermutation.type.id
+  )?.updateConnections();
 });
 
 _: _addTerrainTexture(

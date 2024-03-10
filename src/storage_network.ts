@@ -48,11 +48,15 @@ export class StorageNetwork {
 
   /**
    * Get the {@link StorageNetwork} that the {@link Block} belongs to
+   * @param typeIdOverride forwarded to {@link StorageNetwork.isPartOfNetwork}
    * @returns the {@link StorageNetwork} if it was found or undefined
    */
-  static getNetwork(block: Block): StorageNetwork | undefined {
+  static getNetwork(
+    block: Block,
+    typeIdOverride?: string
+  ): StorageNetwork | undefined {
     return StorageNetwork.storageNetworks.find((network) =>
-      network.isPartOfNetwork(block)
+      network.isPartOfNetwork(block, typeIdOverride)
     );
   }
 
@@ -284,16 +288,19 @@ export class StorageNetwork {
 
   /**
    * Check if a {@link Block} is part of this network
+   * @param typeIdOverride use this string instead of the block's actual type ID. Use this parameter to get the network of a block that has since been changed (eg. a broken block)
    * @throws if this object is not valid
    */
-  isPartOfNetwork(block: Block): boolean {
+  isPartOfNetwork(block: Block, typeIdOverride?: string): boolean {
     this.ensureValidity();
 
     if (block.dimension.id !== this.dimension.id) {
       return false;
     }
 
-    switch (block.typeId) {
+    const typeId = typeIdOverride ?? block.typeId;
+
+    switch (typeId) {
       case CABLE_BLOCK_TYPE_ID:
         return this.connections.cables.some((v) =>
           Vector3Utils.equals(v, block.location)

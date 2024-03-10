@@ -316,6 +316,9 @@ async function showRequestItemUi(
               ),
             ]
           : []),
+        ...(item.dynamicProperties.length
+          ? [{ text: "§r\n§7" }, { translate: "item.customProperties" }]
+          : []),
         {
           text: "§r\n\n",
         },

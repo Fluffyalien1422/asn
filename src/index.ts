@@ -13,6 +13,8 @@ import {
   USED_STORAGE_DISK_ITEM_TYPE_ID,
 } from "./storage_drive";
 
+//todo: serialization support for item dynamic properties
+
 _: {
   _finishTerrainTexture();
   _finishItemTexture();

@@ -41,7 +41,10 @@ $.server.world.afterEvents.playerBreakBlock.subscribe((e) => {
   if (e.brokenBlockPermutation.type.id !== STORAGE_CORE_BLOCK_TYPE_ID) return;
 
   getStorageCoreEntity(e.block)?.triggerEvent("fluffyalien_asn:despawn");
-  StorageNetwork.getNetwork(e.block)?.destroy();
+  StorageNetwork.getNetwork(
+    e.block,
+    e.brokenBlockPermutation.type.id
+  )?.destroy();
 });
 
 let lastPlayerInteractWithBlockTriggerTick = 0;
