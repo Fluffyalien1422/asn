@@ -4,12 +4,17 @@ import { STORAGE_DRIVE_BLOCK_TYPE_ID } from "./storage_drive";
 import { STORAGE_INTERFACE_BLOCK_TYPE_ID } from "./storage_interface";
 import { STORAGE_CORE_BLOCK_TYPE_ID } from "./storage_core";
 import { CABLE_BLOCK_TYPE_ID } from "./cable";
+import { IMPORT_BUS_BLOCK_TYPE_ID } from "./import_bus";
 
 export interface CableNetworkConnections {
   cables: Vector3[];
   storageCore: Vector3;
   storageDrives: Vector3[];
   storageInterfaces: Vector3[];
+  /**
+   * Other connections: import bus, export bus, level emitter
+   */
+  other: Vector3[];
 }
 
 export type DiscoverCableNetworkConnectionsError =
@@ -25,6 +30,7 @@ export function discoverCableNetworkConnections(
   const cables: Vector3[] = [];
   const storageDrives: Vector3[] = [];
   const storageInterfaces: Vector3[] = [];
+  const otherConnections: Vector3[] = [];
   let storageCore: Vector3 | undefined;
 
   function handleNextBlock(
@@ -37,6 +43,7 @@ export function discoverCableNetworkConnections(
         STORAGE_CORE_BLOCK_TYPE_ID,
         STORAGE_DRIVE_BLOCK_TYPE_ID,
         STORAGE_INTERFACE_BLOCK_TYPE_ID,
+        IMPORT_BUS_BLOCK_TYPE_ID,
       ].includes(block.typeId) ||
       visitedLocations.some(
         (vector) =>
@@ -48,13 +55,10 @@ export function discoverCableNetworkConnections(
 
     visitedLocations.push(block.location);
 
-    if (block.typeId === STORAGE_DRIVE_BLOCK_TYPE_ID) {
-      storageDrives.push(block.location);
-      return success(null);
-    }
+    if (block.typeId === CABLE_BLOCK_TYPE_ID) {
+      cables.push(block.location);
+      stack.push(block);
 
-    if (block.typeId === STORAGE_INTERFACE_BLOCK_TYPE_ID) {
-      storageInterfaces.push(block.location);
       return success(null);
     }
 
@@ -67,9 +71,17 @@ export function discoverCableNetworkConnections(
       return success(null);
     }
 
-    cables.push(block.location);
-    stack.push(block);
+    if (block.typeId === STORAGE_DRIVE_BLOCK_TYPE_ID) {
+      storageDrives.push(block.location);
+      return success(null);
+    }
 
+    if (block.typeId === STORAGE_INTERFACE_BLOCK_TYPE_ID) {
+      storageInterfaces.push(block.location);
+      return success(null);
+    }
+
+    otherConnections.push(block.location);
     return success(null);
   }
 
@@ -121,5 +133,6 @@ export function discoverCableNetworkConnections(
     storageCore,
     storageDrives,
     storageInterfaces,
+    other: otherConnections,
   });
 }

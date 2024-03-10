@@ -19,6 +19,7 @@ import { DeepReadonly } from "ts-essentials";
 import { CABLE_BLOCK_TYPE_ID } from "./cable";
 import { STORAGE_CORE_BLOCK_TYPE_ID } from "./storage_core";
 import { STORAGE_INTERFACE_BLOCK_TYPE_ID } from "./storage_interface";
+import { IMPORT_BUS_BLOCK_TYPE_ID } from "./import_bus";
 
 export type AddItemStackToStorageError = "insufficientStorage";
 
@@ -290,6 +291,10 @@ export class StorageNetwork {
         return this.connections.storageInterfaces.some((v) =>
           vector3Matches(v, block.location)
         );
+      case IMPORT_BUS_BLOCK_TYPE_ID:
+        return this.connections.other.some((v) =>
+          vector3Matches(v, block.location)
+        );
       default:
         return false;
     }
@@ -427,7 +432,6 @@ export class StorageNetwork {
 
   /**
    * Take items out of storage and gives it to the player. Clamps the amount from 1 to the amount available in storage
-   * @throws if a matching item does not exist in the storage
    * @throws if this object is not valid
    */
   takeOutItemStack(player: Player, itemStack: StorageSystemItemStack): void {
@@ -440,9 +444,10 @@ export class StorageNetwork {
     );
 
     if (storedIndex === -1) {
-      throw new Error(
+      console.warn(
         "(StorageNetwork#takeOutItemStack) No matching StorageSystemItemStack was found."
       );
+      return;
     }
 
     const stored = storedItems[storedIndex];
