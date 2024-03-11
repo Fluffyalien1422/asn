@@ -90,12 +90,8 @@ $.server.world.afterEvents.playerInteractWithBlock.subscribe((e) => {
     if (existingData !== undefined) {
       void showForm(
         makeErrorMessageUi({
-          rawtext: [
-            {
-              translate:
-                "fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk",
-            },
-          ],
+          translate:
+            "fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk",
         }),
         e.player
       );

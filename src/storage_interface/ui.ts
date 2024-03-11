@@ -37,14 +37,10 @@ export function showEstablishNetworkError(
 ): Promise<ActionFormResponse> {
   return showForm(
     makeErrorMessageUi({
-      rawtext: [
-        {
-          translate:
-            error === "multipleStorageCores"
-              ? "fluffyalien_asn.ui.storageInterface.error.multipleStorageCores"
-              : "fluffyalien_asn.ui.storageInterface.error.noStorageCores",
-        },
-      ],
+      translate:
+        error === "multipleStorageCores"
+          ? "fluffyalien_asn.ui.storageInterface.error.multipleStorageCores"
+          : "fluffyalien_asn.ui.storageInterface.error.noStorageCores",
     }),
     player
   );
@@ -66,11 +62,7 @@ export async function showItemsListUi(
   const form = new $.serverUi.ActionFormData();
 
   form.title({
-    rawtext: [
-      {
-        translate: "fluffyalien_asn.ui.storageInterface.title",
-      },
-    ],
+    translate: "fluffyalien_asn.ui.storageInterface.title",
   });
 
   const body: RawMessage[] = [];
@@ -93,11 +85,7 @@ export async function showItemsListUi(
 
   form.button(
     {
-      rawtext: [
-        {
-          translate: "fluffyalien_asn.ui.storageInterface.itemsList.search",
-        },
-      ],
+      translate: "fluffyalien_asn.ui.storageInterface.itemsList.search",
     },
     "textures/fluffyalien/asn/ui/search"
   );
@@ -159,23 +147,14 @@ export async function showItemsListUi(
 
   form.button(
     {
-      rawtext: [
-        {
-          translate:
-            "fluffyalien_asn.ui.storageInterface.itemsList.previousPage",
-        },
-      ],
+      translate: "fluffyalien_asn.ui.storageInterface.itemsList.previousPage",
     },
     "textures/fluffyalien/asn/ui/previous_page"
   );
 
   form.button(
     {
-      rawtext: [
-        {
-          translate: "fluffyalien_asn.ui.storageInterface.itemsList.nextPage",
-        },
-      ],
+      translate: "fluffyalien_asn.ui.storageInterface.itemsList.nextPage",
     },
     "textures/fluffyalien/asn/ui/next_page"
   );
@@ -241,11 +220,7 @@ async function showRequestItemUi(
   const form = new $.serverUi.ModalFormData();
 
   form.title({
-    rawtext: [
-      {
-        translate: "fluffyalien_asn.ui.storageInterface.title",
-      },
-    ],
+    translate: "fluffyalien_asn.ui.storageInterface.title",
   });
 
   const mcItemStack = item.toItemStack();
@@ -344,12 +319,8 @@ async function showRequestItemUi(
   if (!amount || amount < 0) {
     await showForm(
       makeErrorMessageUi({
-        rawtext: [
-          {
-            translate:
-              "fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber",
-          },
-        ],
+        translate:
+          "fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber",
       }),
       player
     );
@@ -360,12 +331,8 @@ async function showRequestItemUi(
   if (amount > item.amount) {
     await showForm(
       makeErrorMessageUi({
-        rawtext: [
-          {
-            translate:
-              "fluffyalien_asn.ui.storageInterface.requestItem.error.notEnough",
-          },
-        ],
+        translate:
+          "fluffyalien_asn.ui.storageInterface.requestItem.error.notEnough",
       }),
       player
     );
@@ -380,20 +347,12 @@ async function showSearchUi(player: Player): Promise<string | undefined> {
   const form = new $.serverUi.ModalFormData();
 
   form.title({
-    rawtext: [
-      {
-        translate: "fluffyalien_asn.ui.storageInterface.title",
-      },
-    ],
+    translate: "fluffyalien_asn.ui.storageInterface.title",
   });
 
   form.textField(
     {
-      rawtext: [
-        {
-          translate: "fluffyalien_asn.ui.storageInterface.search.label",
-        },
-      ],
+      translate: "fluffyalien_asn.ui.storageInterface.search.label",
     },
     "Query"
   );

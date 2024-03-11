@@ -7,6 +7,7 @@ item.fluffyalien_asn:storage_disk_core=Storage Disk Core §9Advanced Storage Net
 item.fluffyalien_asn:storage_crystal=Storage Crystal §9Advanced Storage Network
 item.fluffyalien_asn:raw_storage_crystal=Raw Storage Crystal §9Advanced Storage Network
 item.fluffyalien_asn:used_storage_disk=Storage Disk (With Data) §9Advanced Storage Network
+item.fluffyalien_asn:tutorial_book=Tutorial Book §9Advanced Storage Network
 
 tile.fluffyalien_asn:storage_drive.name=Storage Drive §9Advanced Storage Network
 tile.fluffyalien_asn:storage_interface.name=Storage Interface §9Advanced Storage Network
@@ -14,7 +15,6 @@ tile.fluffyalien_asn:storage_core.name=Storage Core §9Advanced Storage Network
 tile.fluffyalien_asn:storage_cable.name=Storage Cable §9Advanced Storage Network
 tile.fluffyalien_asn:import_bus.name=Storage Import Bus §9Advanced Storage Network
 
-fluffyalien_asn.ui.common.ok=Ok
 fluffyalien_asn.ui.common.error=Error
 fluffyalien_asn.ui.common.close=Close
 
@@ -45,3 +45,35 @@ fluffyalien_asn.ui.storageCore.title=Storage Core
 fluffyalien_asn.ui.storageCore.body.storageUsed=Storage used (network): %s/%su
 fluffyalien_asn.ui.storageCore.body.connectedInterfaces=Connected interfaces: %s
 fluffyalien_asn.ui.storageCore.body.connectedDrives=Connected drives: %s
+
+fluffyalien_asn.ui.tutorialBook.title=Tutorial Book
+
+fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.title=Storage Network
+fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.body=TBD
+
+fluffyalien_asn.ui.tutorialBook.entry.storageCore.title=Storage Core
+fluffyalien_asn.ui.tutorialBook.entry.storageCore.body=TBD
+
+fluffyalien_asn.ui.tutorialBook.entry.storageCable.title=Storage Cable
+fluffyalien_asn.ui.tutorialBook.entry.storageCable.body=TBD
+
+fluffyalien_asn.ui.tutorialBook.entry.storageDrive.title=Storage Drive
+fluffyalien_asn.ui.tutorialBook.entry.storageDrive.body=TBD
+
+fluffyalien_asn.ui.tutorialBook.entry.storageInterface.title=Storage Interface
+fluffyalien_asn.ui.tutorialBook.entry.storageInterface.body=TBD
+
+fluffyalien_asn.ui.tutorialBook.entry.importBus.title=Storage Import Bus
+fluffyalien_asn.ui.tutorialBook.entry.importBus.body=TBD
+
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.title=Storage Export Bus
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.body=TBD
+
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.title=Storage Level Emitter
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.body=TBD
+
+fluffyalien_asn.ui.tutorialBook.entry.storageDisk.title=Storage Disk
+fluffyalien_asn.ui.tutorialBook.entry.storageDisk.body=TBD
+
+fluffyalien_asn.ui.tutorialBook.entry.storageCrystal.title=Storage Crystal
+fluffyalien_asn.ui.tutorialBook.entry.storageCrystal.body=TBD

@@ -10,39 +10,27 @@ export function showStorageDriveUi(
   const form = new $.serverUi.ActionFormData();
 
   form.title({
-    rawtext: [
-      {
-        translate: "fluffyalien_asn.ui.storageDrive.title",
-      },
-    ],
+    translate: "fluffyalien_asn.ui.storageDrive.title",
   });
 
   form.body({
-    rawtext: [
-      {
-        translate: "fluffyalien_asn.ui.storageDrive.body.storageUsed",
-        with: {
-          rawtext: [
-            {
-              text:
-                (
-                  getStorageDriveEntity(storageDrive)?.getDynamicProperty(
-                    STORAGE_DATA_DYNAMIC_PROPERTY_ID
-                  ) as string | undefined
-                )?.length.toString() ?? "0",
-            },
-          ],
+    translate: "fluffyalien_asn.ui.storageDrive.body.storageUsed",
+    with: {
+      rawtext: [
+        {
+          text:
+            (
+              getStorageDriveEntity(storageDrive)?.getDynamicProperty(
+                STORAGE_DATA_DYNAMIC_PROPERTY_ID
+              ) as string | undefined
+            )?.length.toString() ?? "0",
         },
-      },
-    ],
+      ],
+    },
   });
 
   form.button({
-    rawtext: [
-      {
-        translate: "fluffyalien_asn.ui.common.ok",
-      },
-    ],
+    translate: "fluffyalien_asn.ui.common.close",
   });
 
   return showForm(form, player);

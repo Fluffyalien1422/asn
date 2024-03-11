@@ -48,12 +48,8 @@ $.server.world.afterEvents.playerInteractWithBlock.subscribe((e) => {
     if (!res.success) {
       void showForm(
         makeErrorMessageUi({
-          rawtext: [
-            {
-              translate:
-                "fluffyalien_asn.ui.storageInterface.error.insufficientStorage",
-            },
-          ],
+          translate:
+            "fluffyalien_asn.ui.storageInterface.error.insufficientStorage",
         }),
         e.player
       );

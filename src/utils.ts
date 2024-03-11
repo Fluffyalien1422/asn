@@ -111,11 +111,7 @@ export function makeMessageUi(
   form.title(title);
   form.body(body);
   form.button({
-    rawtext: [
-      {
-        translate: "fluffyalien_asn.ui.common.ok",
-      },
-    ],
+    translate: "fluffyalien_asn.ui.common.close",
   });
 
   return form;
@@ -124,11 +120,7 @@ export function makeMessageUi(
 export function makeErrorMessageUi(body: RawMessage): ActionFormData {
   return makeMessageUi(
     {
-      rawtext: [
-        {
-          translate: "fluffyalien_asn.ui.common.error",
-        },
-      ],
+      translate: "fluffyalien_asn.ui.common.error",
     },
     body
   );

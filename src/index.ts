@@ -2,6 +2,7 @@ import "./import_bus";
 import "./storage_core";
 import "./storage_drive";
 import "./storage_interface";
+import "./tutorial_book";
 import "./cable";
 import "./crafting_items";
 
@@ -13,7 +14,7 @@ import {
   USED_STORAGE_DISK_ITEM_TYPE_ID,
 } from "./storage_drive";
 
-//todo: serialization support for item dynamic properties
+//todo: add tutorial book
 
 _: {
   _finishTerrainTexture();

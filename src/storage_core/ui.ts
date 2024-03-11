@@ -10,11 +10,7 @@ export function showStorageCoreUi(
   const form = new $.serverUi.ActionFormData();
 
   form.title({
-    rawtext: [
-      {
-        translate: "fluffyalien_asn.ui.storageCore.title",
-      },
-    ],
+    translate: "fluffyalien_asn.ui.storageCore.title",
   });
 
   form.body({
@@ -64,11 +60,7 @@ export function showStorageCoreUi(
   });
 
   form.button({
-    rawtext: [
-      {
-        translate: "fluffyalien_asn.ui.common.close",
-      },
-    ],
+    translate: "fluffyalien_asn.ui.common.close",
   });
 
   return showForm(form, player);
