@@ -458,10 +458,12 @@ export class StorageNetwork {
   }
 
   /**
-   * Take items out of storage and gives it to the player. Clamps the amount from 1 to the amount available in storage
+   * Removes items from storage. Clamps the amount from 1 to the amount available in storage
    * @throws if this object is not valid
+   * @returns the amount that was removed
+   * @see {@link StorageNetwork.takeOutItemStack}
    */
-  takeOutItemStack(player: Player, itemStack: StorageSystemItemStack): void {
+  removeItemStack(itemStack: StorageSystemItemStack): number {
     this.ensureValidity();
 
     const storedItems = this.getStoredItemStacksMutable();
@@ -474,7 +476,7 @@ export class StorageNetwork {
       console.warn(
         "(StorageNetwork#takeOutItemStack) No matching StorageSystemItemStack was found."
       );
-      return;
+      return 0;
     }
 
     const stored = storedItems[storedIndex];
@@ -489,7 +491,19 @@ export class StorageNetwork {
       storedItems.splice(storedIndex, 1);
     }
 
-    // spawn the items
+    // save
+    this.saveData();
+
+    return requestAmount;
+  }
+
+  /**
+   * Take items out of storage and gives it to the player. Clamps the amount from 1 to the amount available in storage
+   * @throws if this object is not valid
+   * @see {@link StorageNetwork.removeItemStack}
+   */
+  takeOutItemStack(player: Player, itemStack: StorageSystemItemStack): void {
+    const requestAmount = this.removeItemStack(itemStack);
 
     const mcItemStack = itemStack.toItemStack();
 
@@ -504,8 +518,5 @@ export class StorageNetwork {
 
       player.dimension.spawnItem(newItemStack, player.location);
     }
-
-    // save
-    this.saveData();
   }
 }

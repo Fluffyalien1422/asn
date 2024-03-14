@@ -14,7 +14,7 @@ import {
   USED_STORAGE_DISK_ITEM_TYPE_ID,
 } from "./storage_drive";
 
-//todo: add tutorial book
+//todo: add export bus ui
 
 _: {
   _finishTerrainTexture();
