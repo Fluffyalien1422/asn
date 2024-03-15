@@ -21,6 +21,7 @@ import { STORAGE_CORE_BLOCK_TYPE_ID } from "./storage_core";
 import { STORAGE_INTERFACE_BLOCK_TYPE_ID } from "./storage_interface";
 import { IMPORT_BUS_BLOCK_TYPE_ID, updateImportBus } from "./import_bus";
 import { Vector3Utils } from "@minecraft/math";
+import { EXPORT_BUS_BLOCK_TYPE_ID, updateExportBus } from "./export_bus";
 
 export type AddItemStackToStorageError = "insufficientStorage";
 
@@ -161,6 +162,9 @@ export class StorageNetwork {
         switch (block.typeId) {
           case IMPORT_BUS_BLOCK_TYPE_ID:
             updateImportBus(block, this);
+            break;
+          case EXPORT_BUS_BLOCK_TYPE_ID:
+            updateExportBus(block, this);
             break;
         }
       }
@@ -319,6 +323,7 @@ export class StorageNetwork {
           Vector3Utils.equals(v, block.location)
         );
       case IMPORT_BUS_BLOCK_TYPE_ID:
+      case EXPORT_BUS_BLOCK_TYPE_ID:
         return this.connections.updateConnections.some((v) =>
           Vector3Utils.equals(v, block.location)
         );

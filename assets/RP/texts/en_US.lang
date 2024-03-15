@@ -14,6 +14,7 @@ tile.fluffyalien_asn:storage_interface.name=Storage Interface §9Advanced Storag
 tile.fluffyalien_asn:storage_core.name=Storage Core §9Advanced Storage Network
 tile.fluffyalien_asn:storage_cable.name=Storage Cable §9Advanced Storage Network
 tile.fluffyalien_asn:import_bus.name=Storage Import Bus §9Advanced Storage Network
+tile.fluffyalien_asn:export_bus.name=Storage Export Bus §9Advanced Storage Network
 
 fluffyalien_asn.ui.common.error=Error
 fluffyalien_asn.ui.common.close=Close
@@ -45,6 +46,18 @@ fluffyalien_asn.ui.storageCore.title=Storage Core
 fluffyalien_asn.ui.storageCore.body.storageUsed=Storage used (network): %s/%su
 fluffyalien_asn.ui.storageCore.body.connectedInterfaces=Connected interfaces: %s
 fluffyalien_asn.ui.storageCore.body.connectedDrives=Connected drives: %s
+
+fluffyalien_asn.ui.exportBus.title=Export Bus
+fluffyalien_asn.ui.exportBus.exportItem=Exporting %s
+fluffyalien_asn.ui.exportBus.noExportItem=Not exporting anything. Interact while holding an item to export that item.
+fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.label=Enchantments:
+fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.ignore=Ignore
+fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.with=With
+fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.without=Without
+fluffyalien_asn.ui.exportBus.exportItemMinDamage=Min damage (inclusive):
+fluffyalien_asn.ui.exportBus.exportItemMaxDamage=Max damage (inclusive):
+fluffyalien_asn.ui.exportBus.error.invalidMinDamage=Invalid value for min damage field.
+fluffyalien_asn.ui.exportBus.error.invalidMaxDamage=Invalid value for max damage field.
 
 fluffyalien_asn.ui.tutorialBook.title=Tutorial Book
 

@@ -15,6 +15,7 @@ import {
   ModalFormData,
   ModalFormResponse,
 } from "@minecraft/server-ui";
+import { ITEM_TRANSLATION_OVERRIDES } from "./item_translation_overrides";
 
 export function getBlockInDirection(
   block: Block,
@@ -131,4 +132,21 @@ export function vector3AsDimensionLocation(
   dimension: Dimension
 ): DimensionLocation {
   return { ...vec, dimension };
+}
+
+export function getItemTranslationKey(itemId: string): string {
+  if (itemId in ITEM_TRANSLATION_OVERRIDES) {
+    return ITEM_TRANSLATION_OVERRIDES[itemId];
+  }
+
+  const isMinecraftNamespace = itemId.startsWith("minecraft:");
+  const translationKeyItemId = isMinecraftNamespace
+    ? itemId.slice("minecraft:".length)
+    : itemId;
+
+  return isBlock(itemId)
+    ? `tile.${translationKeyItemId}.name`
+    : isMinecraftNamespace
+    ? `item.${translationKeyItemId}.name`
+    : `item.${translationKeyItemId}`;
 }

@@ -74,8 +74,12 @@ _.define.block({
           event: "fluffyalien_asn:update",
         },
       },
+      "minecraft:on_interact": {
+        event: "fluffyalien_asn:empty",
+      },
     },
     events: {
+      "fluffyalien_asn:empty": {},
       "fluffyalien_asn:update": {
         sequence: [
           {

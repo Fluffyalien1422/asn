@@ -61,7 +61,7 @@ $.server.world.afterEvents.playerInteractWithBlock.subscribe((e) => {
   const networkResult = StorageNetwork.getOrEstablishNetwork(e.block);
   if (!networkResult.success) {
     throw new Error(
-      "(storage_core.ts:playerInteractWithBlock) Could not get or establish network."
+      "(storage_core/events.ts:playerInteractWithBlock) Could not get or establish network."
     );
   }
 

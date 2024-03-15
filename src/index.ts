@@ -1,6 +1,6 @@
+import "./export_bus";
 import "./import_bus";
 import "./storage_core";
-import "./storage_drive";
 import "./storage_interface";
 import "./tutorial_book";
 import "./cable";
@@ -13,8 +13,6 @@ import {
   STORAGE_DATA_DYNAMIC_PROPERTY_ID,
   USED_STORAGE_DISK_ITEM_TYPE_ID,
 } from "./storage_drive";
-
-//todo: add export bus ui
 
 _: {
   _finishTerrainTexture();

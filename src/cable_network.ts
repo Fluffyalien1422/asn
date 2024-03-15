@@ -6,6 +6,7 @@ import { STORAGE_CORE_BLOCK_TYPE_ID } from "./storage_core";
 import { CABLE_BLOCK_TYPE_ID } from "./cable";
 import { IMPORT_BUS_BLOCK_TYPE_ID } from "./import_bus";
 import { Vector3Utils } from "@minecraft/math";
+import { EXPORT_BUS_BLOCK_TYPE_ID } from "./export_bus";
 
 export interface CableNetworkConnections {
   cables: Vector3[];
@@ -45,6 +46,7 @@ export function discoverCableNetworkConnections(
         STORAGE_DRIVE_BLOCK_TYPE_ID,
         STORAGE_INTERFACE_BLOCK_TYPE_ID,
         IMPORT_BUS_BLOCK_TYPE_ID,
+        EXPORT_BUS_BLOCK_TYPE_ID,
       ].includes(block.typeId) ||
       visitedLocations.some((vector) =>
         Vector3Utils.equals(block.location, vector)

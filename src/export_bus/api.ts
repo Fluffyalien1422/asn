@@ -5,7 +5,7 @@ import { EXPORT_BUS_ENTITY_TYPE_ID } from ".";
 export type ExportBusExportItemEnchantments = "with" | "without" | "ignore";
 
 export interface ExportBusExportItemDamageRange {
-  min?: number;
+  min: number;
   max?: number;
 }
 
@@ -54,18 +54,17 @@ export function updateExportBus(block: Block, network: StorageNetwork): void {
             itemStack.enchantments.length) ||
           (exportItemEnchantmentsStatus === "without" &&
             !itemStack.enchantments.length)) &&
-        (exportItemDamageRange.min === undefined ||
-          itemStack.damage > exportItemDamageRange.min) &&
+        itemStack.damage >= exportItemDamageRange.min &&
         (exportItemDamageRange.max === undefined ||
-          itemStack.damage < exportItemDamageRange.max)
+          itemStack.damage <= exportItemDamageRange.max)
     );
 
   if (!itemStack) {
     return;
   }
 
-  const added = container.addItem(itemStack.toItemStack(1));
-  if (!added) {
+  const notAdded = container.addItem(itemStack.toItemStack(1));
+  if (notAdded) {
     return;
   }
 
@@ -115,9 +114,10 @@ export function setExportBusExportItemEnchantments(
 export function getExportBusExportItemDamageRange(
   entity: Entity
 ): ExportBusExportItemDamageRange {
-  const min = entity.getDynamicProperty(
-    "fluffyalien_asn:export_item_damage_min"
-  ) as number | undefined;
+  const min =
+    (entity.getDynamicProperty("fluffyalien_asn:export_item_damage_min") as
+      | number
+      | undefined) ?? 0;
 
   const max = entity.getDynamicProperty(
     "fluffyalien_asn:export_item_damage_max"
