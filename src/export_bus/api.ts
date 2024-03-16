@@ -1,6 +1,7 @@
 import { Block, DimensionLocation, Entity } from "@minecraft/server";
 import { StorageNetwork } from "../storage_network";
 import { EXPORT_BUS_ENTITY_TYPE_ID } from ".";
+import { receivingRedstoneSignal } from "../utils";
 
 export type ExportBusExportItemEnchantments = "with" | "without" | "ignore";
 
@@ -10,6 +11,8 @@ export interface ExportBusExportItemDamageRange {
 }
 
 export function updateExportBus(block: Block, network: StorageNetwork): void {
+  if (receivingRedstoneSignal(block)) return;
+
   const cardinalDirection = block.permutation.getState(
     "minecraft:cardinal_direction"
   ) as string;

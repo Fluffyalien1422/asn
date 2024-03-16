@@ -1,4 +1,4 @@
-import { Entity, Player } from "@minecraft/server";
+import { Entity, Player, RawMessage } from "@minecraft/server";
 import {
   ExportBusExportItemEnchantments,
   getExportBusExportItemDamageRange,
@@ -30,76 +30,111 @@ export async function showExportBusUi(
     );
   }
 
+  const exportItemRawMessage: RawMessage = {
+    translate: "fluffyalien_asn.ui.exportBus.exportItem",
+    with: {
+      rawtext: [
+        {
+          rawtext: [
+            {
+              text: "§l",
+            },
+            {
+              translate: getItemTranslationKey(exportItemId),
+            },
+          ],
+        },
+      ],
+    },
+  };
+
+  const mcItemStack = new $.server.ItemStack(exportItemId);
+  const enchantable = mcItemStack.hasComponent("enchantable");
+  const breakable = mcItemStack.hasComponent("durability");
+
+  if (!enchantable && !breakable) {
+    // set to default values
+    setExportBusExportItemEnchantments(dummyEntity, "ignore");
+    setExportBusExportItemDamageRange(dummyEntity, { min: 0 });
+
+    return void showForm(
+      makeMessageUi(
+        { translate: "fluffyalien_asn.ui.exportBus.title" },
+        exportItemRawMessage
+      ),
+      player
+    );
+  }
+
   const exportItemEnchantmentsStatus =
     getExportBusExportItemEnchantments(dummyEntity);
 
   const exportItemDamageRange = getExportBusExportItemDamageRange(dummyEntity);
 
+  const body: RawMessage[] = [
+    exportItemRawMessage,
+    {
+      text: "§r\n\n",
+    },
+  ];
+
   const form = new $.serverUi.ModalFormData();
 
   form.title({ translate: "fluffyalien_asn.ui.exportBus.title" });
 
-  form.dropdown(
-    {
-      rawtext: [
-        {
-          translate: "fluffyalien_asn.ui.exportBus.exportItem",
-          with: {
-            rawtext: [
-              {
-                rawtext: [
-                  {
-                    text: "§l",
-                  },
-                  {
-                    translate: getItemTranslationKey(exportItemId),
-                  },
-                ],
-              },
-            ],
+  if (enchantable) {
+    form.dropdown(
+      {
+        rawtext: [
+          ...body,
+          {
+            translate:
+              "fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.label",
           },
-        },
+        ],
+      },
+      [
         {
-          text: "§r\n\n",
+          translate:
+            "fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.ignore",
         },
         {
           translate:
-            "fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.label",
+            "fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.with",
+        },
+        {
+          translate:
+            "fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.without",
         },
       ],
-    },
-    [
-      {
-        translate:
-          "fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.ignore",
-      },
-      {
-        translate:
-          "fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.with",
-      },
-      {
-        translate:
-          "fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.without",
-      },
-    ],
-    exportItemEnchantmentsStatus === "ignore"
-      ? 0
-      : exportItemEnchantmentsStatus === "with"
-      ? 1
-      : 2
-  );
+      exportItemEnchantmentsStatus === "ignore"
+        ? 0
+        : exportItemEnchantmentsStatus === "with"
+        ? 1
+        : 2
+    );
+  }
 
-  form.textField(
-    { translate: "fluffyalien_asn.ui.exportBus.exportItemMinDamage" },
-    "0",
-    exportItemDamageRange.min.toString()
-  );
+  if (breakable) {
+    form.textField(
+      enchantable
+        ? { translate: "fluffyalien_asn.ui.exportBus.exportItemMinDamage" }
+        : {
+            rawtext: [
+              ...body,
+              { translate: "fluffyalien_asn.ui.exportBus.exportItemMinDamage" },
+            ],
+          },
+      "0",
+      exportItemDamageRange.min.toString()
+    );
 
-  form.textField(
-    { translate: "fluffyalien_asn.ui.exportBus.exportItemMaxDamage" },
-    "",
-    exportItemDamageRange.max?.toString()
-  );
+    form.textField(
+      { translate: "fluffyalien_asn.ui.exportBus.exportItemMaxDamage" },
+      "",
+      exportItemDamageRange.max?.toString()
+    );
+  }
 
   const response = await showForm(form, player);
 
@@ -107,10 +142,19 @@ export async function showExportBusUi(
     return;
   }
 
-  const enchantmentsDropdownResponse = response.formValues[0] as number;
+  const enchantmentsDropdownResponse = enchantable
+    ? (response.formValues[0] as number)
+    : 0;
 
-  const minDamageResponse = response.formValues[1]
-    ? Number(response.formValues[1])
+  const minDamageResponseRaw = breakable
+    ? response.formValues[enchantable ? 1 : 0]
+    : null;
+  const maxDamageResponseRaw = breakable
+    ? response.formValues[enchantable ? 2 : 1]
+    : null;
+
+  const minDamageResponse = minDamageResponseRaw
+    ? Number(minDamageResponseRaw)
     : 0;
   if (isNaN(minDamageResponse)) {
     return void showForm(
@@ -121,8 +165,8 @@ export async function showExportBusUi(
     );
   }
 
-  const maxDamageResponse = response.formValues[2]
-    ? Number(response.formValues[2])
+  const maxDamageResponse = maxDamageResponseRaw
+    ? Number(maxDamageResponseRaw)
     : undefined;
   if (maxDamageResponse !== undefined && isNaN(maxDamageResponse)) {
     return void showForm(

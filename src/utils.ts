@@ -150,3 +150,12 @@ export function getItemTranslationKey(itemId: string): string {
     ? `item.${translationKeyItemId}.name`
     : `item.${translationKeyItemId}`;
 }
+
+export function receivingRedstoneSignal(block: Block): boolean {
+  return (
+    !!block.north()?.getRedstonePower() ||
+    !!block.east()?.getRedstonePower() ||
+    !!block.south()?.getRedstonePower() ||
+    !!block.west()?.getRedstonePower()
+  );
+}

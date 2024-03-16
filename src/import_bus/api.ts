@@ -1,8 +1,11 @@
 import { Block } from "@minecraft/server";
 import { StorageNetwork } from "../storage_network";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
+import { receivingRedstoneSignal } from "../utils";
 
 export function updateImportBus(block: Block, network: StorageNetwork): void {
+  if (receivingRedstoneSignal(block)) return;
+
   const cardinalDirection = block.permutation.getState(
     "minecraft:cardinal_direction"
   ) as string;
