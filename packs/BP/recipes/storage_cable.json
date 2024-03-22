@@ -1,0 +1,35 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "fluffyalien_asn:storage_cable"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern": [
+            "IRI",
+            "RER",
+            "IRI"
+        ],
+        "key": {
+            "R": {
+                "item": "redstone"
+            },
+            "E": {
+                "item": "emerald"
+            },
+            "I": {
+                "item": "iron_ingot"
+            }
+        },
+        "result": {
+            "item": "fluffyalien_asn:storage_cable"
+        },
+        "unlock": [
+            {
+                "item": "diamond"
+            }
+        ]
+    }
+}

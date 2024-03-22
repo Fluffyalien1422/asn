@@ -1,0 +1,38 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "fluffyalien_asn:storage_interface"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern": [
+            "ECD",
+            "CLC",
+            "DCE"
+        ],
+        "key": {
+            "D": {
+                "item": "diamond"
+            },
+            "E": {
+                "item": "emerald"
+            },
+            "L": {
+                "item": "redstone_lamp"
+            },
+            "C": {
+                "item": "fluffyalien_asn:storage_cable"
+            }
+        },
+        "result": {
+            "item": "fluffyalien_asn:storage_interface"
+        },
+        "unlock": [
+            {
+                "item": "diamond"
+            }
+        ]
+    }
+}

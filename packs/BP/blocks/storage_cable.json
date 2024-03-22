@@ -1,0 +1,107 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:block": {
+        "description": {
+            "identifier": "fluffyalien_asn:storage_cable",
+            "menu_category": {
+                "category": "items"
+            },
+            "states": {
+                "fluffyalien_asn:north": [
+                    0,
+                    1
+                ],
+                "fluffyalien_asn:east": [
+                    0,
+                    1
+                ],
+                "fluffyalien_asn:south": [
+                    0,
+                    1
+                ],
+                "fluffyalien_asn:west": [
+                    0,
+                    1
+                ],
+                "fluffyalien_asn:up": [
+                    0,
+                    1
+                ],
+                "fluffyalien_asn:down": [
+                    0,
+                    1
+                ]
+            }
+        },
+        "components": {
+            "tag:fluffyalien_asn:storage_cable_connectable": {},
+            "minecraft:geometry": {
+                "identifier": "geometry.fluffyalien_asn.storage_cable",
+                "bone_visibility": {
+                    "north": "q.block_state('fluffyalien_asn:north')",
+                    "east": "q.block_state('fluffyalien_asn:east')",
+                    "south": "q.block_state('fluffyalien_asn:south')",
+                    "west": "q.block_state('fluffyalien_asn:west')",
+                    "up": "q.block_state('fluffyalien_asn:up')",
+                    "down": "q.block_state('fluffyalien_asn:down')"
+                }
+            },
+            "minecraft:material_instances": {
+                "*": {
+                    "texture": "fluffyalien_asn:storage_cable"
+                }
+            },
+            "minecraft:collision_box": {
+                "origin": [
+                    -4,
+                    4,
+                    -4
+                ],
+                "size": [
+                    8,
+                    8,
+                    8
+                ]
+            },
+            "minecraft:selection_box": {
+                "origin": [
+                    -3,
+                    5,
+                    -3
+                ],
+                "size": [
+                    6,
+                    6,
+                    6
+                ]
+            },
+            "minecraft:light_dampening": 0,
+            "minecraft:destructible_by_explosion": false,
+            "minecraft:destructible_by_mining": {
+                "seconds_to_destroy": 1
+            },
+            "minecraft:queued_ticking": {
+                "looping": true,
+                "interval_range": [
+                    0,
+                    0
+                ],
+                "on_tick": {
+                    "event": "fluffyalien_asn:update"
+                }
+            }
+        },
+        "events": {
+            "fluffyalien_asn:update": {
+                "set_block_state": {
+                    "fluffyalien_asn:north": "q.block_neighbor_has_any_tag(0, 0, -1, 'fluffyalien_asn:storage_cable_connectable')",
+                    "fluffyalien_asn:east": "q.block_neighbor_has_any_tag(1, 0, 0, 'fluffyalien_asn:storage_cable_connectable')",
+                    "fluffyalien_asn:south": "q.block_neighbor_has_any_tag(0, 0, 1, 'fluffyalien_asn:storage_cable_connectable')",
+                    "fluffyalien_asn:west": "q.block_neighbor_has_any_tag(-1, 0, 0, 'fluffyalien_asn:storage_cable_connectable')",
+                    "fluffyalien_asn:up": "q.block_neighbor_has_any_tag(0, 1, 0, 'fluffyalien_asn:storage_cable_connectable')",
+                    "fluffyalien_asn:down": "q.block_neighbor_has_any_tag(0, -1, 0, 'fluffyalien_asn:storage_cable_connectable')"
+                }
+            }
+        }
+    }
+}

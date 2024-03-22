@@ -1,0 +1,35 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "fluffyalien_asn:storage_disk_casing"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern": [
+            "NIN",
+            "ISI",
+            "NIN"
+        ],
+        "key": {
+            "I": {
+                "item": "iron_ingot"
+            },
+            "S": {
+                "item": "smooth_stone"
+            },
+            "N": {
+                "item": "iron_nugget"
+            }
+        },
+        "result": {
+            "item": "fluffyalien_asn:storage_disk_casing"
+        },
+        "unlock": [
+            {
+                "item": "diamond"
+            }
+        ]
+    }
+}

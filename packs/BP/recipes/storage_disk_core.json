@@ -1,0 +1,35 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "fluffyalien_asn:storage_disk_core"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern": [
+            "SIS",
+            "ICI",
+            "SIS"
+        ],
+        "key": {
+            "I": {
+                "item": "iron_ingot"
+            },
+            "S": {
+                "item": "smooth_stone"
+            },
+            "C": {
+                "item": "fluffyalien_asn:storage_crystal"
+            }
+        },
+        "result": {
+            "item": "fluffyalien_asn:storage_disk_core"
+        },
+        "unlock": [
+            {
+                "item": "diamond"
+            }
+        ]
+    }
+}

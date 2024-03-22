@@ -1,0 +1,96 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:block": {
+        "description": {
+            "identifier": "fluffyalien_asn:storage_drive",
+            "menu_category": {
+                "category": "items"
+            },
+            "traits": {
+                "minecraft:placement_direction": {
+                    "enabled_states": [
+                        "minecraft:cardinal_direction"
+                    ]
+                }
+            }
+        },
+        "components": {
+            "tag:fluffyalien_asn:storage_cable_connectable": {},
+            "minecraft:geometry": "minecraft:geometry.full_block",
+            "minecraft:material_instances": {
+                "north": {
+                    "texture": "fluffyalien_asn:storage_drive_side"
+                },
+                "south": {
+                    "texture": "fluffyalien_asn:storage_drive_front"
+                },
+                "up": {
+                    "texture": "fluffyalien_asn:storage_drive_top"
+                },
+                "east": "north",
+                "west": "north",
+                "down": "up"
+            },
+            "minecraft:on_interact": {
+                "event": "fluffyalien_asn:empty"
+            },
+            "minecraft:destructible_by_explosion": false,
+            "minecraft:destructible_by_mining": {
+                "seconds_to_destroy": 1
+            }
+        },
+        "events": {
+            "fluffyalien_asn:empty": {}
+        },
+        "permutations": [
+            {
+                "condition": "q.block_state('minecraft:cardinal_direction') == 'north'",
+                "components": {
+                    "minecraft:transformation": {
+                        "rotation": [
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "condition": "q.block_state('minecraft:cardinal_direction') == 'south'",
+                "components": {
+                    "minecraft:transformation": {
+                        "rotation": [
+                            0,
+                            180,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "condition": "q.block_state('minecraft:cardinal_direction') == 'west'",
+                "components": {
+                    "minecraft:transformation": {
+                        "rotation": [
+                            0,
+                            90,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "condition": "q.block_state('minecraft:cardinal_direction') == 'east'",
+                "components": {
+                    "minecraft:transformation": {
+                        "rotation": [
+                            0,
+                            -90,
+                            0
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,59 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "fluffyalien_asn:storage_drive_entity",
+            "is_summonable": true,
+            "is_spawnable": false
+        },
+        "component_groups": {
+            "fluffyalien_asn:despawn": {
+                "minecraft:instant_despawn": {}
+            }
+        },
+        "components": {
+            "minecraft:breathable": {
+                "breathes_water": true
+            },
+            "minecraft:physics": {
+                "has_gravity": false,
+                "has_collision": false
+            },
+            "minecraft:custom_hit_test": {
+                "hitboxes": [
+                    {
+                        "pivot": [
+                            0,
+                            99,
+                            0
+                        ],
+                        "width": 0,
+                        "height": 0
+                    }
+                ]
+            },
+            "minecraft:damage_sensor": {
+                "triggers": {
+                    "deals_damage": false
+                }
+            },
+            "minecraft:pushable": {
+                "is_pushable": false,
+                "is_pushable_by_piston": false
+            },
+            "minecraft:collision_box": {
+                "width": 0,
+                "height": 0
+            }
+        },
+        "events": {
+            "fluffyalien_asn:despawn": {
+                "add": {
+                    "component_groups": [
+                        "fluffyalien_asn:despawn"
+                    ]
+                }
+            }
+        }
+    }
+}

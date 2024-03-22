@@ -1,0 +1,19 @@
+{
+    "texture_data": {
+        "fluffyalien_asn:storage_disk": {
+            "textures": "textures/fluffyalien/asn/items/storage_disk"
+        },
+        "fluffyalien_asn:storage_disk_casing": {
+            "textures": "textures/fluffyalien/asn/items/storage_disk_casing"
+        },
+        "fluffyalien_asn:storage_disk_core": {
+            "textures": "textures/fluffyalien/asn/items/storage_disk_core"
+        },
+        "fluffyalien_asn:storage_crystal": {
+            "textures": "textures/fluffyalien/asn/items/storage_crystal"
+        },
+        "fluffyalien_asn:raw_storage_crystal": {
+            "textures": "textures/fluffyalien/asn/items/raw_storage_crystal"
+        }
+    }
+}

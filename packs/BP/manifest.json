@@ -29,7 +29,7 @@
             "type": "script",
             "language": "javascript",
             "uuid": "d6b39452-de71-4e5a-9401-a1c48bc1cda2",
-            "entry": "scripts/bundle.js",
+            "entry": "scripts/__bundle.js",
             "version": [
                 2,
                 0,
@@ -40,12 +40,10 @@
     "dependencies": [
         {
             "module_name": "@minecraft/server",
-            "hopper:alias": "server",
             "version": "1.11.0-beta"
         },
         {
             "module_name": "@minecraft/server-ui",
-            "hopper:alias": "serverUi",
             "version": "1.2.0-beta"
         },
         {
