@@ -33,7 +33,7 @@ system.afterEvents.scriptEventReceive.subscribe(
         .getDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID)
         ?.toString();
       if (s)
-        log.warn(
+        log.msg(
           "scriptEventRecieve event",
           `fluffyalien_asn:debug_log_disk_data result: ${s}`,
         );

@@ -1,7 +1,5 @@
 import { VERSION } from "./constants";
 
-export type LogLevel = "warn" | "raise";
-
 export class Logger {
   /**
    * @param filePath File path relative to `packs/BP/scripts`
@@ -15,11 +13,11 @@ export class Logger {
    * @returns the log string
    */
   private makeLogString(
-    logLevel: LogLevel,
+    logLevel: string,
     location: string,
     message: string,
   ): string {
-    return `[Advanced Storage Network v${VERSION}] (${this.filePath} - ${location}) ${logLevel.toUpperCase()} ${message}`;
+    return `[Advanced Storage Network v${VERSION}] (${this.filePath} - ${location}) ${logLevel} ${message}`;
   }
 
   /**
@@ -28,7 +26,7 @@ export class Logger {
    * @param message the message
    */
   warn(location: string, message: string): void {
-    console.warn(this.makeLogString("warn", location, message));
+    console.warn(this.makeLogString("WARN", location, message));
   }
 
   /**
@@ -42,6 +40,24 @@ export class Logger {
    * ```
    */
   makeRaiseString(location: string, message: string): string {
-    return this.makeLogString("raise", location, message);
+    return this.makeLogString("RAISE", location, message);
+  }
+
+  /**
+   * Log info (does not show on content log GUI)
+   * @param location the location of the log (eg. "playerBreakBlock event", "myFunction", "Class#method", "Class.staticMethod")
+   * @param message the message
+   */
+  info(location: string, message: string): void {
+    console.info(this.makeLogString("INFO", location, message));
+  }
+
+  /**
+   * Log a debug message (shows on content log GUI)
+   * @param location the location of the log (eg. "playerBreakBlock event", "myFunction", "Class#method", "Class.staticMethod")
+   * @param message the message
+   */
+  msg(location: string, message: string): void {
+    console.warn(this.makeLogString("MSG", location, message));
   }
 }
