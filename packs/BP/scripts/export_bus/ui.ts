@@ -17,7 +17,7 @@ import {
 
 export async function showExportBusUi(
   player: Player,
-  dummyEntity: Entity
+  dummyEntity: Entity,
 ): Promise<void> {
   const exportItemId = getExportBusExportItemId(dummyEntity);
 
@@ -25,9 +25,9 @@ export async function showExportBusUi(
     return void showForm(
       makeMessageUi(
         { translate: "fluffyalien_asn.ui.exportBus.title" },
-        { translate: "fluffyalien_asn.ui.exportBus.noExportItem" }
+        { translate: "fluffyalien_asn.ui.exportBus.noExportItem" },
       ),
-      player
+      player,
     );
   }
 
@@ -61,9 +61,9 @@ export async function showExportBusUi(
     return void showForm(
       makeMessageUi(
         { translate: "fluffyalien_asn.ui.exportBus.title" },
-        exportItemRawMessage
+        exportItemRawMessage,
       ),
-      player
+      player,
     );
   }
 
@@ -111,8 +111,8 @@ export async function showExportBusUi(
       exportItemEnchantmentsStatus === "ignore"
         ? 0
         : exportItemEnchantmentsStatus === "with"
-        ? 1
-        : 2
+          ? 1
+          : 2,
     );
   }
 
@@ -127,13 +127,13 @@ export async function showExportBusUi(
             ],
           },
       "0",
-      exportItemDamageRange.min.toString()
+      exportItemDamageRange.min.toString(),
     );
 
     form.textField(
       { translate: "fluffyalien_asn.ui.exportBus.exportItemMaxDamage" },
       "",
-      exportItemDamageRange.max?.toString()
+      exportItemDamageRange.max?.toString(),
     );
   }
 
@@ -162,7 +162,7 @@ export async function showExportBusUi(
       makeErrorMessageUi({
         translate: "fluffyalien_asn.ui.exportBus.error.invalidMinDamage",
       }),
-      player
+      player,
     );
   }
 
@@ -174,7 +174,7 @@ export async function showExportBusUi(
       makeErrorMessageUi({
         translate: "fluffyalien_asn.ui.exportBus.error.invalidMaxDamage",
       }),
-      player
+      player,
     );
   }
 
@@ -182,7 +182,7 @@ export async function showExportBusUi(
     dummyEntity,
     (["ignore", "with", "without"] as ExportBusExportItemEnchantments[])[
       enchantmentsDropdownResponse
-    ]
+    ],
   );
 
   setExportBusExportItemDamageRange(dummyEntity, {

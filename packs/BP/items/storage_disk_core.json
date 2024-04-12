@@ -1,16 +1,16 @@
 {
-    "format_version": "1.20.80",
-    "minecraft:item": {
-        "description": {
-            "identifier": "fluffyalien_asn:storage_disk_core"
-        },
-        "components": {
-            "minecraft:max_stack_size": 16,
-            "minecraft:icon": {
-                "textures": {
-                    "default": "fluffyalien_asn:storage_disk_core"
-                }
-            }
+  "format_version": "1.20.80",
+  "minecraft:item": {
+    "description": {
+      "identifier": "fluffyalien_asn:storage_disk_core"
+    },
+    "components": {
+      "minecraft:max_stack_size": 16,
+      "minecraft:icon": {
+        "textures": {
+          "default": "fluffyalien_asn:storage_disk_core"
         }
+      }
     }
+  }
 }

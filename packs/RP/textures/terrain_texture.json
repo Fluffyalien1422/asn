@@ -1,28 +1,28 @@
 {
-    "texture_data": {
-        "fluffyalien_asn:storage_drive_front": {
-            "textures": "textures/fluffyalien/asn/blocks/storage_drive_front"
-        },
-        "fluffyalien_asn:storage_drive_side": {
-            "textures": "textures/fluffyalien/asn/blocks/storage_drive_side"
-        },
-        "fluffyalien_asn:storage_drive_top": {
-            "textures": "textures/fluffyalien/asn/blocks/storage_drive_top"
-        },
-        "fluffyalien_asn:storage_cable": {
-            "textures": "textures/fluffyalien/asn/blocks/storage_cable"
-        },
-        "fluffyalien_asn:storage_interface": {
-            "textures": "textures/fluffyalien/asn/blocks/storage_interface"
-        },
-        "fluffyalien_asn:storage_core": {
-            "textures": "textures/fluffyalien/asn/blocks/storage_core"
-        },
-        "fluffyalien_asn:import_bus": {
-            "textures": "textures/fluffyalien/asn/blocks/import_bus"
-        },
-        "fluffyalien_asn:export_bus": {
-            "textures": "textures/fluffyalien/asn/blocks/export_bus"
-        }
+  "texture_data": {
+    "fluffyalien_asn:storage_drive_front": {
+      "textures": "textures/fluffyalien/asn/blocks/storage_drive_front"
+    },
+    "fluffyalien_asn:storage_drive_side": {
+      "textures": "textures/fluffyalien/asn/blocks/storage_drive_side"
+    },
+    "fluffyalien_asn:storage_drive_top": {
+      "textures": "textures/fluffyalien/asn/blocks/storage_drive_top"
+    },
+    "fluffyalien_asn:storage_cable": {
+      "textures": "textures/fluffyalien/asn/blocks/storage_cable"
+    },
+    "fluffyalien_asn:storage_interface": {
+      "textures": "textures/fluffyalien/asn/blocks/storage_interface"
+    },
+    "fluffyalien_asn:storage_core": {
+      "textures": "textures/fluffyalien/asn/blocks/storage_core"
+    },
+    "fluffyalien_asn:import_bus": {
+      "textures": "textures/fluffyalien/asn/blocks/import_bus"
+    },
+    "fluffyalien_asn:export_bus": {
+      "textures": "textures/fluffyalien/asn/blocks/export_bus"
     }
+  }
 }

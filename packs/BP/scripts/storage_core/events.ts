@@ -1,0 +1,69 @@
+import { Vector3Utils } from "@minecraft/math";
+import { getStorageCoreEntity } from ".";
+import { StorageNetwork } from "../storage_network";
+import { showStorageCoreUi } from "./ui";
+import { system, world } from "@minecraft/server";
+
+world.afterEvents.entityLoad.subscribe((e) => {
+  if (e.entity.typeId !== "fluffyalien_asn:storage_core_entity") return;
+
+  const block = e.entity.dimension.getBlock(e.entity.location);
+  if (!block) {
+    console.warn(
+      `(storage_core/events.ts:entityLoad) Could not get storage core block at (${Vector3Utils.toString(
+        e.entity.location,
+      )}) in ${e.entity.dimension.id}.`,
+    );
+    return;
+  }
+
+  // establish a network when the storage core entity is loaded so that the interval
+  // will start running without having to open an interface
+  StorageNetwork.getOrEstablishNetwork(block);
+});
+
+world.afterEvents.playerPlaceBlock.subscribe((e) => {
+  if (e.block.typeId !== "fluffyalien_asn:storage_core") return;
+
+  e.block.dimension.spawnEntity("fluffyalien_asn:storage_core_entity", {
+    x: e.block.x + 0.5,
+    y: e.block.y,
+    z: e.block.z + 0.5,
+  });
+
+  StorageNetwork.updateConnectableNetworks(e.block);
+});
+
+world.afterEvents.playerBreakBlock.subscribe((e) => {
+  if (e.brokenBlockPermutation.type.id !== "fluffyalien_asn:storage_core")
+    return;
+
+  getStorageCoreEntity(e.block)?.triggerEvent("fluffyalien_asn:despawn");
+  StorageNetwork.getNetwork(
+    e.block,
+    e.brokenBlockPermutation.type.id,
+  )?.destroy();
+});
+
+let lastPlayerInteractWithBlockTriggerTick = 0;
+world.afterEvents.playerInteractWithBlock.subscribe((e) => {
+  if (
+    e.block.typeId !== "fluffyalien_asn:storage_core" ||
+    e.player.isSneaking ||
+    lastPlayerInteractWithBlockTriggerTick + 5 > system.currentTick
+  )
+    return;
+
+  lastPlayerInteractWithBlockTriggerTick = system.currentTick;
+
+  const networkResult = StorageNetwork.getOrEstablishNetwork(e.block);
+  if (!networkResult.success) {
+    throw new Error(
+      "(storage_core/events.ts:playerInteractWithBlock) Could not get or establish network.",
+    );
+  }
+
+  const network = networkResult.value;
+
+  void showStorageCoreUi(e.player, network);
+});

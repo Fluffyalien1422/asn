@@ -1,44 +1,44 @@
 {
-    "$schema": "https://raw.githubusercontent.com/Bedrock-OSS/regolith-schemas/main/config/v1.2.json",
-    "author": "Fluffyalien1422",
-    "name": "Advanced Storage Network 2",
-    "packs": {
-        "behaviorPack": "./packs/BP",
-        "resourcePack": "./packs/RP"
+  "$schema": "https://raw.githubusercontent.com/Bedrock-OSS/regolith-schemas/main/config/v1.2.json",
+  "author": "Fluffyalien1422",
+  "name": "Advanced Storage Network 2",
+  "packs": {
+    "behaviorPack": "./packs/BP",
+    "resourcePack": "./packs/RP"
+  },
+  "regolith": {
+    "dataPath": "./packs/data",
+    "filterDefinitions": {
+      "build_scripts_dev": {
+        "runWith": "shell",
+        "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --external:@minecraft/server --external:@minecraft/server-ui"
+      },
+      "build_scripts_prod": {
+        "runWith": "shell",
+        "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --external:@minecraft/server --external:@minecraft/server-ui --minify; Remove-Item ./BP/scripts/* -Recurse -Exclude __bundle.js"
+      }
     },
-    "regolith": {
-        "dataPath": "./packs/data",
-        "filterDefinitions": {
-            "build_scripts_dev": {
-                "runWith": "shell",
-                "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js"
-            },
-            "build_scripts_prod": {
-                "runWith": "shell",
-                "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js; rm ./BP/scripts/*.ts;"
-            }
+    "profiles": {
+      "default": {
+        "export": {
+          "target": "preview"
         },
-        "profiles": {
-            "default": {
-                "export": {
-                    "target": "preview"
-                },
-                "filters": [
-                    {
-                        "filter": "build_scripts_dev"
-                    }
-                ]
-            },
-            "prod": {
-                "export": {
-                    "target": "local"
-                },
-                "filters": [
-                    {
-                        "filter": "build_scripts_prod"
-                    }
-                ]
-            }
-        }
+        "filters": [
+          {
+            "filter": "build_scripts_dev"
+          }
+        ]
+      },
+      "prod": {
+        "export": {
+          "target": "local"
+        },
+        "filters": [
+          {
+            "filter": "build_scripts_prod"
+          }
+        ]
+      }
     }
+  }
 }

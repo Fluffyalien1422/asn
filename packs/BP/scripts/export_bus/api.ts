@@ -1,6 +1,5 @@
 import { Block, DimensionLocation, Entity } from "@minecraft/server";
 import { StorageNetwork } from "../storage_network";
-import { EXPORT_BUS_ENTITY_TYPE_ID } from ".";
 import { receivingRedstoneSignal } from "../utils";
 
 export type ExportBusExportItemEnchantments = "with" | "without" | "ignore";
@@ -14,17 +13,17 @@ export function updateExportBus(block: Block, network: StorageNetwork): void {
   if (receivingRedstoneSignal(block)) return;
 
   const cardinalDirection = block.permutation.getState(
-    "minecraft:cardinal_direction"
+    "minecraft:cardinal_direction",
   ) as string;
 
   const target =
     cardinalDirection === "north"
       ? block.north()
       : cardinalDirection === "east"
-      ? block.east()
-      : cardinalDirection === "south"
-      ? block.south()
-      : block.west();
+        ? block.east()
+        : cardinalDirection === "south"
+          ? block.south()
+          : block.west();
 
   const container = target?.getComponent("inventory")?.container;
   if (!container) return;
@@ -32,7 +31,9 @@ export function updateExportBus(block: Block, network: StorageNetwork): void {
   const dummyEntity = getExportBusEntity(block);
   if (!dummyEntity) {
     console.warn(
-      `(updateExportBus) Could not update export bus at (${block.x}, ${block.y}, ${block.z}) in ${block.dimension.id}: could not get dummy entity.`
+      `(updateExportBus) Could not update export bus at (${block.x.toString()}, ${block.y.toString()}, ${block.z.toString()}) in ${
+        block.dimension.id
+      }: could not get dummy entity.`,
     );
     return;
   }
@@ -59,7 +60,7 @@ export function updateExportBus(block: Block, network: StorageNetwork): void {
             !itemStack.enchantments.length)) &&
         itemStack.damage >= exportItemDamageRange.min &&
         (exportItemDamageRange.max === undefined ||
-          itemStack.damage <= exportItemDamageRange.max)
+          itemStack.damage <= exportItemDamageRange.max),
     );
 
   if (!itemStack) {
@@ -80,11 +81,11 @@ export function updateExportBus(block: Block, network: StorageNetwork): void {
  * @returns the {@link Entity} or undefined if it could not be found
  */
 export function getExportBusEntity(
-  location: DimensionLocation
+  location: DimensionLocation,
 ): Entity | undefined {
   return location.dimension
     .getEntitiesAtBlockLocation(location)
-    .find((v) => v.typeId === EXPORT_BUS_ENTITY_TYPE_ID);
+    .find((v) => v.typeId === "fluffyalien_asn:export_bus_entity");
 }
 
 export function getExportBusExportItemId(entity: Entity): string | undefined {
@@ -98,7 +99,7 @@ export function setExportBusExportItemId(entity: Entity, value: string): void {
 }
 
 export function getExportBusExportItemEnchantments(
-  entity: Entity
+  entity: Entity,
 ): ExportBusExportItemEnchantments {
   return (
     (entity.getDynamicProperty("fluffyalien_asn:export_item_enchantments") as
@@ -109,13 +110,13 @@ export function getExportBusExportItemEnchantments(
 
 export function setExportBusExportItemEnchantments(
   entity: Entity,
-  value: ExportBusExportItemEnchantments
+  value: ExportBusExportItemEnchantments,
 ): void {
   entity.setDynamicProperty("fluffyalien_asn:export_item_enchantments", value);
 }
 
 export function getExportBusExportItemDamageRange(
-  entity: Entity
+  entity: Entity,
 ): ExportBusExportItemDamageRange {
   const min =
     (entity.getDynamicProperty("fluffyalien_asn:export_item_damage_min") as
@@ -123,7 +124,7 @@ export function getExportBusExportItemDamageRange(
       | undefined) ?? 0;
 
   const max = entity.getDynamicProperty(
-    "fluffyalien_asn:export_item_damage_max"
+    "fluffyalien_asn:export_item_damage_max",
   ) as number | undefined;
 
   return { min, max };
@@ -131,15 +132,15 @@ export function getExportBusExportItemDamageRange(
 
 export function setExportBusExportItemDamageRange(
   entity: Entity,
-  value: ExportBusExportItemDamageRange
+  value: ExportBusExportItemDamageRange,
 ): void {
   entity.setDynamicProperty(
     "fluffyalien_asn:export_item_damage_min",
-    value.min
+    value.min,
   );
 
   entity.setDynamicProperty(
     "fluffyalien_asn:export_item_damage_max",
-    value.max
+    value.max,
   );
 }

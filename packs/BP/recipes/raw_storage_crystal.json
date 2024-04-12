@@ -1,38 +1,36 @@
 {
-    "format_version": "1.20.80",
-    "minecraft:recipe_shapeless": {
-        "description": {
-            "identifier": "fluffyalien_asn:raw_storage_crystal"
-        },
-        "tags": [
-            "crafting_table"
-        ],
-        "ingredients": [
-            {
-                "item": "emerald",
-                "count": 3
-            },
-            {
-                "item": "diamond",
-                "count": 3
-            },
-            {
-                "item": "lapis_block"
-            },
-            {
-                "item": "redstone_block"
-            },
-            {
-                "item": "amethyst_shard"
-            }
-        ],
-        "result": {
-            "item": "fluffyalien_asn:raw_storage_crystal"
-        },
-        "unlock": [
-            {
-                "item": "diamond"
-            }
-        ]
-    }
+  "format_version": "1.20.80",
+  "minecraft:recipe_shapeless": {
+    "description": {
+      "identifier": "fluffyalien_asn:raw_storage_crystal"
+    },
+    "tags": ["crafting_table"],
+    "ingredients": [
+      {
+        "item": "emerald",
+        "count": 3
+      },
+      {
+        "item": "diamond",
+        "count": 3
+      },
+      {
+        "item": "lapis_block"
+      },
+      {
+        "item": "redstone_block"
+      },
+      {
+        "item": "amethyst_shard"
+      }
+    ],
+    "result": {
+      "item": "fluffyalien_asn:raw_storage_crystal"
+    },
+    "unlock": [
+      {
+        "item": "diamond"
+      }
+    ]
+  }
 }

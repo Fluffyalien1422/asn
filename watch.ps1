@@ -1,1 +1,0 @@
-hopper watch "Advanced Storage Network 2" -m "%localappdata%/Packages/Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe/LocalState/games/com.mojang"
