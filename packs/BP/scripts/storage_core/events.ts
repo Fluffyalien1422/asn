@@ -3,16 +3,20 @@ import { getStorageCoreEntity } from ".";
 import { StorageNetwork } from "../storage_network";
 import { showStorageCoreUi } from "./ui";
 import { system, world } from "@minecraft/server";
+import { Logger } from "../log";
+
+const log = new Logger("storage_core/events.ts");
 
 world.afterEvents.entityLoad.subscribe((e) => {
   if (e.entity.typeId !== "fluffyalien_asn:storage_core_entity") return;
 
   const block = e.entity.dimension.getBlock(e.entity.location);
   if (!block) {
-    console.warn(
-      `(storage_core/events.ts:entityLoad) Could not get storage core block at (${Vector3Utils.toString(
+    log.warn(
+      "entityLoad event",
+      `could not get storage core block at (${Vector3Utils.toString(
         e.entity.location,
-      )}) in ${e.entity.dimension.id}.`,
+      )}) in ${e.entity.dimension.id}`,
     );
     return;
   }

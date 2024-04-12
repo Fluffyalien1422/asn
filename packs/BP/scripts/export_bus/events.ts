@@ -3,6 +3,9 @@ import { getExportBusEntity, setExportBusExportItemId } from ".";
 import { StorageNetwork } from "../storage_network";
 import { getPlayerMainhandSlot } from "../utils";
 import { showExportBusUi } from "./ui";
+import { Logger } from "../log";
+
+const log = new Logger("export_bus/events.ts");
 
 world.afterEvents.playerPlaceBlock.subscribe((e) => {
   if (e.block.typeId !== "fluffyalien_asn:export_bus") return;
@@ -40,8 +43,9 @@ world.afterEvents.playerInteractWithBlock.subscribe((e) => {
 
   const entity = getExportBusEntity(e.block);
   if (!entity) {
-    console.warn(
-      "(export_bus/events.ts:playerInteractWithBlock) Cannot get export bus dummy entity.",
+    log.warn(
+      "playerInteractWithBlock event",
+      "cannot get export bus dummy entity",
     );
     return;
   }

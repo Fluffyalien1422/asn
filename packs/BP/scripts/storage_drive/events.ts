@@ -4,6 +4,7 @@ import {
   setStorageDriveSerializedData,
   STORAGE_DATA_DYNAMIC_PROPERTY_ID,
 } from ".";
+import { Logger } from "../log";
 import { StorageNetwork } from "../storage_network";
 import {
   getBlockInDirection,
@@ -13,6 +14,8 @@ import {
 } from "../utils";
 import { showStorageDriveUi } from "./ui";
 import { ItemStack, system, world } from "@minecraft/server";
+
+const log = new Logger("storage_drive/events.ts");
 
 world.afterEvents.itemUseOn.subscribe((e) => {
   if (e.itemStack.typeId !== "fluffyalien_asn:storage_drive") return;
@@ -51,10 +54,11 @@ world.afterEvents.playerBreakBlock.subscribe((e) => {
 
   const data = getStorageDriveSerializedData(e.block);
   if (data === false) {
-    console.warn(
-      `(storage_drive/events.ts:playerBreakBlock) Could not read data from storage drive at (${e.block.x.toString()}, ${e.block.y.toString()}, ${e.block.z.toString()}) in ${
+    log.warn(
+      "playerBreakBlock",
+      `could not read data from storage drive at (${e.block.x.toString()}, ${e.block.y.toString()}, ${e.block.z.toString()}) in ${
         e.block.dimension.id
-      }. Items will be lost.`,
+      }. items will be lost`,
     );
   }
 

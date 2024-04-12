@@ -18,6 +18,9 @@ import { DeepReadonly } from "ts-essentials";
 import { updateImportBus } from "./import_bus";
 import { Vector3Utils } from "@minecraft/math";
 import { updateExportBus } from "./export_bus";
+import { Logger } from "./log";
+
+const log = new Logger("storage_network.ts");
 
 export type AddItemStackToStorageError = "insufficientStorage";
 
@@ -174,7 +177,10 @@ export class StorageNetwork {
   private ensureValidity(): void {
     if (!this.internalIsValid) {
       throw new Error(
-        `(StorageNetwork#ensureValidity) This object has been destroyed and is no longer valid`,
+        log.makeRaiseString(
+          "StorageNetwork#ensureValidity",
+          `this object has been destroyed and is no longer valid`,
+        ),
       );
     }
   }
@@ -192,10 +198,11 @@ export class StorageNetwork {
       );
 
       if (serialized === false) {
-        console.warn(
-          `(StorageNetwork#getStoredItemStacksMutable) Could not read data from storage drive at (${driveLocation.x.toString()}, ${driveLocation.y.toString()}, ${driveLocation.z.toString()}) in ${
+        log.warn(
+          "StorageNetwork#getStoredItemStacksMutable",
+          `could not read data from storage drive at (${driveLocation.x.toString()}, ${driveLocation.y.toString()}, ${driveLocation.z.toString()}) in ${
             this.dimension.id
-          }. Skipping. Some items may be missing.`,
+          }. skipping. some items may be missing`,
         );
       }
       if (!serialized) {
@@ -244,10 +251,11 @@ export class StorageNetwork {
           serializedData,
         )
       ) {
-        console.warn(
-          `(StorageNetwork#saveData) Could not set data in storage drive at (${driveLocation.x.toString()}, ${driveLocation.y.toString()}, ${driveLocation.z.toString()}) in ${
+        log.warn(
+          "StorageNetwork#saveData",
+          `could not set data in storage drive at (${driveLocation.x.toString()}, ${driveLocation.y.toString()}, ${driveLocation.z.toString()}) in ${
             this.dimension.id
-          }. Skipping. Some items may be missing or duplicated.`,
+          }. skipping. some items may be missing or duplicated`,
         );
       }
     }
@@ -256,13 +264,17 @@ export class StorageNetwork {
       if (useRealMaxLength) {
         // if the fallback failed as well, throw an error
         throw new Error(
-          "(StorageNetwork#saveData) Could not save data: reached max storage.",
+          log.makeRaiseString(
+            "StorageNetwork#saveData",
+            "could not save data: reached max storage",
+          ),
         );
       }
 
       // fall back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH if we could not save everything
-      console.warn(
-        "(StorageNetwork#saveData) Could not save data with default max data length (MAX_STORAGE_DRIVE_DATA_LENGTH). Falling back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH.",
+      log.warn(
+        "StorageNetwork#saveData",
+        "could not save data with default max data length (MAX_STORAGE_DRIVE_DATA_LENGTH). falling back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH",
       );
       this.saveData(true);
     }
@@ -345,9 +357,12 @@ export class StorageNetwork {
     const coreBlock = this.dimension.getBlock(this.connections.storageCore);
     if (!coreBlock) {
       throw new Error(
-        `(StorageNetwork#updateConnections) Cannot update connections: location (${this.connections.storageCore.x.toString()}, ${this.connections.storageCore.y.toString()}, ${this.connections.storageCore.z.toString()}) in ${
-          this.dimension.id
-        } is not loaded.`,
+        log.makeRaiseString(
+          "StorageNetwork#updateConnections",
+          `cannot update connections: location (${this.connections.storageCore.x.toString()}, ${this.connections.storageCore.y.toString()}, ${this.connections.storageCore.z.toString()}) in ${
+            this.dimension.id
+          } is not loaded`,
+        ),
       );
     }
 
@@ -399,10 +414,11 @@ export class StorageNetwork {
       );
 
       if (serialized === false) {
-        console.warn(
-          `(StorageNetwork#getUsedDataLength) Could not read data from storage drive at (${driveLocation.x.toString()}, ${driveLocation.y.toString()}, ${driveLocation.z.toString()}) in ${
+        log.warn(
+          "StorageNetwork#getUsedDataLength",
+          `could not read data from storage drive at (${driveLocation.x.toString()}, ${driveLocation.y.toString()}, ${driveLocation.z.toString()}) in ${
             this.dimension.id
-          }. Skipping. Some items may be missing.`,
+          }. skipping. some items may be missing`,
         );
       }
       if (!serialized) {
@@ -482,8 +498,9 @@ export class StorageNetwork {
     );
 
     if (storedIndex === -1) {
-      console.warn(
-        "(StorageNetwork#takeOutItemStack) No matching StorageSystemItemStack was found.",
+      log.warn(
+        "StorageNetwork#takeOutItemStack",
+        "no matching StorageSystemItemStack was found",
       );
       return 0;
     }

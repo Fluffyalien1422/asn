@@ -1,6 +1,9 @@
 import { Block, DimensionLocation, Entity } from "@minecraft/server";
 import { StorageNetwork } from "../storage_network";
 import { receivingRedstoneSignal } from "../utils";
+import { Logger } from "../log";
+
+const log = new Logger("export_bus/api.ts");
 
 export type ExportBusExportItemEnchantments = "with" | "without" | "ignore";
 
@@ -30,10 +33,11 @@ export function updateExportBus(block: Block, network: StorageNetwork): void {
 
   const dummyEntity = getExportBusEntity(block);
   if (!dummyEntity) {
-    console.warn(
-      `(updateExportBus) Could not update export bus at (${block.x.toString()}, ${block.y.toString()}, ${block.z.toString()}) in ${
+    log.warn(
+      "updateExportBus",
+      `could not update export bus at (${block.x.toString()}, ${block.y.toString()}, ${block.z.toString()}) in ${
         block.dimension.id
-      }: could not get dummy entity.`,
+      }: could not get dummy entity`,
     );
     return;
   }
