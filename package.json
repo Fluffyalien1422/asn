@@ -1,21 +1,23 @@
 {
-    "type": "module",
-    "scripts": {
-        "build-dev": "hopper build \"Advanced Storage Network 2\" -m \"%localappdata%/Packages/Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe/LocalState/games/com.mojang\"",
-        "build-prod": "hopper build \"Advanced Storage Network 2\" -Oo build",
-        "watch": "hopper watch \"Advanced Storage Network 2\" -m \"%localappdata%/Packages/Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe/LocalState/games/com.mojang\"",
-        "clean": "hopper clean \"Advanced Storage Network 2\""
-    },
-    "devDependencies": {
-        "@hopper-mcbe/hopper-mcbe": "^0.3.0",
-        "@minecraft/server": "1.11.0-beta.1.20.80-preview.20",
-        "@minecraft/server-ui": "1.2.0-beta.1.20.80-preview.20",
-        "@typescript-eslint/eslint-plugin": "^7.1.0",
-        "@typescript-eslint/parser": "^7.1.0",
-        "eslint": "^8.57.0",
-        "ts-essentials": "^9.4.1"
-    },
-    "dependencies": {
-        "@minecraft/math": "^1.3.4"
-    }
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "eslint . & tsc",
+    "fmt": "prettier . -w",
+    "fmt-check": "npm run fmt && npm run check"
+  },
+  "devDependencies": {
+    "@minecraft/server": "1.12.0-beta.1.21.0-preview.21",
+    "@minecraft/server-ui": "1.2.0-beta.1.21.0-preview.21",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "esbuild": "^0.20.2",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "ts-essentials": "^9.4.1",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@minecraft/math": "^1.3.4"
+  }
 }

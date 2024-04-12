@@ -1,0 +1,25 @@
+{
+  "format_version": "1.20.80",
+  "minecraft:recipe_shapeless": {
+    "description": {
+      "identifier": "fluffyalien_asn:tutorial_book"
+    },
+    "tags": ["crafting_table"],
+    "ingredients": [
+      {
+        "item": "book"
+      },
+      {
+        "item": "emerald"
+      }
+    ],
+    "result": {
+      "item": "fluffyalien_asn:tutorial_book"
+    },
+    "unlock": [
+      {
+        "item": "diamond"
+      }
+    ]
+  }
+}

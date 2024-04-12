@@ -1,1 +1,0 @@
-hopper clean "Advanced Storage Network 2" "%localappdata%/Packages/Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe/LocalState/games/com.mojang"
