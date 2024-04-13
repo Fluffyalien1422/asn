@@ -1,5 +1,5 @@
 pack.name=Advanced Storage Network
-pack.description=Advanced Storage Network v2.0.0
+pack.description=Advanced Storage Network
 
 item.fluffyalien_asn:storage_disk=Storage Disk §9Advanced Storage Network
 item.fluffyalien_asn:storage_disk_casing=Storage Disk Casing §9Advanced Storage Network

@@ -1,4 +1,4 @@
-import { VERSION } from "./constants";
+import { VERSION_STR } from "./constants";
 
 export class Logger {
   /**
@@ -17,7 +17,7 @@ export class Logger {
     location: string,
     message: string,
   ): string {
-    return `[Advanced Storage Network v${VERSION}] (${this.filePath} - ${location}) ${logLevel} ${message}`;
+    return `[Advanced Storage Network v${VERSION_STR}] (${this.filePath} - ${location}) ${logLevel} ${message}`;
   }
 
   /**

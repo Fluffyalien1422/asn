@@ -1,6 +1,9 @@
 {
   "include": ["./packs/BP/scripts"],
   "compilerOptions": {
+    "paths": {
+      "@/*": ["./packs/*"]
+    },
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "target": "es2022",

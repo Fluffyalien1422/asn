@@ -1,5 +1,5 @@
 {
-  "format_version": "1.20.80",
+  "format_version": "1.20.70",
   "minecraft:recipe_shaped": {
     "description": {
       "identifier": "fluffyalien_asn:storage_disk_core"
