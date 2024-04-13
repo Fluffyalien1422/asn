@@ -62,31 +62,31 @@ fluffyalien_asn.ui.exportBus.error.invalidMaxDamage=Invalid value for max damage
 fluffyalien_asn.ui.tutorialBook.title=Tutorial Book
 
 fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.title=Storage Network
-fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.body=TBD
+fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.body=A network of devices that can hold an infinite amount of items. A storage network is made up of one Storage Core and any number of Storage Drives and Storage Interfaces connected by Storage Cables. A storage network can also contain many other optional devices. To get started, you will need one Storage Core, one Storage Drive, and one Storage Interface. Read their respective tutorial entries for more information.
 
 fluffyalien_asn.ui.tutorialBook.entry.storageCore.title=Storage Core
-fluffyalien_asn.ui.tutorialBook.entry.storageCore.body=TBD
+fluffyalien_asn.ui.tutorialBook.entry.storageCore.body=The core of a storage network. This is required for a storage network to function and there can only be one of these blocks in a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.storageCable.title=Storage Cable
-fluffyalien_asn.ui.tutorialBook.entry.storageCable.body=TBD
+fluffyalien_asn.ui.tutorialBook.entry.storageCable.body=Cables that connect the devices in a storage network. All devices in a network need to be connected to each other with these cables.
 
 fluffyalien_asn.ui.tutorialBook.entry.storageDrive.title=Storage Drive
-fluffyalien_asn.ui.tutorialBook.entry.storageDrive.body=TBD
+fluffyalien_asn.ui.tutorialBook.entry.storageDrive.body=A device that provides the network it's connected to with 1,000u of storage space. Drops a Storage Disk (With Data) when destroyed that contains the items the drive had before it was broken. Any number of these devices can be connected to a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.storageInterface.title=Storage Interface
-fluffyalien_asn.ui.tutorialBook.entry.storageInterface.body=TBD
+fluffyalien_asn.ui.tutorialBook.entry.storageInterface.body=A device that allows you to view, add, or take out items in a storage network. Any number of these devices can be connected to a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.importBus.title=Storage Import Bus
-fluffyalien_asn.ui.tutorialBook.entry.importBus.body=TBD
+fluffyalien_asn.ui.tutorialBook.entry.importBus.body=A device that imports items from the chest it's facing into the storage network it's connected to. Stops importing when recieving a redstone current. Any number of these devices can be connected to a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.title=Storage Export Bus
-fluffyalien_asn.ui.tutorialBook.entry.exportBus.body=TBD
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.body=A device that exports items from the storage network it's connected to into the chest it's facing. Stops exporting when recieving a redstone current. Interact with an empty hand to configure it. Any number of these devices can be connected to a network.
 
-fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.title=Storage Level Emitter
-fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.body=TBD
+# fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.title=Storage Level Emitter
+# fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.body=TBD
 
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.title=Storage Disk
-fluffyalien_asn.ui.tutorialBook.entry.storageDisk.body=TBD
+fluffyalien_asn.ui.tutorialBook.entry.storageDisk.body=A crafting item. If the disk contains data (will say "Storage Disk (With Data)") then interact with an empty Storage Drive while holding the disk to deposit the items inside the disk into the drive.
 
 fluffyalien_asn.ui.tutorialBook.entry.storageCrystal.title=Storage Crystal
-fluffyalien_asn.ui.tutorialBook.entry.storageCrystal.body=TBD
+fluffyalien_asn.ui.tutorialBook.entry.storageCrystal.body=A crafting item. Created by smelting a Raw Storage Crystal in a furnace or blast furnace.

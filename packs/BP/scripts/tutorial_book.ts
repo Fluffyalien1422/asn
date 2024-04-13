@@ -36,12 +36,12 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
   },
   {
     id: "exportBus",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/import_bus_icon",
+    icon: "textures/fluffyalien/asn/ui/tutorial_book/export_bus_icon",
   },
-  {
-    id: "levelEmitter",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/import_bus_icon",
-  },
+  // {
+  //   id: "levelEmitter",
+  //   icon: "textures/fluffyalien/asn/ui/tutorial_book/import_bus_icon",
+  // },
   {
     id: "storageDisk",
     icon: "textures/fluffyalien/asn/items/storage_disk",
