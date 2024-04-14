@@ -13,13 +13,13 @@
         "runWith": "shell",
         "command": "npm run tsx ./filters/simple_manifest"
       },
-      "build_scripts_dev": {
+      "build_scripts": {
         "runWith": "shell",
         "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --external:@minecraft/server --external:@minecraft/server-ui"
       },
-      "build_scripts_prod": {
+      "minify_and_clean_scripts": {
         "runWith": "shell",
-        "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --external:@minecraft/server --external:@minecraft/server-ui --minify; Remove-Item ./BP/scripts/* -Recurse -Exclude __bundle.js"
+        "command": "npx terser ./BP/scripts/__bundle.js --module -cmo ./BP/scripts/__bundle.js; Remove-Item ./BP/scripts/* -Recurse -Exclude __bundle.js"
       }
     },
     "profiles": {
@@ -30,6 +30,9 @@
         "filters": [
           {
             "filter": "simple_manifest"
+          },
+          {
+            "filter": "build_scripts"
           }
         ]
       },
@@ -40,9 +43,6 @@
         "filters": [
           {
             "profile": "base"
-          },
-          {
-            "filter": "build_scripts_dev"
           }
         ]
       },
@@ -55,7 +55,7 @@
             "profile": "base"
           },
           {
-            "filter": "build_scripts_prod"
+            "filter": "minify_and_clean_scripts"
           }
         ]
       }
