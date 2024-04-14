@@ -77,10 +77,10 @@ fluffyalien_asn.ui.tutorialBook.entry.storageInterface.title=Storage Interface
 fluffyalien_asn.ui.tutorialBook.entry.storageInterface.body=A device that allows you to view, add, or take out items in a storage network. Any number of these devices can be connected to a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.importBus.title=Storage Import Bus
-fluffyalien_asn.ui.tutorialBook.entry.importBus.body=A device that imports items from the chest it's facing into the storage network it's connected to. Stops importing when recieving a redstone current. Any number of these devices can be connected to a network.
+fluffyalien_asn.ui.tutorialBook.entry.importBus.body=A device that imports items from the chest it's facing into the storage network it's connected to. Stops importing when receiving a redstone current. Any number of these devices can be connected to a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.title=Storage Export Bus
-fluffyalien_asn.ui.tutorialBook.entry.exportBus.body=A device that exports items from the storage network it's connected to into the chest it's facing. Stops exporting when recieving a redstone current. Interact with an empty hand to configure it. Any number of these devices can be connected to a network.
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.body=A device that exports items from the storage network it's connected to into the chest it's facing. Stops exporting when receiving a redstone current. Interact with an empty hand to configure it. Any number of these devices can be connected to a network.
 
 # fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.title=Storage Level Emitter
 # fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.body=TBD
