@@ -1,10 +1,5 @@
 import { Player, RawMessage } from "@minecraft/server";
-import { DiscoverCableNetworkConnectionsError } from "../cable_network";
-import {
-  ActionFormResponse,
-  ActionFormData,
-  ModalFormData,
-} from "@minecraft/server-ui";
+import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import {
   makeErrorMessageUi,
   showForm,
@@ -16,21 +11,6 @@ import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { ENCHANTMENT_TRANSLATION_KEYS } from "../enchantment_translations";
 
 const ITEMS_PER_PAGE = 10;
-
-export function showEstablishNetworkError(
-  player: Player,
-  error: DiscoverCableNetworkConnectionsError,
-): Promise<ActionFormResponse> {
-  return showForm(
-    makeErrorMessageUi({
-      translate:
-        error === "multipleStorageCores"
-          ? "fluffyalien_asn.ui.storageInterface.error.multipleStorageCores"
-          : "fluffyalien_asn.ui.storageInterface.error.noStorageCores",
-    }),
-    player,
-  );
-}
 
 /**
  * Shows the items list to the player

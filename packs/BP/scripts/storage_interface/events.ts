@@ -1,7 +1,8 @@
+import { showEstablishNetworkError } from "../cable_network";
 import { StorageNetwork } from "../storage_network";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { getPlayerMainhandSlot, makeErrorMessageUi, showForm } from "../utils";
-import { showEstablishNetworkError, showItemsListUi } from "./ui";
+import { showItemsListUi } from "./ui";
 import { world, system } from "@minecraft/server";
 
 world.afterEvents.playerPlaceBlock.subscribe((e) => {

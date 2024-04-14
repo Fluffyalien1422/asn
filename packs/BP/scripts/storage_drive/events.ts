@@ -6,44 +6,20 @@ import {
 } from ".";
 import { Logger } from "../log";
 import { StorageNetwork } from "../storage_network";
-import {
-  getBlockInDirection,
-  getPlayerMainhandSlot,
-  makeErrorMessageUi,
-  showForm,
-} from "../utils";
+import { getPlayerMainhandSlot, makeErrorMessageUi, showForm } from "../utils";
 import { showStorageDriveUi } from "./ui";
 import { ItemStack, system, world } from "@minecraft/server";
 
 const log = new Logger("storage_drive/events.ts");
 
-world.afterEvents.itemUseOn.subscribe((e) => {
-  if (e.itemStack.typeId !== "fluffyalien_asn:storage_drive") return;
-
-  const targetBlock = getBlockInDirection(e.block, e.blockFace);
-  if (!targetBlock) {
-    throw new Error(
-      "(storage_drive/events.ts:itemUseOn) Could not get target block to spawn drive entity.",
-    );
-  }
-
-  const entity = targetBlock.dimension.spawnEntity(
-    "fluffyalien_asn:storage_drive_entity",
-    {
-      x: targetBlock.x + 0.5,
-      y: targetBlock.y,
-      z: targetBlock.z + 0.5,
-    },
-  );
-
-  entity.setDynamicProperty(
-    STORAGE_DATA_DYNAMIC_PROPERTY_ID,
-    e.itemStack.getDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID),
-  );
-});
-
 world.afterEvents.playerPlaceBlock.subscribe((e) => {
   if (e.block.typeId !== "fluffyalien_asn:storage_drive") return;
+
+  e.block.dimension.spawnEntity("fluffyalien_asn:storage_drive_entity", {
+    x: e.block.x + 0.5,
+    y: e.block.y,
+    z: e.block.z + 0.5,
+  });
 
   StorageNetwork.updateConnectableNetworks(e.block);
 });

@@ -4,6 +4,7 @@ import { StorageNetwork } from "../storage_network";
 import { showStorageCoreUi } from "./ui";
 import { system, world } from "@minecraft/server";
 import { Logger } from "../log";
+import { showEstablishNetworkError } from "../cable_network";
 
 const log = new Logger("storage_core/events.ts");
 
@@ -21,7 +22,7 @@ world.afterEvents.entityLoad.subscribe((e) => {
     return;
   }
 
-  // establish a network when the storage core entity is loaded so that the interval
+  // establish a network when the storage core entity is loaded so that the processes
   // will start running without having to open an interface
   StorageNetwork.getOrEstablishNetwork(block);
 });
@@ -62,9 +63,8 @@ world.afterEvents.playerInteractWithBlock.subscribe((e) => {
 
   const networkResult = StorageNetwork.getOrEstablishNetwork(e.block);
   if (!networkResult.success) {
-    throw new Error(
-      "(storage_core/events.ts:playerInteractWithBlock) Could not get or establish network.",
-    );
+    void showEstablishNetworkError(e.player, networkResult.error);
+    return;
   }
 
   const network = networkResult.value;

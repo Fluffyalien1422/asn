@@ -1,6 +1,8 @@
-import { Block, Vector3 } from "@minecraft/server";
+import { Block, Player, Vector3 } from "@minecraft/server";
 import { Result, failure, success } from "./result";
 import { Vector3Utils } from "@minecraft/math";
+import { makeErrorMessageUi, showForm } from "./utils";
+import { ActionFormResponse } from "@minecraft/server-ui";
 
 export interface CableNetworkConnections {
   cables: Vector3[];
@@ -131,4 +133,19 @@ export function discoverCableNetworkConnections(
     storageInterfaces,
     updateConnections,
   });
+}
+
+export function showEstablishNetworkError(
+  player: Player,
+  error: DiscoverCableNetworkConnectionsError,
+): Promise<ActionFormResponse> {
+  return showForm(
+    makeErrorMessageUi({
+      translate:
+        error === "multipleStorageCores"
+          ? "fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores"
+          : "fluffyalien_asn.ui.cableNetwork.error.noStorageCores",
+    }),
+    player,
+  );
 }
