@@ -23,9 +23,9 @@
       }
     },
     "profiles": {
-      "base": {
+      "default": {
         "export": {
-          "target": "local"
+          "target": "development"
         },
         "filters": [
           {
@@ -36,23 +36,13 @@
           }
         ]
       },
-      "default": {
-        "export": {
-          "target": "development"
-        },
-        "filters": [
-          {
-            "profile": "base"
-          }
-        ]
-      },
       "prod": {
         "export": {
           "target": "local"
         },
         "filters": [
           {
-            "profile": "base"
+            "profile": "default"
           },
           {
             "filter": "minify_and_clean_scripts"

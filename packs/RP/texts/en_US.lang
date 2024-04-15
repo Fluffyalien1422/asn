@@ -83,8 +83,8 @@ fluffyalien_asn.ui.tutorialBook.entry.importBus.body=A device that imports items
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.title=Storage Export Bus
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.body=A device that exports items from the storage network it's connected to into the chest it's facing. Stops exporting when receiving a redstone current. Interact with an empty hand to configure it. Any number of these devices can be connected to a network.
 
-# fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.title=Storage Level Emitter
-# fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.body=TBD
+## fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.title=Storage Level Emitter
+## fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.body=TBD
 
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.title=Storage Disk
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.body=A crafting item. If the disk contains data (will say "Storage Disk (With Data)") then interact with an empty Storage Drive while holding the disk to deposit the items inside the disk into the drive.
