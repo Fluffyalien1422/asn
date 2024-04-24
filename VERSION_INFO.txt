@@ -1,0 +1,6 @@
+Version Info document for the ASN Mediafire folder
+See changelogs on vatonage.com: https://www.vatonage.com/post/advanced-storage-network-2
+
+v2.0.0 (asn2.0.0.mcaddon) - Requires Minecraft 1.20.7x
+v2.0.1 (asn2.0.1.mcaddon) - Requires Minecraft 1.20.7x
+v2.1.0 (asn2.1.0.mcaddon) - Requires Minecraft 1.20.8x

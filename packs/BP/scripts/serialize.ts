@@ -28,7 +28,7 @@ minecraft:dirt(1  0   )
 minecraft:wooden_sword(1  0   sharpness@1,unbreaking@2)
 */
 
-import { Enchantment, Vector3 } from "@minecraft/server";
+import { Enchantment, EnchantmentType, Vector3 } from "@minecraft/server";
 import {
   StorageSystemItemStack,
   StorageSystemItemStackDynamicProperty,
@@ -224,7 +224,7 @@ class DeserializeParser {
       );
     }
 
-    enchantments.push({ type: id, level });
+    enchantments.push({ type: new EnchantmentType(id), level });
 
     const char = this.getCurrentChar();
 

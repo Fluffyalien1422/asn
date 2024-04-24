@@ -1,4 +1,4 @@
-import { ItemStack, Player, world } from "@minecraft/server";
+import { ItemStack, Player, RawMessage, world } from "@minecraft/server";
 import { makeMessageUi, showForm } from "./utils";
 import { ActionFormData } from "@minecraft/server-ui";
 
@@ -7,48 +7,59 @@ const NOT_FIRST_JOIN_DYNAMIC_PROPERTY_ID = "fluffyalien_asn:not_first_join";
 interface TutorialEntry {
   id: string;
   icon: string;
+  bullets: number;
 }
 
 const TUTORIAL_ENTRIES: TutorialEntry[] = [
   {
     id: "storageNetwork",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon",
+    bullets: 3,
   },
   {
     id: "storageCore",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon",
+    bullets: 3,
   },
   {
     id: "storageCable",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_cable_icon",
+    bullets: 2,
   },
   {
     id: "storageDrive",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_drive_icon",
+    bullets: 3,
   },
   {
     id: "storageInterface",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_interface_icon",
+    bullets: 3,
   },
   {
     id: "importBus",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/import_bus_icon",
+    bullets: 3,
   },
   {
     id: "exportBus",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/export_bus_icon",
+    bullets: 4,
   },
   // {
   //   id: "levelEmitter",
   //   icon: "textures/fluffyalien/asn/ui/tutorial_book/import_bus_icon",
+  //   bullets: 1,
   // },
   {
     id: "storageDisk",
     icon: "textures/fluffyalien/asn/items/storage_disk",
+    bullets: 3,
   },
   {
     id: "storageCrystal",
     icon: "textures/fluffyalien/asn/items/storage_crystal",
+    bullets: 2,
   },
 ];
 
@@ -70,16 +81,30 @@ export async function showTutorialBookUi(player: Player): Promise<void> {
   if (response.selection === undefined) return;
 
   const entry = TUTORIAL_ENTRIES[response.selection];
-  return void showTutorialBookEntryUi(player, entry.id);
+  return void showTutorialBookEntryUi(player, entry);
 }
 
 async function showTutorialBookEntryUi(
   player: Player,
-  entryId: string,
+  entry: TutorialEntry,
 ): Promise<void> {
+  const rawtext: RawMessage[] = [
+    { text: "§l§2" },
+    {
+      translate: `fluffyalien_asn.ui.tutorialBook.entry.${entry.id}.title`,
+    },
+  ];
+
+  for (let i = 0; i < entry.bullets; i++) {
+    rawtext.push({ text: "\n\n§l§2-§r " });
+    rawtext.push({
+      translate: `fluffyalien_asn.ui.tutorialBook.entry.${entry.id}.bullet${i.toString()}`,
+    });
+  }
+
   const form = makeMessageUi(
     { translate: "fluffyalien_asn.ui.tutorialBook.title" },
-    { translate: `fluffyalien_asn.ui.tutorialBook.entry.${entryId}.body` },
+    { rawtext },
   );
 
   await showForm(form, player);
