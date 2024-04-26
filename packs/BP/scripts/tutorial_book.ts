@@ -1,5 +1,5 @@
 import { ItemStack, Player, RawMessage, world } from "@minecraft/server";
-import { makeMessageUi, showForm } from "./utils";
+import { makeMessageUi } from "./utils";
 import { ActionFormData } from "@minecraft/server-ui";
 
 const NOT_FIRST_JOIN_DYNAMIC_PROPERTY_ID = "fluffyalien_asn:not_first_join";
@@ -77,7 +77,7 @@ export async function showTutorialBookUi(player: Player): Promise<void> {
     );
   }
 
-  const response = await showForm(form, player);
+  const response = await form.show(player);
   if (response.selection === undefined) return;
 
   const entry = TUTORIAL_ENTRIES[response.selection];
@@ -107,7 +107,7 @@ async function showTutorialBookEntryUi(
     { rawtext },
   );
 
-  await showForm(form, player);
+  await form.show(player);
   return showTutorialBookUi(player);
 }
 

@@ -1,9 +1,10 @@
-import { system, world } from "@minecraft/server";
+import { world } from "@minecraft/server";
 import { getExportBusEntity, setExportBusExportItemId } from ".";
 import { StorageNetwork } from "../storage_network";
 import { getPlayerMainhandSlot } from "../utils";
 import { showExportBusUi } from "./ui";
 import { Logger } from "../log";
+import { onPlayerInteractWithBlockNoSpam } from "../interact_with_block_no_spam";
 
 const log = new Logger("export_bus/events.ts");
 
@@ -30,16 +31,9 @@ world.afterEvents.playerBreakBlock.subscribe((e) => {
   )?.updateConnections();
 });
 
-let lastPlayerInteractWithBlockTriggerTick = 0;
-world.afterEvents.playerInteractWithBlock.subscribe((e) => {
-  if (
-    e.block.typeId !== "fluffyalien_asn:export_bus" ||
-    e.player.isSneaking ||
-    lastPlayerInteractWithBlockTriggerTick + 5 > system.currentTick
-  )
+onPlayerInteractWithBlockNoSpam((e) => {
+  if (e.block.typeId !== "fluffyalien_asn:export_bus" || e.player.isSneaking)
     return;
-
-  lastPlayerInteractWithBlockTriggerTick = system.currentTick;
 
   const entity = getExportBusEntity(e.block);
   if (!entity) {

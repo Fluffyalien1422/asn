@@ -10,6 +10,7 @@ import {
   DimensionLocation,
   BlockPermutation,
   EquipmentSlot,
+  Entity,
 } from "@minecraft/server";
 import {
   ActionFormData,
@@ -74,14 +75,6 @@ export function typeIdWithoutNamespace(typeId: string): string {
   return typeId.split(":").slice(1).join("");
 }
 
-export function showForm<T extends ActionFormData | ModalFormData>(
-  form: T,
-  player: Player,
-): Promise<T extends ActionFormData ? ActionFormResponse : ModalFormResponse> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-  return form.show(player as any);
-}
-
 export function makeMessageUi(
   title: RawMessage,
   body: RawMessage,
@@ -137,4 +130,13 @@ export function receivingRedstoneSignal(block: Block): boolean {
     !!block.south()?.getRedstonePower() ||
     !!block.west()?.getRedstonePower()
   );
+}
+
+export function getEntityAtBlockLocation(
+  location: DimensionLocation,
+  entityId: string,
+): Entity | undefined {
+  return location.dimension
+    .getEntitiesAtBlockLocation(location)
+    .find((v) => v.typeId === entityId);
 }

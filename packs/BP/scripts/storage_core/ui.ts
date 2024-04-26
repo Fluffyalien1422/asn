@@ -1,7 +1,6 @@
 import { Player } from "@minecraft/server";
 import { StorageNetwork } from "../storage_network";
 import { ActionFormResponse } from "@minecraft/server-ui";
-import { showForm } from "../utils";
 import { ActionFormData } from "@minecraft/server-ui";
 
 export function showStorageCoreUi(
@@ -64,5 +63,5 @@ export function showStorageCoreUi(
     translate: "fluffyalien_asn.ui.common.close",
   });
 
-  return showForm(form, player);
+  return form.show(player);
 }

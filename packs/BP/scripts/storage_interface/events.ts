@@ -1,9 +1,10 @@
 import { showEstablishNetworkError } from "../cable_network";
+import { onPlayerInteractWithBlockNoSpam } from "../interact_with_block_no_spam";
 import { StorageNetwork } from "../storage_network";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
-import { getPlayerMainhandSlot, makeErrorMessageUi, showForm } from "../utils";
+import { getPlayerMainhandSlot, makeErrorMessageUi } from "../utils";
 import { showItemsListUi } from "./ui";
-import { world, system } from "@minecraft/server";
+import { world } from "@minecraft/server";
 
 world.afterEvents.playerPlaceBlock.subscribe((e) => {
   if (e.block.typeId !== "fluffyalien_asn:storage_interface") return;
@@ -21,16 +22,12 @@ world.afterEvents.playerBreakBlock.subscribe((e) => {
   )?.updateConnections();
 });
 
-let lastPlayerInteractWithBlockTriggerTick = 0;
-world.afterEvents.playerInteractWithBlock.subscribe((e) => {
+onPlayerInteractWithBlockNoSpam((e) => {
   if (
     e.block.typeId !== "fluffyalien_asn:storage_interface" ||
-    e.player.isSneaking ||
-    lastPlayerInteractWithBlockTriggerTick + 5 > system.currentTick
+    e.player.isSneaking
   )
     return;
-
-  lastPlayerInteractWithBlockTriggerTick = system.currentTick;
 
   const networkResult = StorageNetwork.getOrEstablishNetwork(e.block);
   if (!networkResult.success) {
@@ -47,13 +44,10 @@ world.afterEvents.playerInteractWithBlock.subscribe((e) => {
       StorageSystemItemStack.fromItemStack(heldItem),
     );
     if (!res.success) {
-      void showForm(
-        makeErrorMessageUi({
-          translate:
-            "fluffyalien_asn.ui.storageInterface.error.insufficientStorage",
-        }),
-        e.player,
-      );
+      void makeErrorMessageUi({
+        translate:
+          "fluffyalien_asn.ui.storageInterface.error.insufficientStorage",
+      }).show(e.player);
 
       return;
     }

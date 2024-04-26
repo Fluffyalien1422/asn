@@ -11,6 +11,8 @@ import { STORAGE_DATA_DYNAMIC_PROPERTY_ID } from "./storage_drive";
 import { system, Player } from "@minecraft/server";
 import { Logger } from "./log";
 
+//TODO: add level emitter tutorial book entry and recipe
+
 const log = new Logger("index.ts");
 
 system.afterEvents.scriptEventReceive.subscribe(

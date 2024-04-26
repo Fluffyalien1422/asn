@@ -19,6 +19,7 @@ import { updateImportBus } from "./import_bus";
 import { Vector3Utils } from "@minecraft/math";
 import { updateExportBus } from "./export_bus";
 import { Logger } from "./log";
+import { updateLevelEmitter } from "./level_emitter";
 
 const log = new Logger("storage_network.ts");
 
@@ -146,6 +147,7 @@ export class StorageNetwork {
 
   private storedItems?: StorageSystemItemStack[];
   private readonly updateIntervalRunId: number;
+  private readonly levelEmitterUpdateIntervalRunId: number;
 
   private constructor(
     private readonly dimension: Dimension,
@@ -154,7 +156,7 @@ export class StorageNetwork {
     StorageNetwork.storageNetworks.push(this);
 
     this.updateIntervalRunId = system.runInterval(() => {
-      for (const connection of this.connections.updateConnections) {
+      for (const connection of this.connections.buses) {
         const block = this.dimension.getBlock(connection);
         if (!block) continue;
 
@@ -168,6 +170,15 @@ export class StorageNetwork {
         }
       }
     }, 10);
+
+    this.levelEmitterUpdateIntervalRunId = system.runInterval(() => {
+      for (const connection of this.connections.levelEmitters) {
+        const block = this.dimension.getBlock(connection);
+        if (!block) continue;
+
+        updateLevelEmitter(block, this);
+      }
+    });
   }
 
   /**
@@ -295,6 +306,7 @@ export class StorageNetwork {
     this.internalIsValid = false;
 
     system.clearRun(this.updateIntervalRunId);
+    system.clearRun(this.levelEmitterUpdateIntervalRunId);
 
     const i = StorageNetwork.storageNetworks.indexOf(this);
     if (i === -1) return;
@@ -336,7 +348,11 @@ export class StorageNetwork {
         );
       case "fluffyalien_asn:import_bus":
       case "fluffyalien_asn:export_bus":
-        return this.connections.updateConnections.some((v) =>
+        return this.connections.buses.some((v) =>
+          Vector3Utils.equals(v, block.location),
+        );
+      case "fluffyalien_asn:level_emitter":
+        return this.connections.levelEmitters.some((v) =>
           Vector3Utils.equals(v, block.location),
         );
       default:

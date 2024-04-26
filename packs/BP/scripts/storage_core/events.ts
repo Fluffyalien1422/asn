@@ -2,9 +2,10 @@ import { Vector3Utils } from "@minecraft/math";
 import { getStorageCoreEntity } from ".";
 import { StorageNetwork } from "../storage_network";
 import { showStorageCoreUi } from "./ui";
-import { system, world } from "@minecraft/server";
+import { world } from "@minecraft/server";
 import { Logger } from "../log";
 import { showEstablishNetworkError } from "../cable_network";
+import { onPlayerInteractWithBlockNoSpam } from "../interact_with_block_no_spam";
 
 const log = new Logger("storage_core/events.ts");
 
@@ -50,16 +51,9 @@ world.afterEvents.playerBreakBlock.subscribe((e) => {
   )?.destroy();
 });
 
-let lastPlayerInteractWithBlockTriggerTick = 0;
-world.afterEvents.playerInteractWithBlock.subscribe((e) => {
-  if (
-    e.block.typeId !== "fluffyalien_asn:storage_core" ||
-    e.player.isSneaking ||
-    lastPlayerInteractWithBlockTriggerTick + 5 > system.currentTick
-  )
+onPlayerInteractWithBlockNoSpam((e) => {
+  if (e.block.typeId !== "fluffyalien_asn:storage_core" || e.player.isSneaking)
     return;
-
-  lastPlayerInteractWithBlockTriggerTick = system.currentTick;
 
   const networkResult = StorageNetwork.getOrEstablishNetwork(e.block);
   if (!networkResult.success) {

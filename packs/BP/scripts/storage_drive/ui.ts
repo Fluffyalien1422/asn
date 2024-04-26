@@ -1,6 +1,5 @@
 import { Block, Player } from "@minecraft/server";
 import { STORAGE_DATA_DYNAMIC_PROPERTY_ID, getStorageDriveEntity } from ".";
-import { showForm } from "../utils";
 import { ActionFormResponse, ActionFormData } from "@minecraft/server-ui";
 
 export function showStorageDriveUi(
@@ -33,5 +32,5 @@ export function showStorageDriveUi(
     translate: "fluffyalien_asn.ui.common.close",
   });
 
-  return showForm(form, player);
+  return form.show(player);
 }

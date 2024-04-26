@@ -4,11 +4,12 @@ import {
   setStorageDriveSerializedData,
   STORAGE_DATA_DYNAMIC_PROPERTY_ID,
 } from ".";
+import { onPlayerInteractWithBlockNoSpam } from "../interact_with_block_no_spam";
 import { Logger } from "../log";
 import { StorageNetwork } from "../storage_network";
-import { getPlayerMainhandSlot, makeErrorMessageUi, showForm } from "../utils";
+import { getPlayerMainhandSlot, makeErrorMessageUi } from "../utils";
 import { showStorageDriveUi } from "./ui";
-import { ItemStack, system, world } from "@minecraft/server";
+import { ItemStack, world } from "@minecraft/server";
 
 const log = new Logger("storage_drive/events.ts");
 
@@ -52,16 +53,9 @@ world.afterEvents.playerBreakBlock.subscribe((e) => {
   )?.updateConnections();
 });
 
-let lastPlayerInteractWithBlockTriggerTick = 0;
-world.afterEvents.playerInteractWithBlock.subscribe((e) => {
-  if (
-    e.block.typeId !== "fluffyalien_asn:storage_drive" ||
-    e.player.isSneaking ||
-    lastPlayerInteractWithBlockTriggerTick + 5 > system.currentTick
-  )
+onPlayerInteractWithBlockNoSpam((e) => {
+  if (e.block.typeId !== "fluffyalien_asn:storage_drive" || e.player.isSneaking)
     return;
-
-  lastPlayerInteractWithBlockTriggerTick = system.currentTick;
 
   const mainHandSlot = getPlayerMainhandSlot(e.player);
   const heldItem = mainHandSlot?.getItem();
@@ -69,13 +63,9 @@ world.afterEvents.playerInteractWithBlock.subscribe((e) => {
   if (heldItem?.typeId === "fluffyalien_asn:used_storage_disk") {
     const existingData = getStorageDriveSerializedData(e.block);
     if (existingData !== undefined) {
-      void showForm(
-        makeErrorMessageUi({
-          translate:
-            "fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk",
-        }),
-        e.player,
-      );
+      void makeErrorMessageUi({
+        translate: "fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk",
+      }).show(e.player);
 
       return;
     }

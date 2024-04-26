@@ -2,7 +2,6 @@ import { Player, RawMessage } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import {
   makeErrorMessageUi,
-  showForm,
   getEnchantmentTypeId,
   abbreviateNumber,
   getItemTranslationKey,
@@ -125,7 +124,7 @@ export async function showItemsListUi(
     "textures/fluffyalien/asn/ui/next_page",
   );
 
-  const response = await showForm(form, player);
+  const response = await form.show(player);
 
   if (response.selection === undefined) {
     return;
@@ -275,7 +274,7 @@ async function showRequestItemUi(
     "1",
   );
 
-  const response = await showForm(form, player);
+  const response = await form.show(player);
 
   if (!response.formValues) {
     return;
@@ -285,25 +284,19 @@ async function showRequestItemUi(
 
   const amount = Number(textFieldValue);
   if (!amount || amount < 0) {
-    await showForm(
-      makeErrorMessageUi({
-        translate:
-          "fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber",
-      }),
-      player,
-    );
+    await makeErrorMessageUi({
+      translate:
+        "fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber",
+    }).show(player);
 
     return showRequestItemUi(player, item);
   }
 
   if (amount > item.amount) {
-    await showForm(
-      makeErrorMessageUi({
-        translate:
-          "fluffyalien_asn.ui.storageInterface.requestItem.error.notEnough",
-      }),
-      player,
-    );
+    await makeErrorMessageUi({
+      translate:
+        "fluffyalien_asn.ui.storageInterface.requestItem.error.notEnough",
+    }).show(player);
 
     return showRequestItemUi(player, item);
   }
@@ -325,7 +318,7 @@ async function showSearchUi(player: Player): Promise<string | undefined> {
     "Query",
   );
 
-  const response = await showForm(form, player);
+  const response = await form.show(player);
   if (!response.formValues) {
     return;
   }

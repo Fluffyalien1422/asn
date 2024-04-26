@@ -1,7 +1,7 @@
 import { Block, Player, Vector3 } from "@minecraft/server";
 import { Result, failure, success } from "./result";
 import { Vector3Utils } from "@minecraft/math";
-import { makeErrorMessageUi, showForm } from "./utils";
+import { makeErrorMessageUi } from "./utils";
 import { ActionFormResponse } from "@minecraft/server-ui";
 
 export interface CableNetworkConnections {
@@ -9,10 +9,8 @@ export interface CableNetworkConnections {
   storageCore: Vector3;
   storageDrives: Vector3[];
   storageInterfaces: Vector3[];
-  /**
-   * Connections that should be updated on interval (import buses, export buses, level emitter, etc)
-   */
-  updateConnections: Vector3[];
+  buses: Vector3[];
+  levelEmitters: Vector3[];
 }
 
 export type DiscoverCableNetworkConnectionsError =
@@ -28,7 +26,8 @@ export function discoverCableNetworkConnections(
   const cables: Vector3[] = [];
   const storageDrives: Vector3[] = [];
   const storageInterfaces: Vector3[] = [];
-  const updateConnections: Vector3[] = [];
+  const buses: Vector3[] = [];
+  const levelEmitters: Vector3[] = [];
   let storageCore: Vector3 | undefined;
 
   function handleNextBlock(
@@ -43,6 +42,7 @@ export function discoverCableNetworkConnections(
         "fluffyalien_asn:storage_interface",
         "fluffyalien_asn:import_bus",
         "fluffyalien_asn:export_bus",
+        "fluffyalien_asn:level_emitter",
       ].includes(block.typeId) ||
       visitedLocations.some((vector) =>
         Vector3Utils.equals(block.location, vector),
@@ -79,7 +79,12 @@ export function discoverCableNetworkConnections(
       return success(null);
     }
 
-    updateConnections.push(block.location);
+    if (block.typeId === "fluffyalien_asn:level_emitter") {
+      levelEmitters.push(block.location);
+      return success(null);
+    }
+
+    buses.push(block.location);
     return success(null);
   }
 
@@ -131,7 +136,8 @@ export function discoverCableNetworkConnections(
     storageCore,
     storageDrives,
     storageInterfaces,
-    updateConnections,
+    buses,
+    levelEmitters,
   });
 }
 
@@ -139,13 +145,10 @@ export function showEstablishNetworkError(
   player: Player,
   error: DiscoverCableNetworkConnectionsError,
 ): Promise<ActionFormResponse> {
-  return showForm(
-    makeErrorMessageUi({
-      translate:
-        error === "multipleStorageCores"
-          ? "fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores"
-          : "fluffyalien_asn.ui.cableNetwork.error.noStorageCores",
-    }),
-    player,
-  );
+  return makeErrorMessageUi({
+    translate:
+      error === "multipleStorageCores"
+        ? "fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores"
+        : "fluffyalien_asn.ui.cableNetwork.error.noStorageCores",
+  }).show(player);
 }
