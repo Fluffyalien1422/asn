@@ -24,8 +24,11 @@
     "fluffyalien_asn:export_bus": {
       "textures": "textures/fluffyalien/asn/blocks/export_bus"
     },
-    "fluffyalien_asn:level_emitter": {
-      "textures": "textures/fluffyalien/asn/blocks/level_emitter"
+    "fluffyalien_asn:level_emitter_off": {
+      "textures": "textures/fluffyalien/asn/blocks/level_emitter_off"
+    },
+    "fluffyalien_asn:level_emitter_on": {
+      "textures": "textures/fluffyalien/asn/blocks/level_emitter_on"
     }
   }
 }

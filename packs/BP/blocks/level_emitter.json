@@ -12,6 +12,7 @@
         }
       },
       "states": {
+        "fluffyalien_asn:on": [0, 1],
         "fluffyalien_asn:south": [0, 1],
         "fluffyalien_asn:east": [0, 1],
         "fluffyalien_asn:west": [0, 1],
@@ -29,11 +30,6 @@
           "west": "q.block_state('fluffyalien_asn:west')",
           "up": "q.block_state('fluffyalien_asn:up')",
           "down": "q.block_state('fluffyalien_asn:down')"
-        }
-      },
-      "minecraft:material_instances": {
-        "*": {
-          "texture": "fluffyalien_asn:level_emitter"
         }
       },
       "minecraft:collision_box": {
@@ -106,6 +102,26 @@
       }
     },
     "permutations": [
+      {
+        "condition": "!q.block_state('fluffyalien_asn:on')",
+        "components": {
+          "minecraft:material_instances": {
+            "*": {
+              "texture": "fluffyalien_asn:level_emitter_off"
+            }
+          }
+        }
+      },
+      {
+        "condition": "q.block_state('fluffyalien_asn:on')",
+        "components": {
+          "minecraft:material_instances": {
+            "*": {
+              "texture": "fluffyalien_asn:level_emitter_on"
+            }
+          }
+        }
+      },
       {
         "condition": "q.block_state('minecraft:cardinal_direction') == 'north'",
         "components": {

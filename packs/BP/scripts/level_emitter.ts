@@ -225,8 +225,20 @@ export function updateLevelEmitter(
           (operator === Operator.NOT_EQ && itemStack.amount !== amount)),
     );
 
+  const onState = block.permutation.getState("fluffyalien_asn:on") as 0 | 1;
+
   if (!shouldEmitSignal) {
+    if (onState) {
+      block.setPermutation(
+        block.permutation.withState("fluffyalien_asn:on", 0),
+      );
+    }
+
     return;
+  }
+
+  if (!onState) {
+    block.setPermutation(block.permutation.withState("fluffyalien_asn:on", 1));
   }
 
   target.setPermutation(
