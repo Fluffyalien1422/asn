@@ -95,18 +95,21 @@ fluffyalien_asn.ui.tutorialBook.entry.storageInterface.bullet1=Interact with the
 fluffyalien_asn.ui.tutorialBook.entry.storageInterface.bullet2=Any number of these devices can exist in a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.importBus.title=Storage Import Bus
-fluffyalien_asn.ui.tutorialBook.entry.importBus.bullet0=Imports items from the chest it's facing into the storage network it's connected to.
+fluffyalien_asn.ui.tutorialBook.entry.importBus.bullet0=Imports items from the container it's facing into the storage network it's connected to.
 fluffyalien_asn.ui.tutorialBook.entry.importBus.bullet1=Stops importing when receiving a redstone current.
 fluffyalien_asn.ui.tutorialBook.entry.importBus.bullet2=Any number of these devices can exist in a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.title=Storage Export Bus
-fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet0=Exports items from the storage network it's connected to into the chest it's facing.
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet0=Exports items from the storage network it's connected to into the container it's facing.
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet1=Stops exporting when receiving a redstone current.
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet2=Interact with an empty hand to configure.
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet3=Any number of these devices can exist in a network.
 
-## fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.title=Storage Level Emitter
-## fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet0=TBD
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.title=Storage Level Emitter
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet0=Tests that an item in the storage network matches a query.
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet1=Activates the repeater in front of it when the test is true.
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet2=Interact with an empty hand to configure.
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet3=Any number of these devices can exist in a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.title=Storage Disk
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet0=A crafting item.

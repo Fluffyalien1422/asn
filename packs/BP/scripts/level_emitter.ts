@@ -7,11 +7,14 @@ import {
   world,
 } from "@minecraft/server";
 import {
+  CardinalDirection,
+  getBlockInDirection,
   getEntityAtBlockLocation,
   getItemTranslationKey,
   getPlayerMainhandSlot,
   makeErrorMessageUi,
   makeMessageUi,
+  reverseDirection,
 } from "./utils";
 import { Logger } from "./log";
 import { ModalFormData } from "@minecraft/server-ui";
@@ -22,10 +25,10 @@ const log = new Logger("level_emitter.ts");
 const OPERATOR_STRS = [">", "<", "==", "!="];
 // Operator enum members should match the order of OPERATOR_STRS
 enum Operator {
-  GREATER_THAN,
-  LESS_THAN,
-  EQ_EQ,
-  NOT_EQ,
+  GreaterThan,
+  LessThan,
+  EqEq,
+  NotEq,
 }
 
 world.afterEvents.playerPlaceBlock.subscribe((e) => {
@@ -165,21 +168,16 @@ export function updateLevelEmitter(
 ): void {
   const cardinalDirection = block.permutation.getState(
     "minecraft:cardinal_direction",
-  ) as string;
+  ) as CardinalDirection;
 
-  const target =
-    cardinalDirection === "north"
-      ? block.north()
-      : cardinalDirection === "east"
-        ? block.east()
-        : cardinalDirection === "south"
-          ? block.south()
-          : block.west();
+  const target = getBlockInDirection(block, cardinalDirection);
 
   if (
     !target ||
     (target.typeId !== "minecraft:powered_repeater" &&
-      target.typeId !== "minecraft:unpowered_repeater")
+      target.typeId !== "minecraft:unpowered_repeater") ||
+    target.permutation.getState("minecraft:cardinal_direction") !==
+      reverseDirection(cardinalDirection)
   ) {
     return;
   }
@@ -214,31 +212,31 @@ export function updateLevelEmitter(
       | number
       | undefined) ?? 0;
 
-  const shouldEmitSignal = network
-    .getStoredItemStacks()
-    .some(
-      (itemStack) =>
-        itemStack.typeId === itemId &&
-        ((operator === Operator.EQ_EQ && itemStack.amount === amount) ||
-          (operator === Operator.GREATER_THAN && itemStack.amount > amount) ||
-          (operator === Operator.LESS_THAN && itemStack.amount < amount) ||
-          (operator === Operator.NOT_EQ && itemStack.amount !== amount)),
-    );
+  const amountStored =
+    network
+      .getStoredItemStacks()
+      .find((itemStack) => itemStack.typeId === itemId)?.amount ?? 0;
 
-  const onState = block.permutation.getState("fluffyalien_asn:on") as 0 | 1;
+  const shouldEmitSignal =
+    (operator === Operator.EqEq && amountStored === amount) ||
+    (operator === Operator.GreaterThan && amountStored > amount) ||
+    (operator === Operator.LessThan && amountStored < amount) ||
+    (operator === Operator.NotEq && amountStored !== amount);
+
+  const litState = block.permutation.getState("fluffyalien_asn:lit") as 0 | 1;
 
   if (!shouldEmitSignal) {
-    if (onState) {
+    if (litState) {
       block.setPermutation(
-        block.permutation.withState("fluffyalien_asn:on", 0),
+        block.permutation.withState("fluffyalien_asn:lit", 0),
       );
     }
 
     return;
   }
 
-  if (!onState) {
-    block.setPermutation(block.permutation.withState("fluffyalien_asn:on", 1));
+  if (!litState) {
+    block.setPermutation(block.permutation.withState("fluffyalien_asn:lit", 1));
   }
 
   target.setPermutation(

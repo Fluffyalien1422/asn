@@ -12,7 +12,7 @@
         }
       },
       "states": {
-        "fluffyalien_asn:on": [0, 1],
+        "fluffyalien_asn:lit": [0, 1],
         "fluffyalien_asn:south": [0, 1],
         "fluffyalien_asn:east": [0, 1],
         "fluffyalien_asn:west": [0, 1],
@@ -103,7 +103,7 @@
     },
     "permutations": [
       {
-        "condition": "!q.block_state('fluffyalien_asn:on')",
+        "condition": "!q.block_state('fluffyalien_asn:lit')",
         "components": {
           "minecraft:material_instances": {
             "*": {
@@ -113,7 +113,7 @@
         }
       },
       {
-        "condition": "q.block_state('fluffyalien_asn:on')",
+        "condition": "q.block_state('fluffyalien_asn:lit')",
         "components": {
           "minecraft:material_instances": {
             "*": {

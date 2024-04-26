@@ -22,6 +22,7 @@ module.exports = {
         "@typescript-eslint/explicit-function-return-type": "error",
         "@typescript-eslint/prefer-readonly": "error",
         "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/switch-exhaustiveness-check": "error",
       },
     },
     {

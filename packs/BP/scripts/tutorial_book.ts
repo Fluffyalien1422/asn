@@ -46,11 +46,11 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
     icon: "textures/fluffyalien/asn/ui/tutorial_book/export_bus_icon",
     bullets: 4,
   },
-  // {
-  //   id: "levelEmitter",
-  //   icon: "textures/fluffyalien/asn/ui/tutorial_book/import_bus_icon",
-  //   bullets: 1,
-  // },
+  {
+    id: "levelEmitter",
+    icon: "textures/fluffyalien/asn/ui/tutorial_book/level_emitter_icon",
+    bullets: 4,
+  },
   {
     id: "storageDisk",
     icon: "textures/fluffyalien/asn/items/storage_disk",

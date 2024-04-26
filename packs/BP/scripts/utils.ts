@@ -12,29 +12,35 @@ import {
   EquipmentSlot,
   Entity,
 } from "@minecraft/server";
-import {
-  ActionFormData,
-  ActionFormResponse,
-  ModalFormData,
-  ModalFormResponse,
-} from "@minecraft/server-ui";
+import { ActionFormData } from "@minecraft/server-ui";
 import { ITEM_TRANSLATION_OVERRIDES } from "./item_translation_overrides";
+import { Vector3Utils } from "@minecraft/math";
+
+export type CardinalDirection = "north" | "east" | "south" | "west";
+export type VerticalDirection = "up" | "down";
+export type FacingDirection = CardinalDirection | VerticalDirection;
 
 export function getBlockInDirection(
   block: Block,
-  direction: Direction,
+  direction: Direction | FacingDirection,
 ): Block | undefined {
   switch (direction) {
+    case "north":
     case Direction.North:
       return block.north();
+    case "east":
     case Direction.East:
       return block.east();
+    case "south":
     case Direction.South:
       return block.south();
+    case "west":
     case Direction.West:
       return block.west();
+    case "up":
     case Direction.Up:
       return block.above();
+    case "down":
     case Direction.Down:
       return block.below();
   }
@@ -123,12 +129,54 @@ export function getItemTranslationKey(itemId: string): string {
       : `item.${translationKeyItemId}`;
 }
 
+export function recievingRedstoneSignalFromDirection(
+  block: Block,
+  direction: Direction,
+): boolean {
+  const target = getBlockInDirection(block, direction);
+  if (!target?.getRedstonePower()) {
+    return false;
+  }
+
+  if (direction === Direction.Up || direction === Direction.Down) {
+    return ![
+      "minecraft:redstone_wire",
+      "minecraft:powered_comparator",
+      "minecraft:powered_repeater",
+    ].includes(target.typeId);
+  }
+
+  if (
+    target.typeId === "minecraft:powered_comparator" ||
+    target.typeId === "minecraft:powered_repeater"
+  ) {
+    const facingBlock = getBlockInDirection(
+      target,
+      reverseDirection(
+        target.permutation.getState(
+          "minecraft:cardinal_direction",
+        ) as CardinalDirection,
+      ),
+    );
+
+    if (!facingBlock) {
+      return false;
+    }
+
+    return Vector3Utils.equals(block, facingBlock);
+  }
+
+  return true;
+}
+
 export function receivingRedstoneSignal(block: Block): boolean {
   return (
-    !!block.north()?.getRedstonePower() ||
-    !!block.east()?.getRedstonePower() ||
-    !!block.south()?.getRedstonePower() ||
-    !!block.west()?.getRedstonePower()
+    recievingRedstoneSignalFromDirection(block, Direction.North) ||
+    recievingRedstoneSignalFromDirection(block, Direction.East) ||
+    recievingRedstoneSignalFromDirection(block, Direction.South) ||
+    recievingRedstoneSignalFromDirection(block, Direction.West) ||
+    recievingRedstoneSignalFromDirection(block, Direction.Up) ||
+    recievingRedstoneSignalFromDirection(block, Direction.Down)
   );
 }
 
@@ -139,4 +187,38 @@ export function getEntityAtBlockLocation(
   return location.dimension
     .getEntitiesAtBlockLocation(location)
     .find((v) => v.typeId === entityId);
+}
+export function reverseDirection(dir: Direction): Direction;
+export function reverseDirection(dir: CardinalDirection): CardinalDirection;
+export function reverseDirection(dir: VerticalDirection): VerticalDirection;
+export function reverseDirection(dir: FacingDirection): FacingDirection;
+export function reverseDirection(
+  dir: Direction | FacingDirection,
+): Direction | FacingDirection {
+  switch (dir) {
+    case Direction.North:
+      return Direction.South;
+    case Direction.East:
+      return Direction.West;
+    case Direction.South:
+      return Direction.North;
+    case Direction.West:
+      return Direction.West;
+    case Direction.Up:
+      return Direction.Down;
+    case Direction.Down:
+      return Direction.Up;
+    case "north":
+      return "south";
+    case "east":
+      return "west";
+    case "south":
+      return "north";
+    case "west":
+      return "east";
+    case "up":
+      return "down";
+    case "down":
+      return "up";
+  }
 }
