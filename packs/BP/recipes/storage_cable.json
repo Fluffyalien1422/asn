@@ -18,7 +18,8 @@
       }
     },
     "result": {
-      "item": "fluffyalien_asn:storage_cable"
+      "item": "fluffyalien_asn:storage_cable",
+      "count": 16
     },
     "unlock": [
       {

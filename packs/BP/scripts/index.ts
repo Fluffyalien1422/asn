@@ -11,6 +11,9 @@ import { STORAGE_DATA_DYNAMIC_PROPERTY_ID } from "./storage_drive";
 import { system, Player } from "@minecraft/server";
 import { Logger } from "./log";
 
+//TODO: add options for level emitter to test for enchantments and damage like export bus
+//TODO: make level emitter test all matching item stacks instead of the first one (switch from array.find to array.filter)
+
 const log = new Logger("index.ts");
 
 system.afterEvents.scriptEventReceive.subscribe(
