@@ -1,21 +1,21 @@
 pack.name=Advanced Storage Network
 pack.description=A fix for your storage problem.
 
-item.fluffyalien_asn:storage_disk=Storage Disk §9Advanced Storage Network
-item.fluffyalien_asn:storage_disk_casing=Storage Disk Casing §9Advanced Storage Network
-item.fluffyalien_asn:storage_disk_core=Storage Disk Core §9Advanced Storage Network
-item.fluffyalien_asn:storage_crystal=Storage Crystal §9Advanced Storage Network
-item.fluffyalien_asn:raw_storage_crystal=Raw Storage Crystal §9Advanced Storage Network
-item.fluffyalien_asn:used_storage_disk=Storage Disk (With Data) §9Advanced Storage Network
-item.fluffyalien_asn:tutorial_book=Tutorial Book §9Advanced Storage Network
+item.fluffyalien_asn:storage_disk=Storage Disk
+item.fluffyalien_asn:storage_disk_casing=Storage Disk Casing
+item.fluffyalien_asn:storage_disk_core=Storage Disk Core
+item.fluffyalien_asn:storage_crystal=Storage Crystal
+item.fluffyalien_asn:raw_storage_crystal=Raw Storage Crystal
+item.fluffyalien_asn:used_storage_disk=Storage Disk (With Data)
+item.fluffyalien_asn:tutorial_book=Tutorial Book
 
-tile.fluffyalien_asn:storage_drive.name=Storage Drive §9Advanced Storage Network
-tile.fluffyalien_asn:storage_interface.name=Storage Interface §9Advanced Storage Network
-tile.fluffyalien_asn:storage_core.name=Storage Core §9Advanced Storage Network
-tile.fluffyalien_asn:storage_cable.name=Storage Cable §9Advanced Storage Network
-tile.fluffyalien_asn:import_bus.name=Storage Import Bus §9Advanced Storage Network
-tile.fluffyalien_asn:export_bus.name=Storage Export Bus §9Advanced Storage Network
-tile.fluffyalien_asn:level_emitter.name=Storage Level Emitter §9Advanced Storage Network
+tile.fluffyalien_asn:storage_drive.name=Storage Drive
+tile.fluffyalien_asn:storage_interface.name=Storage Interface
+tile.fluffyalien_asn:storage_core.name=Storage Core
+tile.fluffyalien_asn:storage_cable.name=Storage Cable
+tile.fluffyalien_asn:import_bus.name=Storage Import Bus
+tile.fluffyalien_asn:export_bus.name=Storage Export Bus
+tile.fluffyalien_asn:level_emitter.name=Storage Level Emitter
 
 fluffyalien_asn.ui.common.error=Error
 fluffyalien_asn.ui.common.close=Close
@@ -52,14 +52,14 @@ fluffyalien_asn.ui.storageCore.body.connectedDrives=Connected drives: %s
 fluffyalien_asn.ui.exportBus.title=Export Bus
 fluffyalien_asn.ui.exportBus.exportItem=Exporting %s
 fluffyalien_asn.ui.exportBus.noExportItem=Not exporting anything. Interact while holding an item to export that item.
-fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.label=Enchantments:
+fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.label=Enchantments filter:
 fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.ignore=Ignore
 fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.with=With
 fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.without=Without
-fluffyalien_asn.ui.exportBus.exportItemMinDamage=Min damage (inclusive):
-fluffyalien_asn.ui.exportBus.exportItemMaxDamage=Max damage (inclusive):
-fluffyalien_asn.ui.exportBus.error.invalidMinDamage=Invalid value for min damage field.
-fluffyalien_asn.ui.exportBus.error.invalidMaxDamage=Invalid value for max damage field.
+fluffyalien_asn.ui.exportBus.exportItemMinDamage=Min damage filter (inclusive):
+fluffyalien_asn.ui.exportBus.exportItemMaxDamage=Max damage filter (inclusive):
+fluffyalien_asn.ui.exportBus.error.invalidMinDamage=Invalid value for "Min damage filter (inclusive)" field.
+fluffyalien_asn.ui.exportBus.error.invalidMaxDamage=Invalid value for "Max damage filter (inclusive)" field.
 
 fluffyalien_asn.ui.levelEmitter.title=Level Emitter
 fluffyalien_asn.ui.levelEmitter.noItem=Not testing anything. Interact while holding an item to test that item.
@@ -101,15 +101,17 @@ fluffyalien_asn.ui.tutorialBook.entry.importBus.bullet2=Any number of these devi
 
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.title=Storage Export Bus
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet0=Exports items from the storage network it's connected to into the container it's facing.
-fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet1=Stops exporting when receiving a redstone current.
-fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet2=Interact with an empty hand to configure.
-fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet3=Any number of these devices can exist in a network.
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet1=More filter options are available when exporting an item that is enchantable or breakable.
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet2=Stops exporting when receiving a redstone current.
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet3=Interact with an empty hand to configure.
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet4=Any number of these devices can exist in a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.title=Storage Level Emitter
-fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet0=Tests that an item in the storage network matches a query.
-fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet1=Activates the repeater in front of it when the test is true.
-fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet2=Interact with an empty hand to configure.
-fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet3=Any number of these devices can exist in a network.
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet0=Tests that the total amount of a filtered set of item stacks in the storage network matches a query.
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet1=Filter options are available when exporting an item that is enchantable or breakable.
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet2=Activates the repeater in front of it when the test is true.
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet3=Interact with an empty hand to configure.
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet4=Any number of these devices can exist in a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.title=Storage Disk
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet0=A crafting item.

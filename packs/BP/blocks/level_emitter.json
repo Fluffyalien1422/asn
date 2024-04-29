@@ -107,6 +107,7 @@
         "components": {
           "minecraft:material_instances": {
             "*": {
+              "render_method": "alpha_test",
               "texture": "fluffyalien_asn:level_emitter_off"
             }
           }

@@ -1,5 +1,10 @@
 import { world } from "@minecraft/server";
-import { getExportBusEntity, setExportBusExportItemId } from ".";
+import {
+  getExportBusEntity,
+  setExportBusExportItemDamageRange,
+  setExportBusExportItemEnchantments,
+  setExportBusExportItemId,
+} from ".";
 import { StorageNetwork } from "../storage_network";
 import { getPlayerMainhandSlot } from "../utils";
 import { showExportBusUi } from "./ui";
@@ -48,6 +53,10 @@ onPlayerInteractWithBlockNoSpam((e) => {
   const heldItem = mainhandSlot?.getItem();
   if (heldItem) {
     setExportBusExportItemId(entity, heldItem.typeId);
+
+    // reset optional values
+    setExportBusExportItemEnchantments(entity, "ignore");
+    setExportBusExportItemDamageRange(entity, { min: 0 });
   }
 
   void showExportBusUi(e.player, entity);

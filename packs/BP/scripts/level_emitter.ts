@@ -3,6 +3,7 @@ import {
   Block,
   BlockPermutation,
   Entity,
+  ItemStack,
   Player,
   world,
 } from "@minecraft/server";
@@ -19,6 +20,7 @@ import {
 import { Logger } from "./log";
 import { ModalFormData } from "@minecraft/server-ui";
 import { onPlayerInteractWithBlockNoSpam } from "./interact_with_block_no_spam";
+import { DynamicProperty } from "./dynamic_property";
 
 const log = new Logger("level_emitter.ts");
 
@@ -30,6 +32,37 @@ enum Operator {
   EqEq,
   NotEq,
 }
+
+enum TestItemEnchantableStatus {
+  Ignore,
+  WithEnchantments,
+  WithoutEnchantments,
+}
+
+const levelEmitterItem = new DynamicProperty<string>(
+  "fluffyalien_asn:level_emitter_item",
+);
+
+const levelEmitterTestAmount = new DynamicProperty<number>(
+  "fluffyalien_asn:level_emitter_test_amount",
+);
+
+const levelEmitterOperator = new DynamicProperty<Operator>(
+  "fluffyalien_asn:level_emitter_operator",
+);
+
+const levelEmitterTestEnchantments =
+  new DynamicProperty<TestItemEnchantableStatus>(
+    "fluffyalien_asn:level_emitter_test_enchantments",
+  );
+
+const levelEmitterItemMinDamage = new DynamicProperty<number>(
+  "fluffyalien_asn:level_emitter_item_min_damage",
+);
+
+const levelEmitterItemMaxDamage = new DynamicProperty<number>(
+  "fluffyalien_asn:level_emitter_item_max_damage",
+);
 
 world.afterEvents.playerPlaceBlock.subscribe((e) => {
   if (e.block.typeId !== "fluffyalien_asn:level_emitter") return;
@@ -74,7 +107,12 @@ onPlayerInteractWithBlockNoSpam((e) => {
   const mainhandSlot = getPlayerMainhandSlot(e.player);
   const heldItem = mainhandSlot?.getItem();
   if (heldItem) {
-    entity.setDynamicProperty("fluffyalien_asn:test_item", heldItem.typeId);
+    levelEmitterItem.set(entity, heldItem.typeId);
+
+    // reset optional values
+    levelEmitterTestEnchantments.set(entity);
+    levelEmitterItemMinDamage.set(entity);
+    levelEmitterItemMaxDamage.set(entity);
   }
 
   void showLevelEmitterUi(e.player, entity);
@@ -84,9 +122,7 @@ async function showLevelEmitterUi(
   player: Player,
   dummyEntity: Entity,
 ): Promise<void> {
-  const itemId = dummyEntity.getDynamicProperty("fluffyalien_asn:test_item") as
-    | string
-    | undefined;
+  const itemId = levelEmitterItem.get(dummyEntity);
 
   if (!itemId) {
     return void makeMessageUi(
@@ -126,20 +162,59 @@ async function showLevelEmitterUi(
       ],
     },
     OPERATOR_STRS,
-    dummyEntity.getDynamicProperty("fluffyalien_asn:test_operator") as
-      | Operator
-      | undefined,
+    levelEmitterOperator.get(dummyEntity),
   );
 
   form.textField(
     { translate: "fluffyalien_asn.ui.levelEmitter.amount" },
     "",
-    (
-      (dummyEntity.getDynamicProperty("fluffyalien_asn:test_amount") as
-        | number
-        | undefined) ?? 0
-    ).toString(),
+    (levelEmitterTestAmount.get(dummyEntity) ?? 0).toString(),
   );
+
+  const itemStack = new ItemStack(itemId);
+  const enchantable = itemStack.hasComponent("enchantable");
+  const breakable = itemStack.hasComponent("durability");
+
+  const itemEnchantmentsStatus = levelEmitterTestEnchantments.get(dummyEntity);
+
+  if (enchantable) {
+    form.dropdown(
+      {
+        translate:
+          "fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.label",
+      },
+      [
+        // should be in the same order as the enum
+        {
+          translate:
+            "fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.ignore",
+        },
+        {
+          translate:
+            "fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.with",
+        },
+        {
+          translate:
+            "fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.without",
+        },
+      ],
+      itemEnchantmentsStatus,
+    );
+  }
+
+  if (breakable) {
+    form.textField(
+      { translate: "fluffyalien_asn.ui.exportBus.exportItemMinDamage" },
+      "0",
+      (levelEmitterItemMinDamage.get(dummyEntity) ?? 0).toString(),
+    );
+
+    form.textField(
+      { translate: "fluffyalien_asn.ui.exportBus.exportItemMaxDamage" },
+      "",
+      levelEmitterItemMaxDamage.get(dummyEntity)?.toString(),
+    );
+  }
 
   const response = await form.show(player);
 
@@ -158,30 +233,46 @@ async function showLevelEmitterUi(
     }).show(player);
   }
 
-  dummyEntity.setDynamicProperty("fluffyalien_asn:test_operator", operator);
-  dummyEntity.setDynamicProperty("fluffyalien_asn:test_amount", amount);
+  const enchantmentsDropdownResponse = enchantable
+    ? (response.formValues[2] as number)
+    : undefined;
+
+  const minDamageResponseRaw = breakable
+    ? response.formValues[enchantable ? 3 : 2]
+    : null;
+  const maxDamageResponseRaw = breakable
+    ? response.formValues[enchantable ? 4 : 3]
+    : null;
+
+  const minDamageResponse = minDamageResponseRaw
+    ? Number(minDamageResponseRaw)
+    : undefined;
+  if (minDamageResponse !== undefined && isNaN(minDamageResponse)) {
+    return void makeErrorMessageUi({
+      translate: "fluffyalien_asn.ui.exportBus.error.invalidMinDamage",
+    }).show(player);
+  }
+
+  const maxDamageResponse = maxDamageResponseRaw
+    ? Number(maxDamageResponseRaw)
+    : undefined;
+  if (maxDamageResponse !== undefined && isNaN(maxDamageResponse)) {
+    return void makeErrorMessageUi({
+      translate: "fluffyalien_asn.ui.exportBus.error.invalidMaxDamage",
+    }).show(player);
+  }
+
+  levelEmitterOperator.set(dummyEntity, operator);
+  levelEmitterTestAmount.set(dummyEntity, amount);
+  levelEmitterTestEnchantments.set(dummyEntity, enchantmentsDropdownResponse);
+  levelEmitterItemMinDamage.set(dummyEntity, minDamageResponse);
+  levelEmitterItemMaxDamage.set(dummyEntity, maxDamageResponse);
 }
 
 export function updateLevelEmitter(
   block: Block,
   network: StorageNetwork,
 ): void {
-  const cardinalDirection = block.permutation.getState(
-    "minecraft:cardinal_direction",
-  ) as CardinalDirection;
-
-  const target = getBlockInDirection(block, cardinalDirection);
-
-  if (
-    !target ||
-    (target.typeId !== "minecraft:powered_repeater" &&
-      target.typeId !== "minecraft:unpowered_repeater") ||
-    target.permutation.getState("minecraft:cardinal_direction") !==
-      reverseDirection(cardinalDirection)
-  ) {
-    return;
-  }
-
   const dummy = getEntityAtBlockLocation(
     block,
     "fluffyalien_asn:level_emitter_entity",
@@ -196,32 +287,43 @@ export function updateLevelEmitter(
     return;
   }
 
-  const itemId = dummy.getDynamicProperty("fluffyalien_asn:test_item") as
-    | string
-    | undefined;
+  const itemId = levelEmitterItem.get(dummy);
   if (!itemId) {
     return;
   }
 
-  const operator =
-    (dummy.getDynamicProperty("fluffyalien_asn:test_operator") as
-      | Operator
-      | undefined) ?? 0;
-  const amount =
-    (dummy.getDynamicProperty("fluffyalien_asn:test_amount") as
-      | number
-      | undefined) ?? 0;
+  const operator = levelEmitterOperator.get(dummy) ?? 0;
+  const amount = levelEmitterTestAmount.get(dummy) ?? 0;
+  const enchantmentsStatus =
+    levelEmitterTestEnchantments.get(dummy) ?? TestItemEnchantableStatus.Ignore;
+  const minDamage = levelEmitterItemMinDamage.get(dummy) ?? 0;
+  const maxDamage = levelEmitterItemMaxDamage.get(dummy);
 
-  const amountStored =
-    network
-      .getStoredItemStacks()
-      .find((itemStack) => itemStack.typeId === itemId)?.amount ?? 0;
+  const matchingItemStacks = network
+    .getStoredItemStacks()
+    .filter(
+      (itemStack) =>
+        itemStack.typeId === itemId &&
+        (enchantmentsStatus === TestItemEnchantableStatus.Ignore ||
+          (enchantmentsStatus === TestItemEnchantableStatus.WithEnchantments &&
+            itemStack.enchantments.length) ||
+          (enchantmentsStatus ===
+            TestItemEnchantableStatus.WithoutEnchantments &&
+            !itemStack.enchantments.length)) &&
+        itemStack.damage >= minDamage &&
+        (maxDamage === undefined || itemStack.damage <= maxDamage),
+    );
+
+  let totalMatchingAmount = 0;
+  for (const matchingItemStack of matchingItemStacks) {
+    totalMatchingAmount += matchingItemStack.amount;
+  }
 
   const shouldEmitSignal =
-    (operator === Operator.EqEq && amountStored === amount) ||
-    (operator === Operator.GreaterThan && amountStored > amount) ||
-    (operator === Operator.LessThan && amountStored < amount) ||
-    (operator === Operator.NotEq && amountStored !== amount);
+    (operator === Operator.EqEq && totalMatchingAmount === amount) ||
+    (operator === Operator.GreaterThan && totalMatchingAmount > amount) ||
+    (operator === Operator.LessThan && totalMatchingAmount < amount) ||
+    (operator === Operator.NotEq && totalMatchingAmount !== amount);
 
   const litState = block.permutation.getState("fluffyalien_asn:lit") as 0 | 1;
 
@@ -239,10 +341,24 @@ export function updateLevelEmitter(
     block.setPermutation(block.permutation.withState("fluffyalien_asn:lit", 1));
   }
 
-  target.setPermutation(
-    BlockPermutation.resolve(
-      "powered_repeater",
-      target.permutation.getAllStates(),
-    ),
-  );
+  const cardinalDirection = block.permutation.getState(
+    "minecraft:cardinal_direction",
+  ) as CardinalDirection;
+
+  const target = getBlockInDirection(block, cardinalDirection);
+
+  if (
+    target &&
+    (target.typeId === "minecraft:powered_repeater" ||
+      target.typeId === "minecraft:unpowered_repeater") &&
+    target.permutation.getState("minecraft:cardinal_direction") ===
+      reverseDirection(cardinalDirection)
+  ) {
+    target.setPermutation(
+      BlockPermutation.resolve(
+        "powered_repeater",
+        target.permutation.getAllStates(),
+      ),
+    );
+  }
 }
