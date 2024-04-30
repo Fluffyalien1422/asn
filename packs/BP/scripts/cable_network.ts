@@ -1,8 +1,16 @@
-import { Block, Player, Vector3 } from "@minecraft/server";
+import { Block, Direction, Player, Vector3 } from "@minecraft/server";
 import { Result, failure, success } from "./result";
 import { Vector3Utils } from "@minecraft/math";
-import { makeErrorMessageUi } from "./utils";
+import { getBlockInDirection, makeErrorMessageUi, wait } from "./utils";
 import { ActionFormResponse } from "@minecraft/server-ui";
+import { Logger } from "./log";
+import {
+  addAnonymousTickingArea,
+  removeAnonymousTickingArea,
+} from "./tickingarea";
+import { forceLoadNetworksRule } from "./addon_rules";
+
+const log = new Logger("cable_network.ts");
 
 export interface CableNetworkConnections {
   cables: Vector3[];
@@ -17,9 +25,11 @@ export type DiscoverCableNetworkConnectionsError =
   | "multipleStorageCores"
   | "noStorageCore";
 
-export function discoverCableNetworkConnections(
+export async function discoverCableNetworkConnections(
   origin: Block,
-): Result<CableNetworkConnections, DiscoverCableNetworkConnectionsError> {
+): Promise<
+  Result<CableNetworkConnections, DiscoverCableNetworkConnectionsError>
+> {
   const visitedLocations: Vector3[] = [];
   const stack: Block[] = [];
 
@@ -30,11 +40,10 @@ export function discoverCableNetworkConnections(
   const levelEmitters: Vector3[] = [];
   let storageCore: Vector3 | undefined;
 
-  function handleNextBlock(
-    block?: Block,
+  function handleBlock(
+    block: Block,
   ): Result<null, DiscoverCableNetworkConnectionsError> {
     if (
-      !block ||
       ![
         "fluffyalien_asn:storage_cable",
         "fluffyalien_asn:storage_core",
@@ -88,7 +97,41 @@ export function discoverCableNetworkConnections(
     return success(null);
   }
 
-  handleNextBlock(origin);
+  async function next(
+    block: Block,
+    nextDirection: Direction,
+  ): Promise<Result<null, DiscoverCableNetworkConnectionsError>> {
+    let nextBlock = getBlockInDirection(block, nextDirection);
+
+    if (!nextBlock) {
+      if (!forceLoadNetworksRule.get()) {
+        log.warn(
+          "discoverCableNetworkConnections > next",
+          `cable network extends into unloaded chunks and forceLoadNetworks is disabled. some parts of the network may be unloaded`,
+        );
+        return success(null);
+      }
+
+      addAnonymousTickingArea(block.dimension, block.location, 2);
+
+      await wait(1);
+      nextBlock = getBlockInDirection(block, nextDirection);
+
+      removeAnonymousTickingArea(block.dimension, block.location);
+
+      if (!nextBlock) {
+        log.warn(
+          "discoverCableNetworkConnections > next",
+          `failed to follow the cable network into unloaded chunks. some parts of the network may be unloaded`,
+        );
+        return success(null);
+      }
+    }
+
+    return handleBlock(nextBlock);
+  }
+
+  handleBlock(origin);
   if (origin.typeId !== "fluffyalien_asn:storage_cable") {
     stack.push(origin);
   }
@@ -97,32 +140,32 @@ export function discoverCableNetworkConnections(
     const block = stack.pop()!;
 
     {
-      const res = handleNextBlock(block.north());
+      const res = await next(block, Direction.North);
       if (!res.success) return res;
     }
 
     {
-      const res = handleNextBlock(block.east());
+      const res = await next(block, Direction.East);
       if (!res.success) return res;
     }
 
     {
-      const res = handleNextBlock(block.south());
+      const res = await next(block, Direction.South);
       if (!res.success) return res;
     }
 
     {
-      const res = handleNextBlock(block.west());
+      const res = await next(block, Direction.West);
       if (!res.success) return res;
     }
 
     {
-      const res = handleNextBlock(block.above());
+      const res = await next(block, Direction.Up);
       if (!res.success) return res;
     }
 
     {
-      const res = handleNextBlock(block.below());
+      const res = await next(block, Direction.Down);
       if (!res.success) return res;
     }
   }

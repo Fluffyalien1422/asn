@@ -11,6 +11,7 @@ import {
   BlockPermutation,
   EquipmentSlot,
   Entity,
+  system,
 } from "@minecraft/server";
 import { ActionFormData } from "@minecraft/server-ui";
 import { ITEM_TRANSLATION_OVERRIDES } from "./item_translation_overrides";
@@ -221,4 +222,10 @@ export function reverseDirection(
     case "down":
       return "up";
   }
+}
+
+export function wait(ticks: number): Promise<void> {
+  return new Promise((resolve) => {
+    system.runInterval(resolve, ticks);
+  });
 }

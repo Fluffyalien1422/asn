@@ -47,7 +47,7 @@ world.afterEvents.playerBreakBlock.subscribe((e) => {
 
   getStorageDriveEntity(e.block)?.triggerEvent("fluffyalien_asn:despawn");
 
-  StorageNetwork.getNetwork(
+  void StorageNetwork.getNetwork(
     e.block,
     e.brokenBlockPermutation.type.id,
   )?.updateConnections();

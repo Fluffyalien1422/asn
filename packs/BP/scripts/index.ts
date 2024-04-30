@@ -1,48 +1,8 @@
-import "./export_bus";
-import "./import_bus";
 import "./storage_core";
-import "./storage_drive";
 import "./storage_interface";
 import "./cable";
+import "./script_events";
 import "./tutorial_book";
 
-import { getPlayerMainhandSlot } from "./utils";
-import { STORAGE_DATA_DYNAMIC_PROPERTY_ID } from "./storage_drive";
-import { system, Player } from "@minecraft/server";
-import { Logger } from "./log";
-
-const log = new Logger("index.ts");
-
-system.afterEvents.scriptEventReceive.subscribe(
-  (e) => {
-    if (!(e.sourceEntity instanceof Player)) return;
-    const player = e.sourceEntity;
-
-    if (e.id === "fluffyalien_asn:debug_log_disk_data") {
-      const item = getPlayerMainhandSlot(player)?.getItem();
-
-      if (item?.typeId !== "fluffyalien_asn:used_storage_disk") {
-        log.warn(
-          "scriptEventRecieve event",
-          "could not run script event fluffyalien_asn:debug_log_disk_data: not holding fluffyalien_asn:used_storage_disk",
-        );
-        return;
-      }
-
-      const s = item
-        .getDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID)
-        ?.toString();
-      if (s)
-        log.msg(
-          "scriptEventRecieve event",
-          `fluffyalien_asn:debug_log_disk_data result: ${s}`,
-        );
-    } else {
-      log.warn(
-        "scriptEventRecieve event",
-        `could not run script event ${e.id}: this script event does not exist`,
-      );
-    }
-  },
-  { namespaces: ["fluffyalien_asn"] },
-);
+//TODO: add tutorial book entry for addon rules
+//TODO: make storage networks wait some time before reestablishing on world load so the world can fully load and it won't fail

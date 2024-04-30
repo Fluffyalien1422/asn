@@ -10,7 +10,7 @@ world.afterEvents.playerPlaceBlock.subscribe((e) => {
 world.afterEvents.playerBreakBlock.subscribe((e) => {
   if (e.brokenBlockPermutation.type.id !== "fluffyalien_asn:import_bus") return;
 
-  StorageNetwork.getNetwork(
+  void StorageNetwork.getNetwork(
     e.block,
     e.brokenBlockPermutation.type.id,
   )?.updateConnections();

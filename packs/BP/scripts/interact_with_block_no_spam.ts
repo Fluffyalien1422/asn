@@ -6,7 +6,7 @@ import {
 
 type PlayerInteractWithBlockAfterEventCallback = (
   arg: PlayerInteractWithBlockAfterEvent,
-) => void;
+) => void | Promise<void>;
 
 const callbacks: PlayerInteractWithBlockAfterEventCallback[] = [];
 
@@ -17,7 +17,7 @@ world.afterEvents.playerInteractWithBlock.subscribe((e) => {
   lastPlayerInteractWithBlockTriggerTick = system.currentTick;
 
   for (const callback of callbacks) {
-    callback(e);
+    void callback(e);
   }
 });
 

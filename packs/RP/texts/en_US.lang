@@ -17,6 +17,11 @@ tile.fluffyalien_asn:import_bus.name=Storage Import Bus
 tile.fluffyalien_asn:export_bus.name=Storage Export Bus
 tile.fluffyalien_asn:level_emitter.name=Storage Level Emitter
 
+fluffyalien_asn.message.scriptEvent.common.invalidScriptEvent=This script event does not exist.
+fluffyalien_asn.message.scriptEvent.addonRule.invalidRule=This rule does not exist.
+fluffyalien_asn.message.scriptEvent.addonRule.expectedBoolean=Expected "true" or "false" after rule ID.
+fluffyalien_asn.message.scriptEvent.addonRule.help.forceLoadNetworks=forceLoadNetworks <boolean> - When a cable network extends into unloaded chunks, force those chunks to load so the network can fully load. MAY CAUSE LAG!
+
 fluffyalien_asn.ui.common.error=Error
 fluffyalien_asn.ui.common.close=Close
 

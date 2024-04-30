@@ -18,3 +18,18 @@ export class DynamicProperty<TValue extends DynamicPropertyValue> {
     target.setDynamicProperty(this.id, value);
   }
 }
+
+export class DynamicPropertyLocked<TValue extends DynamicPropertyValue> {
+  constructor(
+    readonly id: string,
+    private readonly target: HasDynamicProperties,
+  ) {}
+
+  get(): TValue | undefined {
+    return this.target.getDynamicProperty(this.id) as TValue | undefined;
+  }
+
+  set(value?: TValue): void {
+    this.target.setDynamicProperty(this.id, value);
+  }
+}

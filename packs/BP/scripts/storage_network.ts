@@ -34,10 +34,10 @@ export class StorageNetwork {
    * @param origin any block inside the network
    * @returns a result containing the new {@link StorageNetwork} or an error
    */
-  static establishNetwork(
+  static async establishNetwork(
     origin: Block,
-  ): Result<StorageNetwork, DiscoverCableNetworkConnectionsError> {
-    const result = discoverCableNetworkConnections(origin);
+  ): Promise<Result<StorageNetwork, DiscoverCableNetworkConnectionsError>> {
+    const result = await discoverCableNetworkConnections(origin);
     if (!result.success) {
       return result;
     }
@@ -125,7 +125,7 @@ export class StorageNetwork {
    */
   static updateConnectableNetworks(block: Block): void {
     for (const network of StorageNetwork.getConnectableNetworks(block)) {
-      network.updateConnections();
+      void network.updateConnections();
     }
   }
 
@@ -134,9 +134,9 @@ export class StorageNetwork {
    * @see {@link StorageNetwork.establishNetwork}, {@link StorageNetwork.getNetwork}
    * @returns the existing or new network
    */
-  static getOrEstablishNetwork(
+  static async getOrEstablishNetwork(
     block: Block,
-  ): Result<StorageNetwork, DiscoverCableNetworkConnectionsError> {
+  ): Promise<Result<StorageNetwork, DiscoverCableNetworkConnectionsError>> {
     const existingNetwork = StorageNetwork.getNetwork(block);
     if (existingNetwork) {
       return success(existingNetwork);
@@ -367,7 +367,9 @@ export class StorageNetwork {
    * @throws if this object is not valid
    * @returns a result containing an error or null
    */
-  updateConnections(): Result<null, DiscoverCableNetworkConnectionsError> {
+  async updateConnections(): Promise<
+    Result<null, DiscoverCableNetworkConnectionsError>
+  > {
     this.ensureValidity();
 
     const coreBlock = this.dimension.getBlock(this.connections.storageCore);
@@ -382,7 +384,7 @@ export class StorageNetwork {
       );
     }
 
-    const result = discoverCableNetworkConnections(coreBlock);
+    const result = await discoverCableNetworkConnections(coreBlock);
     if (!result.success) {
       this.destroy();
       return result;

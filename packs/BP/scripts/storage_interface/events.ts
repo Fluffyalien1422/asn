@@ -16,20 +16,20 @@ world.afterEvents.playerBreakBlock.subscribe((e) => {
   if (e.brokenBlockPermutation.type.id !== "fluffyalien_asn:storage_interface")
     return;
 
-  StorageNetwork.getNetwork(
+  void StorageNetwork.getNetwork(
     e.block,
     e.brokenBlockPermutation.type.id,
   )?.updateConnections();
 });
 
-onPlayerInteractWithBlockNoSpam((e) => {
+onPlayerInteractWithBlockNoSpam(async (e) => {
   if (
     e.block.typeId !== "fluffyalien_asn:storage_interface" ||
     e.player.isSneaking
   )
     return;
 
-  const networkResult = StorageNetwork.getOrEstablishNetwork(e.block);
+  const networkResult = await StorageNetwork.getOrEstablishNetwork(e.block);
   if (!networkResult.success) {
     void showEstablishNetworkError(e.player, networkResult.error);
     return;

@@ -85,7 +85,7 @@ world.afterEvents.playerBreakBlock.subscribe((e) => {
     "fluffyalien_asn:level_emitter_entity",
   )?.remove();
 
-  StorageNetwork.getNetwork(
+  void StorageNetwork.getNetwork(
     e.block,
     e.brokenBlockPermutation.type.id,
   )?.updateConnections();

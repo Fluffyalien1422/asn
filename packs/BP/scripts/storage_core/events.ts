@@ -25,7 +25,7 @@ world.afterEvents.entityLoad.subscribe((e) => {
 
   // establish a network when the storage core entity is loaded so that the processes
   // will start running without having to open an interface
-  StorageNetwork.getOrEstablishNetwork(block);
+  void StorageNetwork.getOrEstablishNetwork(block);
 });
 
 world.afterEvents.playerPlaceBlock.subscribe((e) => {
@@ -51,11 +51,11 @@ world.afterEvents.playerBreakBlock.subscribe((e) => {
   )?.destroy();
 });
 
-onPlayerInteractWithBlockNoSpam((e) => {
+onPlayerInteractWithBlockNoSpam(async (e) => {
   if (e.block.typeId !== "fluffyalien_asn:storage_core" || e.player.isSneaking)
     return;
 
-  const networkResult = StorageNetwork.getOrEstablishNetwork(e.block);
+  const networkResult = await StorageNetwork.getOrEstablishNetwork(e.block);
   if (!networkResult.success) {
     void showEstablishNetworkError(e.player, networkResult.error);
     return;

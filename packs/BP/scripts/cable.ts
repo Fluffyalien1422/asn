@@ -11,7 +11,7 @@ world.afterEvents.playerBreakBlock.subscribe((e) => {
   if (e.brokenBlockPermutation.type.id !== "fluffyalien_asn:storage_cable")
     return;
 
-  StorageNetwork.getNetwork(
+  void StorageNetwork.getNetwork(
     e.block,
     e.brokenBlockPermutation.type.id,
   )?.updateConnections();
