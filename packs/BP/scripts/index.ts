@@ -4,5 +4,4 @@ import "./cable";
 import "./script_events";
 import "./tutorial_book";
 
-//TODO: add tutorial book entry for addon rules
 //TODO: make storage networks wait some time before reestablishing on world load so the world can fully load and it won't fail

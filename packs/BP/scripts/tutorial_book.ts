@@ -61,6 +61,11 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
     icon: "textures/fluffyalien/asn/items/storage_crystal",
     bullets: 2,
   },
+  {
+    id: "addonRules",
+    icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon",
+    bullets: 1,
+  },
 ];
 
 export async function showTutorialBookUi(player: Player): Promise<void> {

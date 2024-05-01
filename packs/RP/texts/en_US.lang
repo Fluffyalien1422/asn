@@ -126,3 +126,6 @@ fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet2=Interact with an empty
 fluffyalien_asn.ui.tutorialBook.entry.storageCrystal.title=Storage Crystal
 fluffyalien_asn.ui.tutorialBook.entry.storageCrystal.bullet0=A crafting item.
 fluffyalien_asn.ui.tutorialBook.entry.storageCrystal.bullet1=Created by smelting a Raw Storage Crystal (a craftable item, see recipe book) in a furnace or blast furnace.
+
+fluffyalien_asn.ui.tutorialBook.entry.addonRules.title=Add-on Configuration
+fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet0=Use the "/scriptevent fluffyalien_asn:addonrule help" command for help.
