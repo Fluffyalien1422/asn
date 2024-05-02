@@ -4,3 +4,4 @@ See changelogs on vatonage.com: https://www.vatonage.com/post/advanced-storage-n
 v2.0.0 (asn2.0.0.mcaddon) - Requires Minecraft 1.20.7x
 v2.0.1 (asn2.0.1.mcaddon) - Requires Minecraft 1.20.7x
 v2.1.0 (asn2.1.0.mcaddon) - Requires Minecraft 1.20.8x
+v2.2.0 (asn2.2.0.mcaddon) - Requires Minecraft 1.20.8x
