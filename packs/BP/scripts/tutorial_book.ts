@@ -64,7 +64,7 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
   {
     id: "addonRules",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon",
-    bullets: 1,
+    bullets: 3,
   },
 ];
 
