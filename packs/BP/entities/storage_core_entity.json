@@ -12,6 +12,7 @@
       }
     },
     "components": {
+      "minecraft:persistent": {},
       "minecraft:breathable": {
         "breathes_water": true
       },
