@@ -23,7 +23,10 @@ export function updateImportBus(block: Block, network: StorageNetwork): void {
     const item = container.getItem(i);
     if (!item) continue;
 
-    network.addItemStack(StorageSystemItemStack.fromItemStack(item));
+    const result = network.addItemStack(
+      StorageSystemItemStack.fromItemStack(item),
+    );
+    if (!result.success) return;
 
     container.setItem(i);
   }

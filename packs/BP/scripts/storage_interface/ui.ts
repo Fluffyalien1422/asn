@@ -178,7 +178,7 @@ export async function showItemsListUi(
   return requestedItem;
 }
 
-async function showRequestItemUi(
+export async function showRequestItemUi(
   player: Player,
   item: StorageSystemItemStack,
 ): Promise<StorageSystemItemStack | undefined> {
@@ -304,7 +304,9 @@ async function showRequestItemUi(
   return item.withAmount(amount);
 }
 
-async function showSearchUi(player: Player): Promise<string | undefined> {
+export async function showSearchUi(
+  player: Player,
+): Promise<string | undefined> {
   const form = new ModalFormData();
 
   form.title({

@@ -1,13 +1,18 @@
 pack.name=Advanced Storage Network
 pack.description=A fix for your storage problem.
 
+item.fluffyalien_asn:storage_interface_button_back=Previous
+item.fluffyalien_asn:storage_interface_button_next=Next
+item.fluffyalien_asn:storage_interface_button_search=Search
+item.fluffyalien_asn:storage_interface_button_cancel_search=Cancel Search
+
 item.fluffyalien_asn:storage_disk=Storage Disk
 item.fluffyalien_asn:storage_disk_casing=Storage Disk Casing
 item.fluffyalien_asn:storage_disk_core=Storage Disk Core
 item.fluffyalien_asn:storage_crystal=Storage Crystal
 item.fluffyalien_asn:raw_storage_crystal=Raw Storage Crystal
 item.fluffyalien_asn:used_storage_disk=Storage Disk (With Data)
-item.fluffyalien_asn:tutorial_book=Tutorial Book
+item.fluffyalien_asn:tutorial_book=Advanced Storage Network Tutorial Book
 
 tile.fluffyalien_asn:storage_drive.name=Storage Drive
 tile.fluffyalien_asn:storage_interface.name=Storage Interface
@@ -21,6 +26,8 @@ fluffyalien_asn.message.scriptEvent.common.invalidScriptEvent=This script event 
 fluffyalien_asn.message.scriptEvent.addonRule.invalidRule=This rule does not exist.
 fluffyalien_asn.message.scriptEvent.addonRule.expectedBoolean=Expected "true" or "false" after rule ID.
 fluffyalien_asn.message.scriptEvent.addonRule.help.forceLoadNetworks=forceLoadNetworks: boolean - When a cable network extends into unloaded chunks, force those chunks to load so the network can fully load. MAY CAUSE LAG! This will not work if all ticking area slots are used.
+
+fluffyalien_asn.actionbar.storageInterface.openToViewQueryResults=Open the Storage Interface again to view search results
 
 fluffyalien_asn.ui.common.error=Error
 fluffyalien_asn.ui.common.close=Close

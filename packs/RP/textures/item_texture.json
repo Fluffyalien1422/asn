@@ -14,6 +14,18 @@
     },
     "fluffyalien_asn:raw_storage_crystal": {
       "textures": "textures/fluffyalien/asn/items/raw_storage_crystal"
+    },
+    "fluffyalien_asn:storage_interface_button_back": {
+      "textures": "textures/fluffyalien/asn/ui/previous_page"
+    },
+    "fluffyalien_asn:storage_interface_button_next": {
+      "textures": "textures/fluffyalien/asn/ui/next_page"
+    },
+    "fluffyalien_asn:storage_interface_button_search": {
+      "textures": "textures/fluffyalien/asn/ui/search"
+    },
+    "fluffyalien_asn:storage_interface_button_cancel_search": {
+      "textures": "textures/fluffyalien/asn/ui/cancel_search"
     }
   }
 }
