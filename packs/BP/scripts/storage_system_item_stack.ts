@@ -79,6 +79,18 @@ export class StorageSystemItemStack {
     );
   }
 
+  withLore(lore: string[]): StorageSystemItemStack {
+    return new StorageSystemItemStack(
+      this.typeId,
+      this.amount,
+      this.nameTag,
+      this.damage,
+      lore,
+      this.dynamicProperties,
+      this.enchantments,
+    );
+  }
+
   isStackableWith(other: StorageSystemItemStack): boolean {
     return (
       this.typeId === other.typeId &&

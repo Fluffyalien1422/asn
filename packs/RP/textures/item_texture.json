@@ -1,5 +1,20 @@
 {
   "texture_data": {
+    "fluffyalien_asn:storage_interface_ui_item_back": {
+      "textures": "textures/fluffyalien/asn/ui/storage_interface/previous_page"
+    },
+    "fluffyalien_asn:storage_interface_ui_item_cancel_search": {
+      "textures": "textures/fluffyalien/asn/ui/storage_interface/cancel_search"
+    },
+    "fluffyalien_asn:storage_interface_ui_item_blank_slot": {
+      "textures": "textures/fluffyalien/asn/ui/storage_interface/blank_slot"
+    },
+    "fluffyalien_asn:storage_interface_ui_item_next": {
+      "textures": "textures/fluffyalien/asn/ui/storage_interface/next_page"
+    },
+    "fluffyalien_asn:storage_interface_ui_item_search": {
+      "textures": "textures/fluffyalien/asn/ui/storage_interface/search"
+    },
     "fluffyalien_asn:storage_disk": {
       "textures": "textures/fluffyalien/asn/items/storage_disk"
     },
@@ -14,18 +29,6 @@
     },
     "fluffyalien_asn:raw_storage_crystal": {
       "textures": "textures/fluffyalien/asn/items/raw_storage_crystal"
-    },
-    "fluffyalien_asn:storage_interface_button_back": {
-      "textures": "textures/fluffyalien/asn/ui/previous_page"
-    },
-    "fluffyalien_asn:storage_interface_button_next": {
-      "textures": "textures/fluffyalien/asn/ui/next_page"
-    },
-    "fluffyalien_asn:storage_interface_button_search": {
-      "textures": "textures/fluffyalien/asn/ui/search"
-    },
-    "fluffyalien_asn:storage_interface_button_cancel_search": {
-      "textures": "textures/fluffyalien/asn/ui/cancel_search"
     }
   }
 }

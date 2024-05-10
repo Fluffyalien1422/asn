@@ -22,15 +22,20 @@ import {
 const ITEMS_PER_PAGE = 18;
 
 const BACK_BUTTON_INDEX = 21;
-const BACK_BUTTON_ITEM_ID = "fluffyalien_asn:storage_interface_button_back";
+const BACK_BUTTON_ITEM_ID = "fluffyalien_asn:storage_interface_ui_item_back";
 
 const SEARCH_BUTTON_INDEX = 22;
-const SEARCH_BUTTON_ITEM_ID = "fluffyalien_asn:storage_interface_button_search";
+const SEARCH_BUTTON_ITEM_ID =
+  "fluffyalien_asn:storage_interface_ui_item_search";
 const CANCEL_SEARCH_BUTTON_ITEM_ID =
-  "fluffyalien_asn:storage_interface_button_cancel_search";
+  "fluffyalien_asn:storage_interface_ui_item_cancel_search";
 
 const NEXT_BUTTON_INDEX = 23;
-const NEXT_BUTTON_ITEM_ID = "fluffyalien_asn:storage_interface_button_next";
+const NEXT_BUTTON_ITEM_ID = "fluffyalien_asn:storage_interface_ui_item_next";
+
+const BLANK_SLOT_INDEXES = [18, 19, 20, 24, 25, 26];
+const BLANK_SLOT_ITEM_ID =
+  "fluffyalien_asn:storage_interface_ui_item_blank_slot";
 
 const log = new Logger("storage_interface/index.ts");
 
@@ -47,6 +52,10 @@ interface InterfaceData {
  * key = dummy entity ID
  */
 const interfaceData = new Map<string, InterfaceData>();
+
+function getDisplayItemLoreStr(amount: number): string {
+  return `§r§2§l${abbreviateNumber(amount)}§r`;
+}
 
 function forceCloseInventory(entity: Entity): Promise<void> {
   const ogLocation = { ...entity.location };
@@ -82,7 +91,7 @@ function fillInterfaceInventory(entity: Entity, data: InterfaceData): void {
 
     const displayItem = storageSystemItem.toItemStack();
     displayItem.setLore([
-      `§r§2§l${abbreviateNumber(storageSystemItem.amount)}§r`,
+      getDisplayItemLoreStr(storageSystemItem.amount),
       ...displayItem.getLore(),
     ]);
 
@@ -97,6 +106,10 @@ function fillInterfaceInventory(entity: Entity, data: InterfaceData): void {
     ),
   );
   inventory.setItem(NEXT_BUTTON_INDEX, new ItemStack(NEXT_BUTTON_ITEM_ID));
+
+  for (const index of BLANK_SLOT_INDEXES) {
+    inventory.setItem(index, new ItemStack(BLANK_SLOT_ITEM_ID));
+  }
 }
 
 async function getNetworkOrShowError(
@@ -295,6 +308,8 @@ function isStorageInventoryItemTaken(
 ): boolean {
   if (!inventoryItem) return true;
 
+  inventoryItem = inventoryItem.clone();
+
   // remove the first lore line - it's the line that shows the amount in the storage
   inventoryItem.setLore(inventoryItem.getLore().slice(1));
 
@@ -309,19 +324,31 @@ function isStorageInventoryItemTaken(
   return true;
 }
 
-function clearPlayerSelectedItem(player: Player): void {
+function clearTakenItemFromPlayer(
+  player: Player,
+  takenItem: StorageSystemItemStack,
+): void {
   const playerInventory = player.getComponent("inventory")!.container!;
 
-  const playerItems: (ItemStack | undefined)[] = [];
+  const playerRecoverItems: (ItemStack | null)[] = [];
   for (let i = 0; i < playerInventory.size; i++) {
-    playerItems.push(playerInventory.getItem(i));
+    const item = playerInventory.getItem(i);
+
+    if (
+      item &&
+      !takenItem.isStackableWith(StorageSystemItemStack.fromItemStack(item))
+    ) {
+      playerRecoverItems.push(item);
+    } else {
+      playerRecoverItems.push(null);
+    }
   }
 
   player.runCommand("clear @s"); // clearing with script does not remove the item from the player's selection but this does
 
   for (let i = 0; i < playerInventory.size; i++) {
-    const item = playerItems[i];
-    playerInventory.setItem(i, item);
+    const item = playerRecoverItems[i];
+    if (item) playerInventory.setItem(i, item);
   }
 }
 
@@ -340,8 +367,25 @@ system.runInterval(() => {
 
     const inventory = entity.getComponent("inventory")!.container!;
 
-    if (!inventory.getItem(BACK_BUTTON_INDEX)?.matches(BACK_BUTTON_ITEM_ID)) {
-      clearPlayerSelectedItem(data.playerInUi);
+    for (const blankIndex of BLANK_SLOT_INDEXES) {
+      if (inventory.getItem(blankIndex)?.typeId === BLANK_SLOT_ITEM_ID) {
+        continue;
+      }
+
+      clearTakenItemFromPlayer(
+        data.playerInUi,
+        new StorageSystemItemStack(BLANK_SLOT_ITEM_ID),
+      );
+      fillInterfaceInventory(entity, data);
+
+      continue entityLoop;
+    }
+
+    if (inventory.getItem(BACK_BUTTON_INDEX)?.typeId !== BACK_BUTTON_ITEM_ID) {
+      clearTakenItemFromPlayer(
+        data.playerInUi,
+        new StorageSystemItemStack(BACK_BUTTON_ITEM_ID),
+      );
 
       data.page = Math.max(data.page - 1, 0);
       fillInterfaceInventory(entity, data);
@@ -349,8 +393,11 @@ system.runInterval(() => {
       continue;
     }
 
-    if (!inventory.getItem(NEXT_BUTTON_INDEX)?.matches(NEXT_BUTTON_ITEM_ID)) {
-      clearPlayerSelectedItem(data.playerInUi);
+    if (inventory.getItem(NEXT_BUTTON_INDEX)?.typeId !== NEXT_BUTTON_ITEM_ID) {
+      clearTakenItemFromPlayer(
+        data.playerInUi,
+        new StorageSystemItemStack(NEXT_BUTTON_ITEM_ID),
+      );
 
       data.page++;
       fillInterfaceInventory(entity, data);
@@ -362,9 +409,12 @@ system.runInterval(() => {
 
     if (
       !data.hasQuery &&
-      !searchButtonSlotItem?.matches(SEARCH_BUTTON_ITEM_ID)
+      searchButtonSlotItem?.typeId !== SEARCH_BUTTON_ITEM_ID
     ) {
-      clearPlayerSelectedItem(data.playerInUi);
+      clearTakenItemFromPlayer(
+        data.playerInUi,
+        new StorageSystemItemStack(SEARCH_BUTTON_ITEM_ID),
+      );
 
       data.enabled = false;
       void search(entity, data);
@@ -374,9 +424,12 @@ system.runInterval(() => {
 
     if (
       data.hasQuery &&
-      !searchButtonSlotItem?.matches(CANCEL_SEARCH_BUTTON_ITEM_ID)
+      searchButtonSlotItem?.typeId !== CANCEL_SEARCH_BUTTON_ITEM_ID
     ) {
-      clearPlayerSelectedItem(data.playerInUi);
+      clearTakenItemFromPlayer(
+        data.playerInUi,
+        new StorageSystemItemStack(CANCEL_SEARCH_BUTTON_ITEM_ID),
+      );
 
       data.hasQuery = false;
       refreshInterface(entity, data.playerInUi, data.network);
@@ -394,7 +447,13 @@ system.runInterval(() => {
         continue;
       }
 
-      clearPlayerSelectedItem(data.playerInUi);
+      clearTakenItemFromPlayer(
+        data.playerInUi,
+        storageItem.withLore([
+          getDisplayItemLoreStr(storageItem.amount),
+          ...storageItem.lore,
+        ]),
+      );
 
       data.enabled = false;
       void requestItem(entity, data.playerInUi, data.network, storageItem);
