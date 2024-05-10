@@ -16,7 +16,8 @@
         "fluffyalien_asn:east": [0, 1],
         "fluffyalien_asn:west": [0, 1],
         "fluffyalien_asn:up": [0, 1],
-        "fluffyalien_asn:down": [0, 1]
+        "fluffyalien_asn:down": [0, 1],
+        "fluffyalien_asn:update_2_3": [false, true]
       }
     },
     "components": {
@@ -49,9 +50,7 @@
       },
       "minecraft:light_dampening": 0,
       "minecraft:destructible_by_explosion": false,
-      "minecraft:destructible_by_mining": {
-        "seconds_to_destroy": 1
-      },
+      "minecraft:destructible_by_mining": false,
       "minecraft:queued_ticking": {
         "looping": true,
         "interval_range": [0, 0],

@@ -68,7 +68,7 @@ system.afterEvents.scriptEventReceive.subscribe(
                 translate: `fluffyalien_asn.message.scriptEvent.addonRule.help.${key}`,
               },
               {
-                text: "\n§a-- --§r",
+                text: "\n§a-- --§r\n",
               },
             ]),
           ],
