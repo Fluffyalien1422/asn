@@ -314,6 +314,9 @@ async function search(
   });
 }
 
+/**
+ * check if an item in the interface inventory has been taken by the player
+ */
 function isStorageInventoryItemTaken(
   storageItem: StorageSystemItemStack,
   inventoryItem: ItemStack,
@@ -334,6 +337,9 @@ function isStorageInventoryItemTaken(
   return true;
 }
 
+/**
+ * removes an item taken from the interface entity's inventory from the player
+ */
 function clearTakenItemFromPlayer(
   player: Player,
   takenItem: StorageSystemItemStack,
@@ -362,6 +368,9 @@ function clearTakenItemFromPlayer(
   }
 }
 
+/**
+ * clear an item taken from the interface entity's inventory from the player's inventory and give the player `itemStack` if it is defined
+ */
 function handleTakenItem(
   player: Player,
   itemId: string,
@@ -374,12 +383,37 @@ function handleTakenItem(
   }
 }
 
+/**
+ * add an item to the storage or show the appropriate error. automatically refreshes the interface if the item was added
+ * @returns whether the item was added or not. note: if this returns false then assume that the inventory has been closed and an error UI is displayed
+ */
+function addItemToStorage(
+  interfaceEntity: Entity,
+  data: InterfaceData,
+  itemStack: ItemStack,
+): boolean {
+  const added = addItemToNetworkOrShowError(
+    interfaceEntity,
+    data,
+    StorageSystemItemStack.fromItemStack(itemStack),
+  );
+
+  if (!added) {
+    data.enabled = false;
+    data.playerInUi.dimension.spawnItem(itemStack, data.playerInUi.location);
+    return false;
+  }
+
+  refreshInterface(interfaceEntity, data.playerInUi, data.network);
+  return true;
+}
+
 system.runInterval(() => {
   const entityQueryOptions: EntityQueryOptions = {
     type: "fluffyalien_asn:storage_interface_entity",
   };
 
-  entityLoop: for (const entity of [
+  for (const entity of [
     ...world.getDimension("overworld").getEntities(entityQueryOptions),
     ...world.getDimension("nether").getEntities(entityQueryOptions),
     ...world.getDimension("the_end").getEntities(entityQueryOptions),
@@ -390,23 +424,8 @@ system.runInterval(() => {
     const inventory = entity.getComponent("inventory")!.container!;
 
     const inputSlotItem = inventory.getItem(INPUT_SLOT_INDEX);
-    if (inputSlotItem) {
-      const added = addItemToNetworkOrShowError(
-        entity,
-        data,
-        StorageSystemItemStack.fromItemStack(inputSlotItem),
-      );
-
-      if (!added) {
-        data.enabled = false;
-        data.playerInUi.dimension.spawnItem(
-          inputSlotItem,
-          data.playerInUi.location,
-        );
-        return;
-      }
-
-      refreshInterface(entity, data.playerInUi, data.network);
+    if (inputSlotItem && !addItemToStorage(entity, data, inputSlotItem)) {
+      continue;
     }
 
     const backBtnSlotItem = inventory.getItem(BACK_BUTTON_INDEX);
@@ -465,9 +484,18 @@ system.runInterval(() => {
 
     const itemsOnPage = getItemsOnPage(data.items, data.page);
 
-    for (let i = 0; i < itemsOnPage.length; i++) {
-      const storageItem = itemsOnPage[i];
+    for (let i = 0; i < ITEMS_PER_PAGE; i++) {
+      const storageItem = itemsOnPage[i] as StorageSystemItemStack | undefined;
       const inventoryItem = inventory.getItem(i);
+
+      if (!storageItem) {
+        if (inventoryItem) {
+          addItemToStorage(entity, data, inventoryItem);
+          break;
+        }
+
+        continue;
+      }
 
       if (
         inventoryItem &&
@@ -495,7 +523,7 @@ system.runInterval(() => {
       data.enabled = false;
       void requestItem(entity, data.playerInUi, data.network, storageItem);
 
-      continue entityLoop;
+      break;
     }
   }
 });
