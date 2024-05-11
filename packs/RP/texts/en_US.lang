@@ -97,8 +97,7 @@ fluffyalien_asn.ui.tutorialBook.entry.storageDrive.bullet2=Any number of these d
 
 fluffyalien_asn.ui.tutorialBook.entry.storageInterface.title=Storage Interface
 fluffyalien_asn.ui.tutorialBook.entry.storageInterface.bullet0=Allows players to add, remove, or view items in a storage network.
-fluffyalien_asn.ui.tutorialBook.entry.storageInterface.bullet1=Interact with the interface while holding any item to put it in the network.
-fluffyalien_asn.ui.tutorialBook.entry.storageInterface.bullet2=Any number of these devices can exist in a network.
+fluffyalien_asn.ui.tutorialBook.entry.storageInterface.bullet1=Any number of these devices can exist in a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.importBus.title=Storage Import Bus
 fluffyalien_asn.ui.tutorialBook.entry.importBus.bullet0=Imports items from the container it's facing into the storage network it's connected to.

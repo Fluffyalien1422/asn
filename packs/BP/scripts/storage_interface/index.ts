@@ -267,7 +267,7 @@ onPlayerInteractWithBlockNoSpam((e) => {
     x: e.block.x + 0.5,
     y: e.block.y,
     z: e.block.z + 0.5,
-  }).nameTag = "Storage Interface";
+  }).nameTag = "fluffyalien_asn:storage_interface";
 });
 
 async function requestItem(

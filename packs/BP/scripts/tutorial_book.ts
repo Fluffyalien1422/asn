@@ -34,7 +34,7 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
   {
     id: "storageInterface",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_interface_icon",
-    bullets: 3,
+    bullets: 2,
   },
   {
     id: "importBus",
