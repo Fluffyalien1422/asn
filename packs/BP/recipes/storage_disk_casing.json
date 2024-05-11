@@ -5,16 +5,21 @@
       "identifier": "fluffyalien_asn:storage_disk_casing"
     },
     "tags": ["crafting_table"],
-    "pattern": ["NIN", "ISI", "NIN"],
+    // prettier-ignore
+    "pattern": [
+      "NIN", 
+      "IGI", 
+      "NIN"
+    ],
     "key": {
       "I": {
         "item": "iron_ingot"
       },
-      "S": {
+      "N": {
         "item": "smooth_stone"
       },
-      "N": {
-        "item": "iron_nugget"
+      "G": {
+        "item": "glass"
       }
     },
     "result": {

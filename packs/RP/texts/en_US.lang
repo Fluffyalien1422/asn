@@ -36,7 +36,7 @@ fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores=Cannot establish a st
 fluffyalien_asn.ui.cableNetwork.error.noStorageCores=Cannot establish a storage network: no storage cores found.
 
 fluffyalien_asn.ui.storageDrive.title=Storage Drive
-fluffyalien_asn.ui.storageDrive.body.storageUsed=Storage used (drive): %s/1000u
+fluffyalien_asn.ui.storageDrive.body.storageUsed=Storage used (drive): %s/3000u
 fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk=Cannot add a disk to a non-empty storage drive.
 
 fluffyalien_asn.ui.storageInterface.title=Storage Interface
@@ -122,10 +122,6 @@ fluffyalien_asn.ui.tutorialBook.entry.storageDisk.title=Storage Disk
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet0=A crafting item.
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet1=Can contain data (will say "Storage Disk (With Data)").
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet2=Interact with an empty Storage Drive while holding a disk with data to deposit the items inside of the disk into the drive.
-
-fluffyalien_asn.ui.tutorialBook.entry.storageCrystal.title=Storage Crystal
-fluffyalien_asn.ui.tutorialBook.entry.storageCrystal.bullet0=A crafting item.
-fluffyalien_asn.ui.tutorialBook.entry.storageCrystal.bullet1=Created by smelting a Raw Storage Crystal (a craftable item, see recipe book) in a furnace or blast furnace.
 
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.title=Add-on Configuration
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet0=Use the `/scriptevent fluffyalien_asn:addonrule <rule> [value]` command to change a rule.

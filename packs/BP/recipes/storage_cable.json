@@ -5,7 +5,12 @@
       "identifier": "fluffyalien_asn:storage_cable"
     },
     "tags": ["crafting_table"],
-    "pattern": ["IRI", "RER", "IRI"],
+    // prettier-ignore
+    "pattern": [
+      "IRI",
+      "RER",
+      "IRI"
+    ],
     "key": {
       "R": {
         "item": "redstone"

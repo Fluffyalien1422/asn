@@ -1,6 +1,6 @@
 import { DimensionLocation, Entity } from "@minecraft/server";
 
-export const MAX_STORAGE_DRIVE_DATA_LENGTH = 1_000;
+export const MAX_STORAGE_DRIVE_DATA_LENGTH = 3_000;
 export const STORAGE_DATA_DYNAMIC_PROPERTY_ID = "fluffyalien_asn:storage_data";
 
 /**
