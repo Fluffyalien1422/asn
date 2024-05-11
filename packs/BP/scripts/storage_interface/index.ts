@@ -5,7 +5,7 @@ import { StorageNetwork } from "../storage_network";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
 import {
   abbreviateNumber,
-  getPlayerMainhandSlot,
+  getItemTranslationKey,
   makeErrorMessageUi,
 } from "../utils";
 import { showRequestItemUi, showSearchUi } from "./form";
@@ -19,23 +19,21 @@ import {
   world,
 } from "@minecraft/server";
 
-const ITEMS_PER_PAGE = 18;
+const ITEMS_PER_PAGE = 27;
 
-const BACK_BUTTON_INDEX = 21;
+const INPUT_SLOT_INDEX = 27;
+
+const BACK_BUTTON_INDEX = 28;
 const BACK_BUTTON_ITEM_ID = "fluffyalien_asn:storage_interface_ui_item_back";
 
-const SEARCH_BUTTON_INDEX = 22;
+const NEXT_BUTTON_INDEX = 29;
+const NEXT_BUTTON_ITEM_ID = "fluffyalien_asn:storage_interface_ui_item_next";
+
+const SEARCH_BUTTON_INDEX = 30;
 const SEARCH_BUTTON_ITEM_ID =
   "fluffyalien_asn:storage_interface_ui_item_search";
 const CANCEL_SEARCH_BUTTON_ITEM_ID =
   "fluffyalien_asn:storage_interface_ui_item_cancel_search";
-
-const NEXT_BUTTON_INDEX = 23;
-const NEXT_BUTTON_ITEM_ID = "fluffyalien_asn:storage_interface_ui_item_next";
-
-const BLANK_SLOT_INDEXES = [18, 19, 20, 24, 25, 26];
-const BLANK_SLOT_ITEM_ID =
-  "fluffyalien_asn:storage_interface_ui_item_blank_slot";
 
 const log = new Logger("storage_interface/index.ts");
 
@@ -106,10 +104,6 @@ function fillInterfaceInventory(entity: Entity, data: InterfaceData): void {
     ),
   );
   inventory.setItem(NEXT_BUTTON_INDEX, new ItemStack(NEXT_BUTTON_ITEM_ID));
-
-  for (const index of BLANK_SLOT_INDEXES) {
-    inventory.setItem(index, new ItemStack(BLANK_SLOT_ITEM_ID));
-  }
 }
 
 async function getNetworkOrShowError(
@@ -119,14 +113,51 @@ async function getNetworkOrShowError(
 ): Promise<StorageNetwork | undefined> {
   const networkResult = await StorageNetwork.getOrEstablishNetwork(block);
   if (!networkResult.success) {
-    void forceCloseInventory(interfaceEntity).then(() => {
-      void showEstablishNetworkError(player, networkResult.error);
-    });
+    await forceCloseInventory(interfaceEntity);
+    void showEstablishNetworkError(player, networkResult.error);
 
     return;
   }
 
   return networkResult.value;
+}
+
+function addItemToNetworkOrShowError(
+  interfaceEntity: Entity,
+  data: InterfaceData,
+  itemStack: StorageSystemItemStack,
+): boolean {
+  const res = data.network.addItemStack(itemStack);
+  if (res.success) return true;
+
+  void forceCloseInventory(interfaceEntity).then(() => {
+    switch (res.error.type) {
+      case "insufficientStorage":
+        void makeErrorMessageUi({
+          translate:
+            "fluffyalien_asn.ui.storageInterface.error.insufficientStorage",
+        }).show(data.playerInUi);
+        break;
+      case "bannedItem":
+        void makeErrorMessageUi({
+          translate: "fluffyalien_asn.ui.storageInterface.error.bannedItem",
+          with: {
+            rawtext: [
+              {
+                rawtext: [
+                  { text: "§l" },
+                  { translate: getItemTranslationKey(res.error.itemId) },
+                  { text: "§r" },
+                ],
+              },
+            ],
+          },
+        }).show(data.playerInUi);
+        break;
+    }
+  });
+
+  return false;
 }
 
 /**
@@ -167,7 +198,7 @@ world.afterEvents.playerPlaceBlock.subscribe((e) => {
     x: e.block.x + 0.5,
     y: e.block.y,
     z: e.block.z + 0.5,
-  }).nameTag = "Storage Interface";
+  }).nameTag = "fluffyalien_asn:storage_interface";
 
   StorageNetwork.updateConnectableNetworks(e.block);
 });
@@ -214,25 +245,6 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   void (async (): Promise<void> => {
     const network = await getNetworkOrShowError(block, e.target, e.player);
     if (!network) return;
-
-    const mainhandSlot = getPlayerMainhandSlot(e.player);
-    const heldItem = mainhandSlot?.getItem();
-    if (mainhandSlot && heldItem) {
-      const res = network.addItemStack(
-        StorageSystemItemStack.fromItemStack(heldItem),
-      );
-      if (!res.success) {
-        await forceCloseInventory(e.target);
-        void makeErrorMessageUi({
-          translate:
-            "fluffyalien_asn.ui.storageInterface.error.insufficientStorage",
-        }).show(e.player);
-
-        return;
-      }
-
-      mainhandSlot.setItem();
-    }
 
     refreshInterface(e.target, e.player, network);
   })();
@@ -304,10 +316,8 @@ async function search(
 
 function isStorageInventoryItemTaken(
   storageItem: StorageSystemItemStack,
-  inventoryItem?: ItemStack,
+  inventoryItem: ItemStack,
 ): boolean {
-  if (!inventoryItem) return true;
-
   inventoryItem = inventoryItem.clone();
 
   // remove the first lore line - it's the line that shows the amount in the storage
@@ -352,6 +362,18 @@ function clearTakenItemFromPlayer(
   }
 }
 
+function handleTakenItem(
+  player: Player,
+  itemId: string,
+  itemStack?: ItemStack,
+): void {
+  clearTakenItemFromPlayer(player, new StorageSystemItemStack(itemId));
+
+  if (itemStack) {
+    player.dimension.spawnItem(itemStack, player.location);
+  }
+}
+
 system.runInterval(() => {
   const entityQueryOptions: EntityQueryOptions = {
     type: "fluffyalien_asn:storage_interface_entity",
@@ -367,25 +389,29 @@ system.runInterval(() => {
 
     const inventory = entity.getComponent("inventory")!.container!;
 
-    for (const blankIndex of BLANK_SLOT_INDEXES) {
-      if (inventory.getItem(blankIndex)?.typeId === BLANK_SLOT_ITEM_ID) {
-        continue;
+    const inputSlotItem = inventory.getItem(INPUT_SLOT_INDEX);
+    if (inputSlotItem) {
+      const added = addItemToNetworkOrShowError(
+        entity,
+        data,
+        StorageSystemItemStack.fromItemStack(inputSlotItem),
+      );
+
+      if (!added) {
+        data.enabled = false;
+        data.playerInUi.dimension.spawnItem(
+          inputSlotItem,
+          data.playerInUi.location,
+        );
+        return;
       }
 
-      clearTakenItemFromPlayer(
-        data.playerInUi,
-        new StorageSystemItemStack(BLANK_SLOT_ITEM_ID),
-      );
-      fillInterfaceInventory(entity, data);
-
-      continue entityLoop;
+      refreshInterface(entity, data.playerInUi, data.network);
     }
 
-    if (inventory.getItem(BACK_BUTTON_INDEX)?.typeId !== BACK_BUTTON_ITEM_ID) {
-      clearTakenItemFromPlayer(
-        data.playerInUi,
-        new StorageSystemItemStack(BACK_BUTTON_ITEM_ID),
-      );
+    const backBtnSlotItem = inventory.getItem(BACK_BUTTON_INDEX);
+    if (backBtnSlotItem?.typeId !== BACK_BUTTON_ITEM_ID) {
+      handleTakenItem(data.playerInUi, BACK_BUTTON_ITEM_ID, backBtnSlotItem);
 
       data.page = Math.max(data.page - 1, 0);
       fillInterfaceInventory(entity, data);
@@ -393,11 +419,9 @@ system.runInterval(() => {
       continue;
     }
 
-    if (inventory.getItem(NEXT_BUTTON_INDEX)?.typeId !== NEXT_BUTTON_ITEM_ID) {
-      clearTakenItemFromPlayer(
-        data.playerInUi,
-        new StorageSystemItemStack(NEXT_BUTTON_ITEM_ID),
-      );
+    const nextBtnSlotItem = inventory.getItem(NEXT_BUTTON_INDEX);
+    if (nextBtnSlotItem?.typeId !== NEXT_BUTTON_ITEM_ID) {
+      handleTakenItem(data.playerInUi, NEXT_BUTTON_ITEM_ID, nextBtnSlotItem);
 
       data.page++;
       fillInterfaceInventory(entity, data);
@@ -411,9 +435,10 @@ system.runInterval(() => {
       !data.hasQuery &&
       searchButtonSlotItem?.typeId !== SEARCH_BUTTON_ITEM_ID
     ) {
-      clearTakenItemFromPlayer(
+      handleTakenItem(
         data.playerInUi,
-        new StorageSystemItemStack(SEARCH_BUTTON_ITEM_ID),
+        SEARCH_BUTTON_ITEM_ID,
+        searchButtonSlotItem,
       );
 
       data.enabled = false;
@@ -426,14 +451,14 @@ system.runInterval(() => {
       data.hasQuery &&
       searchButtonSlotItem?.typeId !== CANCEL_SEARCH_BUTTON_ITEM_ID
     ) {
-      clearTakenItemFromPlayer(
+      handleTakenItem(
         data.playerInUi,
-        new StorageSystemItemStack(CANCEL_SEARCH_BUTTON_ITEM_ID),
+        CANCEL_SEARCH_BUTTON_ITEM_ID,
+        searchButtonSlotItem,
       );
 
       data.hasQuery = false;
       refreshInterface(entity, data.playerInUi, data.network);
-      data.enabled = false;
 
       continue;
     }
@@ -442,8 +467,12 @@ system.runInterval(() => {
 
     for (let i = 0; i < itemsOnPage.length; i++) {
       const storageItem = itemsOnPage[i];
+      const inventoryItem = inventory.getItem(i);
 
-      if (!isStorageInventoryItemTaken(storageItem, inventory.getItem(i))) {
+      if (
+        inventoryItem &&
+        !isStorageInventoryItemTaken(storageItem, inventoryItem)
+      ) {
         continue;
       }
 
@@ -454,6 +483,14 @@ system.runInterval(() => {
           ...storageItem.lore,
         ]),
       );
+
+      if (inventoryItem) {
+        // give the item back
+        data.playerInUi.dimension.spawnItem(
+          inventoryItem,
+          data.playerInUi.location,
+        );
+      }
 
       data.enabled = false;
       void requestItem(entity, data.playerInUi, data.network, storageItem);

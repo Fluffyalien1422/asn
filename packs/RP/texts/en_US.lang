@@ -5,7 +5,6 @@ item.fluffyalien_asn:storage_interface_ui_item_back=Previous
 item.fluffyalien_asn:storage_interface_ui_item_next=Next
 item.fluffyalien_asn:storage_interface_ui_item_search=Search
 item.fluffyalien_asn:storage_interface_ui_item_cancel_search=Cancel Search
-item.fluffyalien_asn:storage_interface_ui_item_blank_slot=[Empty]
 
 item.fluffyalien_asn:storage_disk=Storage Disk
 item.fluffyalien_asn:storage_disk_casing=Storage Disk Casing
@@ -49,6 +48,7 @@ fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber=Cannot take 
 fluffyalien_asn.ui.storageInterface.requestItem.error.notEnough=There is not enough of this item stored to take out this amount.
 fluffyalien_asn.ui.storageInterface.search.label=ID Search
 fluffyalien_asn.ui.storageInterface.error.insufficientStorage=Cannot add this item due to insufficient storage. Try connecting more storage drives.
+fluffyalien_asn.ui.storageInterface.error.bannedItem=%s is a banned item.
 
 fluffyalien_asn.ui.storageCore.title=Storage Core
 fluffyalien_asn.ui.storageCore.body.storageUsed=Storage used (network): %s/%su

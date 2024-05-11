@@ -6,9 +6,6 @@
     "fluffyalien_asn:storage_interface_ui_item_cancel_search": {
       "textures": "textures/fluffyalien/asn/ui/storage_interface/cancel_search"
     },
-    "fluffyalien_asn:storage_interface_ui_item_blank_slot": {
-      "textures": "textures/fluffyalien/asn/ui/storage_interface/blank_slot"
-    },
     "fluffyalien_asn:storage_interface_ui_item_next": {
       "textures": "textures/fluffyalien/asn/ui/storage_interface/next_page"
     },

@@ -23,7 +23,14 @@ import { updateLevelEmitter } from "./level_emitter";
 
 const log = new Logger("storage_network.ts");
 
-export type AddItemStackToStorageError = "insufficientStorage";
+export type AddItemStackToStorageError =
+  | {
+      type: "insufficientStorage";
+    }
+  | {
+      type: "bannedItem";
+      itemId: string;
+    };
 
 export class StorageNetwork {
   private static readonly storageNetworks: StorageNetwork[] = [];
@@ -477,6 +484,16 @@ export class StorageNetwork {
   ): Result<null, AddItemStackToStorageError> {
     this.ensureValidity();
 
+    if (
+      itemStack.typeId.startsWith("minecraft:") &&
+      itemStack.typeId.endsWith("_shulker_box")
+    ) {
+      return failure({
+        type: "bannedItem",
+        itemId: itemStack.typeId,
+      });
+    }
+
     const storedItems = this.getStoredItemStacksMutable();
 
     const existingItemStack = storedItems.find((other) =>
@@ -489,7 +506,7 @@ export class StorageNetwork {
       const length = serialize(itemStack).length;
 
       if (this.getUsedDataLength() + length > this.getMaxDataLength()) {
-        return failure("insufficientStorage");
+        return failure({ type: "insufficientStorage" });
       }
 
       storedItems.push(itemStack);
