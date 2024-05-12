@@ -15,7 +15,7 @@ import {
 } from "../utils/block_connect";
 import { STR_DIRECTIONS, StrCardinalDirection } from "../utils/direction";
 
-const log = new Logger("export_bus/events.ts");
+const log = new Logger("export_bus/component.ts");
 
 export const exportBusComponent: BlockCustomComponent = {
   onPlace(e) {

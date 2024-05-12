@@ -40,6 +40,8 @@ const SEARCH_BUTTON_ITEM_ID =
 const CANCEL_SEARCH_BUTTON_ITEM_ID =
   "fluffyalien_asn:storage_interface_ui_item_cancel_search";
 
+const DISPLAY_ITEM_LORE_STR_END = "§a§s§n§r";
+
 const log = new Logger("storage_interface/index.ts");
 
 interface InterfaceData {
@@ -57,7 +59,11 @@ interface InterfaceData {
 const interfaceData = new Map<string, InterfaceData>();
 
 function getDisplayItemLoreStr(amount: number): string {
-  return `§r§2§l${abbreviateNumber(amount)}§r`;
+  return `§r§2§l${abbreviateNumber(amount)}${DISPLAY_ITEM_LORE_STR_END}`;
+}
+
+function isDisplayItem(itemStack: ItemStack): boolean {
+  return !!itemStack.getLore()[0]?.endsWith(DISPLAY_ITEM_LORE_STR_END);
 }
 
 function forceCloseInventory(entity: Entity): Promise<void> {
@@ -475,7 +481,14 @@ system.runInterval(() => {
     ...world.getDimension("the_end").getEntities(entityQueryOptions),
   ]) {
     const data = interfaceData.get(entity.id);
-    if (!data?.enabled) continue;
+    if (
+      !data?.enabled ||
+      !entity.dimension.getPlayers({
+        location: entity.location,
+        maxDistance: 10,
+      }).length
+    )
+      continue;
 
     const inventory = entity.getComponent("inventory")!.container!;
 
@@ -545,7 +558,7 @@ system.runInterval(() => {
       const inventoryItem = inventory.getItem(i);
 
       if (!storageItem) {
-        if (inventoryItem) {
+        if (inventoryItem && !isDisplayItem(inventoryItem)) {
           addItemToStorage(entity, data, inventoryItem);
           break;
         }
