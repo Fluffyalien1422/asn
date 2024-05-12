@@ -1,4 +1,5 @@
 import { Dimension } from "@minecraft/server";
+import { wait } from "./utils/async";
 
 export interface ChunkLocation {
   x: number;
@@ -9,10 +10,12 @@ export function addAnonymousTickingArea(
   dimension: Dimension,
   center: ChunkLocation,
   radius: number,
-): void {
+): Promise<void> {
   dimension.runCommand(
     `tickingarea add circle ${center.x.toString()} 0 ${center.z.toString()} ${radius.toString()}`,
   );
+
+  return wait(1);
 }
 
 export function removeAnonymousTickingArea(

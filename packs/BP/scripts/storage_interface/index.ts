@@ -66,7 +66,7 @@ function isDisplayItem(itemStack: ItemStack): boolean {
   return !!itemStack.getLore()[0]?.endsWith(DISPLAY_ITEM_LORE_STR_END);
 }
 
-function forceCloseInventory(entity: Entity): Promise<void> {
+export function forceCloseInventory(entity: Entity): Promise<void> {
   const ogLocation = { ...entity.location };
 
   entity.teleport({
@@ -172,12 +172,26 @@ function addItemToNetworkOrShowError(
 /**
  * resets interface data and inventory
  * @returns the new InterfaceData
+ * @throws if the passed entity is not part of the "fluffyalien_asn:storage_interface" type family
  */
-function refreshInterface(
+export function refreshInterface(
   interfaceEntity: Entity,
   player: Player,
   network: StorageNetwork,
 ): InterfaceData {
+  if (
+    !interfaceEntity.matches({
+      families: ["fluffyalien_asn:storage_interface"],
+    })
+  ) {
+    throw new Error(
+      log.makeRaiseString(
+        "refreshInterface",
+        "expected `interfaceEntity` to be part of family `fluffyalien_asn:storage_interface`",
+      ),
+    );
+  }
+
   const oldData = interfaceData.get(interfaceEntity.id);
 
   const data: InterfaceData = {
@@ -472,7 +486,8 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
 
 system.runInterval(() => {
   const entityQueryOptions: EntityQueryOptions = {
-    type: "fluffyalien_asn:storage_interface_entity",
+    // we also want this to run for the wireless interface, so check families instead of type
+    families: ["fluffyalien_asn:storage_interface"],
   };
 
   for (const entity of [

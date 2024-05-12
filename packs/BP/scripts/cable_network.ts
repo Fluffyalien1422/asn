@@ -9,7 +9,6 @@ import {
 } from "./tickingarea";
 import { forceLoadNetworksRule } from "./addon_rules";
 import { getBlockInDirection } from "./utils/direction";
-import { wait } from "./utils/async";
 import { makeErrorMessageUi } from "./utils/ui";
 
 const log = new Logger("cable_network.ts");
@@ -106,9 +105,8 @@ export async function discoverCableNetworkConnections(
         return success(null);
       }
 
-      addAnonymousTickingArea(block.dimension, block.location, 2);
+      await addAnonymousTickingArea(block.dimension, block.location, 2);
 
-      await wait(1);
       nextBlock = getBlockInDirection(block, nextDirection);
 
       removeAnonymousTickingArea(block.dimension, block.location);

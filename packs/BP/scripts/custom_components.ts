@@ -1,7 +1,6 @@
 import { world } from "@minecraft/server";
 import { storageInterfaceComponent } from "./storage_interface";
 import { storageDriveComponent } from "./storage_drive";
-import { wirelessInterfaceComponent } from "./wireless_interface";
 import { storageCoreComponent } from "./storage_core";
 import { storageCableComponent } from "./cable";
 import { levelEmitterComponent } from "./level_emitter";
@@ -42,10 +41,5 @@ world.beforeEvents.worldInitialize.subscribe((e) => {
   e.blockTypeRegistry.registerCustomComponent(
     "fluffyalien_asn:export_bus",
     exportBusComponent,
-  );
-
-  e.itemComponentRegistry.registerCustomComponent(
-    "fluffyalien_asn:wireless_interface",
-    wirelessInterfaceComponent,
   );
 });

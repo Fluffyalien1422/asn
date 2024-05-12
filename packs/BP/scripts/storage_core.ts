@@ -10,9 +10,13 @@ import {
 } from "@minecraft/server";
 import { Logger } from "./log";
 import { showEstablishNetworkError } from "./cable_network";
-import { wirelessInterfaceConnectionProperty } from "./wireless_interface";
+import {
+  wirelessInterfaceLinkDimensionProperty,
+  wirelessInterfaceLinkLocationProperty,
+} from "./wireless_interface";
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { getPlayerMainhandSlot } from "./utils/item";
+import { MinecraftDimensionTypes } from "@minecraft/vanilla-data";
 
 const log = new Logger("storage_core.ts");
 
@@ -112,10 +116,17 @@ export const storageCoreComponent: BlockCustomComponent = {
     const player = e.player;
 
     const mainhandSlot = getPlayerMainhandSlot(e.player);
-    const mainhandItem = mainhandSlot.getItem();
 
-    if (mainhandItem?.typeId === "fluffyalien_asn:wireless_interface") {
-      wirelessInterfaceConnectionProperty.set(mainhandItem, e.block.location);
+    if (
+      mainhandSlot.hasItem() &&
+      mainhandSlot.typeId === "fluffyalien_asn:wireless_interface"
+    ) {
+      wirelessInterfaceLinkLocationProperty.set(mainhandSlot, e.block.location);
+      wirelessInterfaceLinkDimensionProperty.set(
+        mainhandSlot,
+        e.block.dimension.id as MinecraftDimensionTypes,
+      );
+
       player.sendMessage({
         rawtext: [
           {

@@ -5,8 +5,6 @@
       "identifier": "fluffyalien_asn:wireless_interface"
     },
     "components": {
-      "minecraft:custom_components": ["fluffyalien_asn:wireless_interface"],
-
       "minecraft:max_stack_size": 1,
       "minecraft:icon": {
         "textures": {

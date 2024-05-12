@@ -2,7 +2,7 @@
   "format_version": "1.20.70",
   "minecraft:entity": {
     "description": {
-      "identifier": "fluffyalien_asn:storage_interface_entity",
+      "identifier": "fluffyalien_asn:wireless_interface_entity",
       "is_summonable": true,
       "is_spawnable": false
     },
