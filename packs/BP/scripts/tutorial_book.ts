@@ -14,7 +14,7 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
   {
     id: "storageNetwork",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon",
-    bullets: 3,
+    bullets: 4,
   },
   {
     id: "storageCore",
@@ -24,7 +24,7 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
   {
     id: "storageCable",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_cable_icon",
-    bullets: 2,
+    bullets: 1,
   },
   {
     id: "storageDrive",
@@ -50,6 +50,11 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
     id: "levelEmitter",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/level_emitter_icon",
     bullets: 5,
+  },
+  {
+    id: "wirelessInterface",
+    icon: "textures/fluffyalien/asn/items/wireless_interface",
+    bullets: 3,
   },
   {
     id: "storageDisk",

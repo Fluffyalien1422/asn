@@ -7,19 +7,25 @@
     "tags": ["crafting_table"],
     // prettier-ignore
     "pattern": [
-      "RIR", 
-      "ICI",
-      "RIR"
+      "EAE", 
+      "CRC",
+      "EGE"
     ],
     "key": {
-      "I": {
-        "item": "iron_ingot"
-      },
-      "C": {
-        "item": "redstone"
+      "A": {
+        "item": "amethyst_shard"
       },
       "R": {
+        "item": "redstone"
+      },
+      "E": {
         "item": "emerald"
+      },
+      "C": {
+        "item": "copper_ingot"
+      },
+      "G": {
+        "item": "gold_ingot"
       }
     },
     "result": {

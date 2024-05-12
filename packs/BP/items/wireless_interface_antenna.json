@@ -2,12 +2,12 @@
   "format_version": "1.20.70",
   "minecraft:item": {
     "description": {
-      "identifier": "fluffyalien_asn:storage_crystal"
+      "identifier": "fluffyalien_asn:wireless_interface_antenna"
     },
     "components": {
       "minecraft:icon": {
         "textures": {
-          "default": "fluffyalien_asn:storage_crystal"
+          "default": "fluffyalien_asn:wireless_interface_antenna"
         }
       }
     }

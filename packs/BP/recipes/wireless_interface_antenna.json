@@ -2,21 +2,24 @@
   "format_version": "1.20.70",
   "minecraft:recipe_shaped": {
     "description": {
-      "identifier": "fluffyalien_asn:storage_cable"
+      "identifier": "fluffyalien_asn:wireless_interface_antenna"
     },
     "tags": ["crafting_table"],
     // prettier-ignore
     "pattern": [
-      "IRC",
-      "GEG",
-      "CRI"
+      "GAG", 
+      "CPC",
+      "IDI"
     ],
     "key": {
-      "R": {
-        "item": "redstone"
+      "P": {
+        "item": "ender_eye"
       },
-      "E": {
-        "item": "emerald"
+      "D": {
+        "item": "diamond"
+      },
+      "A": {
+        "item": "amethyst_shard"
       },
       "I": {
         "item": "iron_ingot"
@@ -25,12 +28,11 @@
         "item": "copper_ingot"
       },
       "G": {
-        "item": "gold_ingot"
+        "item": "gold_nugget"
       }
     },
     "result": {
-      "item": "fluffyalien_asn:storage_cable",
-      "count": 16
+      "item": "fluffyalien_asn:wireless_interface_antenna"
     },
     "unlock": [
       {
