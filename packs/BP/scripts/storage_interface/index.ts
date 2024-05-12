@@ -1,16 +1,21 @@
 import { showEstablishNetworkError } from "../cable_network";
-import { onPlayerInteractWithBlockNoSpam } from "../interact_with_block_no_spam";
 import { Logger } from "../log";
 import { StorageNetwork } from "../storage_network";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
+import { wait } from "../utils/async";
+import { updateBlockConnectStates } from "../utils/block_connect";
 import {
-  abbreviateNumber,
-  getItemTranslationKey,
-  makeErrorMessageUi,
-} from "../utils";
+  STR_DIRECTIONS,
+  StrCardinalDirection,
+  reverseDirection,
+} from "../utils/direction";
+import { getItemTranslationKey } from "../utils/item";
+import { abbreviateNumber } from "../utils/string";
+import { makeErrorMessageUi } from "../utils/ui";
 import { showRequestItemUi, showSearchUi } from "./form";
 import {
   Block,
+  BlockCustomComponent,
   Entity,
   EntityQueryOptions,
   ItemStack,
@@ -66,9 +71,7 @@ function forceCloseInventory(entity: Entity): Promise<void> {
 
   entity.teleport(ogLocation);
 
-  return new Promise((resolve) => {
-    system.runTimeout(resolve, 4);
-  });
+  return wait(4);
 }
 
 function getItemsOnPage(
@@ -186,89 +189,6 @@ function refreshInterface(
 
   return data;
 }
-
-world.afterEvents.playerPlaceBlock.subscribe((e) => {
-  if (e.block.typeId !== "fluffyalien_asn:storage_interface") return;
-
-  e.block.setPermutation(
-    e.block.permutation.withState("fluffyalien_asn:update_2_3", true),
-  );
-
-  e.block.dimension.spawnEntity("fluffyalien_asn:storage_interface_entity", {
-    x: e.block.x + 0.5,
-    y: e.block.y,
-    z: e.block.z + 0.5,
-  }).nameTag = "fluffyalien_asn:storage_interface";
-
-  StorageNetwork.updateConnectableNetworks(e.block);
-});
-
-world.afterEvents.entityHitEntity.subscribe((e) => {
-  if (
-    e.hitEntity.typeId !== "fluffyalien_asn:storage_interface_entity" ||
-    !(e.damagingEntity instanceof Player)
-  ) {
-    return;
-  }
-
-  const block = e.hitEntity.dimension.getBlock(e.hitEntity.location);
-
-  if (block) {
-    block.setType("air");
-
-    e.hitEntity.dimension.spawnItem(
-      new ItemStack("fluffyalien_asn:storage_interface"),
-      e.hitEntity.location,
-    );
-
-    void StorageNetwork.getNetwork(
-      block,
-      "fluffyalien_asn:storage_interface",
-    )?.updateConnections();
-  }
-
-  e.hitEntity.remove();
-});
-
-world.afterEvents.playerInteractWithEntity.subscribe((e) => {
-  if (e.target.typeId !== "fluffyalien_asn:storage_interface_entity") return;
-
-  const block = e.target.dimension.getBlock(e.target.location);
-  if (!block) {
-    log.warn(
-      "playerInteractWithEntity event",
-      `expected a storage interface block at (${e.target.location.x.toString()},${e.target.location.y.toString()},${e.target.location.z.toString()}) in ${e.target.dimension.id}`,
-    );
-    return;
-  }
-
-  void (async (): Promise<void> => {
-    const network = await getNetworkOrShowError(block, e.target, e.player);
-    if (!network) return;
-
-    refreshInterface(e.target, e.player, network);
-  })();
-});
-
-// auto update old blocks
-onPlayerInteractWithBlockNoSpam((e) => {
-  if (
-    e.block.typeId !== "fluffyalien_asn:storage_interface" ||
-    e.block.permutation.getState("fluffyalien_asn:update_2_3")
-  ) {
-    return;
-  }
-
-  e.block.setPermutation(
-    e.block.permutation.withState("fluffyalien_asn:update_2_3", true),
-  );
-
-  e.block.dimension.spawnEntity("fluffyalien_asn:storage_interface_entity", {
-    x: e.block.x + 0.5,
-    y: e.block.y,
-    z: e.block.z + 0.5,
-  }).nameTag = "fluffyalien_asn:storage_interface";
-});
 
 async function requestItem(
   interfaceEntity: Entity,
@@ -407,6 +327,142 @@ function addItemToStorage(
   refreshInterface(interfaceEntity, data.playerInUi, data.network);
   return true;
 }
+
+export const storageInterfaceComponent: BlockCustomComponent = {
+  onPlace(e) {
+    if (e.previousBlock.type.id === "fluffyalien_asn:storage_interface") return;
+
+    e.block.setPermutation(
+      e.block.permutation.withState("fluffyalien_asn:update_2_3", true),
+    );
+
+    e.block.dimension.spawnEntity("fluffyalien_asn:storage_interface_entity", {
+      x: e.block.x + 0.5,
+      y: e.block.y,
+      z: e.block.z + 0.5,
+    }).nameTag = "fluffyalien_asn:storage_interface";
+
+    StorageNetwork.updateConnectableNetworks(e.block);
+  },
+  onPlayerInteract(e) {
+    if (e.block.permutation.getState("fluffyalien_asn:update_2_3")) {
+      return;
+    }
+
+    e.block.setPermutation(
+      e.block.permutation.withState("fluffyalien_asn:update_2_3", true),
+    );
+
+    e.block.dimension.spawnEntity("fluffyalien_asn:storage_interface_entity", {
+      x: e.block.x + 0.5,
+      y: e.block.y,
+      z: e.block.z + 0.5,
+    }).nameTag = "fluffyalien_asn:storage_interface";
+  },
+  onTick(e) {
+    const cardinalDirection = e.block.permutation.getState(
+      "minecraft:cardinal_direction",
+    ) as StrCardinalDirection;
+
+    updateBlockConnectStates(
+      e.block,
+      STR_DIRECTIONS,
+      (other) => other.typeId === "fluffyalien_asn:storage_cable",
+      (direction) => {
+        if (direction === "up" || direction === "down") {
+          return direction;
+        }
+
+        switch (cardinalDirection) {
+          case "north":
+            switch (direction) {
+              case "south":
+                return;
+              default:
+                return direction;
+            }
+          case "east":
+            switch (direction) {
+              case "north":
+                return "west";
+              case "east":
+                return "north";
+              case "south":
+                return "east";
+              case "west":
+                return;
+            }
+            break;
+          case "south":
+            switch (direction) {
+              case "north":
+                return;
+              default:
+                return reverseDirection(direction);
+            }
+          case "west":
+            switch (direction) {
+              case "north":
+                return "east";
+              case "east":
+                return;
+              case "south":
+                return "west";
+              case "west":
+                return "north";
+            }
+        }
+      },
+    );
+  },
+};
+
+world.afterEvents.entityHitEntity.subscribe((e) => {
+  if (
+    e.hitEntity.typeId !== "fluffyalien_asn:storage_interface_entity" ||
+    !(e.damagingEntity instanceof Player)
+  ) {
+    return;
+  }
+
+  const block = e.hitEntity.dimension.getBlock(e.hitEntity.location);
+
+  if (block) {
+    block.setType("air");
+
+    e.hitEntity.dimension.spawnItem(
+      new ItemStack("fluffyalien_asn:storage_interface"),
+      e.hitEntity.location,
+    );
+
+    void StorageNetwork.getNetwork(
+      block,
+      "fluffyalien_asn:storage_interface",
+    )?.updateConnections();
+  }
+
+  e.hitEntity.remove();
+});
+
+world.afterEvents.playerInteractWithEntity.subscribe((e) => {
+  if (e.target.typeId !== "fluffyalien_asn:storage_interface_entity") return;
+
+  const block = e.target.dimension.getBlock(e.target.location);
+  if (!block) {
+    log.warn(
+      "playerInteractWithEntity event",
+      `expected a storage interface block at (${e.target.location.x.toString()},${e.target.location.y.toString()},${e.target.location.z.toString()}) in ${e.target.dimension.id}`,
+    );
+    return;
+  }
+
+  void (async (): Promise<void> => {
+    const network = await getNetworkOrShowError(block, e.target, e.player);
+    if (!network) return;
+
+    refreshInterface(e.target, e.player, network);
+  })();
+});
 
 system.runInterval(() => {
   const entityQueryOptions: EntityQueryOptions = {

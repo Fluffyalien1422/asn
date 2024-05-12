@@ -1,7 +1,6 @@
 import { Block, Direction, Player, Vector3 } from "@minecraft/server";
 import { Result, failure, success } from "./result";
 import { Vector3Utils } from "@minecraft/math";
-import { getBlockInDirection, makeErrorMessageUi, wait } from "./utils";
 import { ActionFormResponse } from "@minecraft/server-ui";
 import { Logger } from "./log";
 import {
@@ -9,6 +8,9 @@ import {
   removeAnonymousTickingArea,
 } from "./tickingarea";
 import { forceLoadNetworksRule } from "./addon_rules";
+import { getBlockInDirection } from "./utils/direction";
+import { wait } from "./utils/async";
+import { makeErrorMessageUi } from "./utils/ui";
 
 const log = new Logger("cable_network.ts");
 

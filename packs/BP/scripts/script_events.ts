@@ -1,4 +1,4 @@
-import { getPlayerMainhandSlot } from "./utils";
+import { getPlayerMainhandSlot } from "./utils/item";
 import { STORAGE_DATA_DYNAMIC_PROPERTY_ID } from "./storage_drive";
 import { system, Player } from "@minecraft/server";
 import { Logger } from "./log";
@@ -33,7 +33,7 @@ system.afterEvents.scriptEventReceive.subscribe(
     const player = e.sourceEntity;
 
     if (e.id === "fluffyalien_asn:debug_log_disk_data") {
-      const item = getPlayerMainhandSlot(player)?.getItem();
+      const item = getPlayerMainhandSlot(player).getItem();
 
       if (item?.typeId !== "fluffyalien_asn:used_storage_disk") {
         log.warn(

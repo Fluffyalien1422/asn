@@ -4,7 +4,7 @@ import {
   DiscoverCableNetworkConnectionsError,
   discoverCableNetworkConnections,
 } from "./cable_network";
-import { vector3AsDimensionLocation } from "./utils";
+import { vector3AsDimensionLocation } from "./utils/location";
 import { Result, failure, success } from "./result";
 import {
   MAX_STORAGE_DRIVE_DATA_LENGTH,

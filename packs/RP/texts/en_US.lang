@@ -13,6 +13,7 @@ item.fluffyalien_asn:storage_crystal=Storage Crystal
 item.fluffyalien_asn:raw_storage_crystal=Raw Storage Crystal
 item.fluffyalien_asn:used_storage_disk=Storage Disk (With Data)
 item.fluffyalien_asn:tutorial_book=Advanced Storage Network Tutorial Book
+item.fluffyalien_asn:wireless_interface=Wireless Storage Interface
 
 tile.fluffyalien_asn:storage_drive.name=Storage Drive
 tile.fluffyalien_asn:storage_interface.name=Storage Interface
@@ -21,6 +22,10 @@ tile.fluffyalien_asn:storage_cable.name=Storage Cable
 tile.fluffyalien_asn:import_bus.name=Storage Import Bus
 tile.fluffyalien_asn:export_bus.name=Storage Export Bus
 tile.fluffyalien_asn:level_emitter.name=Storage Level Emitter
+
+fluffyalien_asn.message.wirelessInterface.linked=Wireless Interface linked.
+fluffyalien_asn.message.wirelessInterface.notLinked=This Wireless Interface is not linked to a storage network.
+fluffyalien_asn.message.wirelessInterface.forceLoadNetworksDisabled=The `forceLoadNetworks` rule must be enabled to use the Wireless Interface. Enable it with `/scriptevent fluffyalien_asn:addonrule forceLoadNetworks true`
 
 fluffyalien_asn.message.scriptEvent.common.invalidScriptEvent=This script event does not exist.
 fluffyalien_asn.message.scriptEvent.addonRule.invalidRule=This rule does not exist.

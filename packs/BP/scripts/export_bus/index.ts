@@ -1,3 +1,2 @@
-import "./events";
-
+export * from "./component";
 export * from "./api";

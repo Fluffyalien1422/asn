@@ -8,11 +8,8 @@ import {
   setExportBusExportItemDamageRange,
   setExportBusExportItemEnchantments,
 } from ".";
-import {
-  getItemTranslationKey,
-  makeErrorMessageUi,
-  makeMessageUi,
-} from "../utils";
+import { makeErrorMessageUi, makeMessageUi } from "../utils/ui";
+import { getItemTranslationKey } from "../utils/item";
 
 export async function showExportBusUi(
   player: Player,

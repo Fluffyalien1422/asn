@@ -26,6 +26,9 @@
     },
     "fluffyalien_asn:raw_storage_crystal": {
       "textures": "textures/fluffyalien/asn/items/raw_storage_crystal"
+    },
+    "fluffyalien_asn:wireless_interface": {
+      "textures": "textures/fluffyalien/asn/items/wireless_interface"
     }
   }
 }

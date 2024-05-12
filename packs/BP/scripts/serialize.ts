@@ -33,7 +33,7 @@ import {
   StorageSystemItemStack,
   StorageSystemItemStackDynamicProperty,
 } from "./storage_system_item_stack";
-import { getEnchantmentTypeId } from "./utils";
+import { getEnchantmentTypeId } from "./utils/item";
 import { Logger } from "./log";
 
 const log = new Logger("serialize.ts");

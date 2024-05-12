@@ -8,15 +8,14 @@
       }
     },
     "components": {
+      "minecraft:custom_components": ["fluffyalien_asn:storage_core"],
       "tag:fluffyalien_asn:storage_cable_connectable": {},
+
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {
         "*": {
           "texture": "fluffyalien_asn:storage_core"
         }
-      },
-      "minecraft:on_interact": {
-        "event": "fluffyalien_asn:empty"
       },
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {

@@ -1,12 +1,9 @@
 import { Player, RawMessage } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
-import {
-  makeErrorMessageUi,
-  getEnchantmentTypeId,
-  getItemTranslationKey,
-} from "../utils";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { ENCHANTMENT_TRANSLATION_KEYS } from "../enchantment_translations";
+import { getEnchantmentTypeId, getItemTranslationKey } from "../utils/item";
+import { makeErrorMessageUi } from "../utils/ui";
 
 export async function showRequestItemUi(
   player: Player,

@@ -12,16 +12,18 @@
         }
       },
       "states": {
-        "fluffyalien_asn:north": [0, 1],
-        "fluffyalien_asn:east": [0, 1],
-        "fluffyalien_asn:west": [0, 1],
-        "fluffyalien_asn:up": [0, 1],
-        "fluffyalien_asn:down": [0, 1],
+        "fluffyalien_asn:north": [false, true],
+        "fluffyalien_asn:east": [false, true],
+        "fluffyalien_asn:west": [false, true],
+        "fluffyalien_asn:up": [false, true],
+        "fluffyalien_asn:down": [false, true],
         "fluffyalien_asn:update_2_3": [false, true]
       }
     },
     "components": {
+      "minecraft:custom_components": ["fluffyalien_asn:storage_interface"],
       "tag:fluffyalien_asn:storage_cable_connectable": {},
+
       "minecraft:geometry": {
         "identifier": "geometry.fluffyalien_asn.storage_interface",
         "bone_visibility": {
@@ -41,67 +43,12 @@
         "origin": [-5, 3, -3],
         "size": [10, 10, 11]
       },
-      "minecraft:selection_box": {
-        "origin": [-5, 3, -3],
-        "size": [10, 10, 11]
-      },
-      "minecraft:on_interact": {
-        "event": "fluffyalien_asn:empty"
-      },
       "minecraft:light_dampening": 0,
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": false,
-      "minecraft:queued_ticking": {
-        "looping": true,
-        "interval_range": [0, 0],
-        "on_tick": {
-          "event": "fluffyalien_asn:update"
-        }
-      }
-    },
-    "events": {
-      "fluffyalien_asn:empty": {},
-      "fluffyalien_asn:update": {
-        "sequence": [
-          {
-            "set_block_state": {
-              "fluffyalien_asn:up": "q.block_neighbor_has_any_tag(0, 1, 0, 'fluffyalien_asn:storage_cable_connectable')",
-              "fluffyalien_asn:down": "q.block_neighbor_has_any_tag(0, -1, 0, 'fluffyalien_asn:storage_cable_connectable')"
-            }
-          },
-          {
-            "condition": "q.block_state('minecraft:cardinal_direction') == 'north'",
-            "set_block_state": {
-              "fluffyalien_asn:north": "q.block_neighbor_has_any_tag(0, 0, -1, 'fluffyalien_asn:storage_cable_connectable')",
-              "fluffyalien_asn:east": "q.block_neighbor_has_any_tag(1, 0, 0, 'fluffyalien_asn:storage_cable_connectable')",
-              "fluffyalien_asn:west": "q.block_neighbor_has_any_tag(-1, 0, 0, 'fluffyalien_asn:storage_cable_connectable')"
-            }
-          },
-          {
-            "condition": "q.block_state('minecraft:cardinal_direction') == 'east'",
-            "set_block_state": {
-              "fluffyalien_asn:north": "q.block_neighbor_has_any_tag(1, 0, 0, 'fluffyalien_asn:storage_cable_connectable')",
-              "fluffyalien_asn:east": "q.block_neighbor_has_any_tag(0, 0, 1, 'fluffyalien_asn:storage_cable_connectable')",
-              "fluffyalien_asn:west": "q.block_neighbor_has_any_tag(0, 0, -1, 'fluffyalien_asn:storage_cable_connectable')"
-            }
-          },
-          {
-            "condition": "q.block_state('minecraft:cardinal_direction') == 'south'",
-            "set_block_state": {
-              "fluffyalien_asn:north": "q.block_neighbor_has_any_tag(0, 0, 1, 'fluffyalien_asn:storage_cable_connectable')",
-              "fluffyalien_asn:east": "q.block_neighbor_has_any_tag(-1, 0, 0, 'fluffyalien_asn:storage_cable_connectable')",
-              "fluffyalien_asn:west": "q.block_neighbor_has_any_tag(1, 0, 0, 'fluffyalien_asn:storage_cable_connectable')"
-            }
-          },
-          {
-            "condition": "q.block_state('minecraft:cardinal_direction') == 'west'",
-            "set_block_state": {
-              "fluffyalien_asn:north": "q.block_neighbor_has_any_tag(-1, 0, 0, 'fluffyalien_asn:storage_cable_connectable')",
-              "fluffyalien_asn:east": "q.block_neighbor_has_any_tag(0, 0, -1, 'fluffyalien_asn:storage_cable_connectable')",
-              "fluffyalien_asn:west": "q.block_neighbor_has_any_tag(0, 0, 1, 'fluffyalien_asn:storage_cable_connectable')"
-            }
-          }
-        ]
+
+      "minecraft:tick": {
+        "interval_range": [5, 5]
       }
     },
     "permutations": [

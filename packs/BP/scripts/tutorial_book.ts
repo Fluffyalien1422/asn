@@ -1,5 +1,5 @@
 import { ItemStack, Player, RawMessage, world } from "@minecraft/server";
-import { makeMessageUi } from "./utils";
+import { makeMessageUi } from "./utils/ui";
 import { ActionFormData } from "@minecraft/server-ui";
 
 const NOT_FIRST_JOIN_DYNAMIC_PROPERTY_ID = "fluffyalien_asn:not_first_join";
