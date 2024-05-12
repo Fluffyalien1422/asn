@@ -24,16 +24,16 @@ tile.fluffyalien_asn:import_bus.name=Storage Import Bus
 tile.fluffyalien_asn:export_bus.name=Storage Export Bus
 tile.fluffyalien_asn:level_emitter.name=Storage Level Emitter
 
-fluffyalien_asn.message.wirelessInterface.linked=Wireless Storage Interface linked.
-fluffyalien_asn.message.wirelessInterface.notLinked=This Wireless Storage Interface is not linked to a storage network.
-fluffyalien_asn.message.wirelessInterface.forceLoadNetworksDisabled=The `forceLoadNetworks` rule must be enabled to use the Wireless Storage Interface. Enable it with `/scriptevent fluffyalien_asn:addonrule forceLoadNetworks true`
+fluffyalien_asn.message.wirelessInterface.linked=Wireless storage interface linked.
+fluffyalien_asn.message.wirelessInterface.notLinked=This wireless storage interface is not linked to a storage network.
+fluffyalien_asn.message.wirelessInterface.forceLoadNetworksDisabled=The `forceLoadNetworks` rule must be enabled to use the wireless storage interface. Enable it with `/scriptevent fluffyalien_asn:addonrule forceLoadNetworks true`
 
 fluffyalien_asn.message.scriptEvent.common.invalidScriptEvent=This script event does not exist.
 fluffyalien_asn.message.scriptEvent.addonRule.invalidRule=This rule does not exist.
 fluffyalien_asn.message.scriptEvent.addonRule.expectedBoolean=Expected "true" or "false" after rule ID.
-fluffyalien_asn.message.scriptEvent.addonRule.help.forceLoadNetworks=forceLoadNetworks: boolean - When a cable network extends into unloaded chunks, force those chunks to load so the network can fully load. MAY CAUSE LAG! This will not work if all ticking area slots are used.
+fluffyalien_asn.message.scriptEvent.addonRule.help.forceLoadNetworks=forceLoadNetworks: boolean - When a storage network extends into unloaded chunks, force those chunks to load so the network can fully load. MAY CAUSE LAG! This will not work if all ticking area slots are used.
 
-fluffyalien_asn.actionbar.storageInterface.openToViewQueryResults=Open the Storage Interface again to view search results
+fluffyalien_asn.actionbar.storageInterface.openToViewQueryResults=Open the storage interface again to view search results
 
 fluffyalien_asn.ui.common.error=Error
 fluffyalien_asn.ui.common.close=Close
@@ -42,14 +42,14 @@ fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores=Cannot establish a st
 fluffyalien_asn.ui.cableNetwork.error.noStorageCores=Cannot establish a storage network: no storage cores found.
 
 fluffyalien_asn.ui.storageDrive.title=Storage Drive
-fluffyalien_asn.ui.storageDrive.body.storageUsed=Storage used (drive): %s/3000u
-fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk=Cannot add a disk to a non-empty storage drive.
+fluffyalien_asn.ui.storageDrive.body.storageUsed=Storage Used (Drive): %s/3000u
+fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk=Cannot add a disk to storage drive with items in it.
 
 fluffyalien_asn.ui.storageInterface.title=Storage Interface
 fluffyalien_asn.ui.storageInterface.requestItem.itemDurability=Durability: %s/%s
 fluffyalien_asn.ui.storageInterface.requestItem.itemEnchantments=Enchantments:
 fluffyalien_asn.ui.storageInterface.requestItem.itemLore=Lore:
-fluffyalien_asn.ui.storageInterface.requestItem.itemAmount=How many of this item to request?
+fluffyalien_asn.ui.storageInterface.requestItem.itemAmount=Request Amount:
 fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber=Cannot take out this amount. The value must be a valid number, greater than zero, and less than or equal to one thousand.
 fluffyalien_asn.ui.storageInterface.requestItem.error.notEnough=There is not enough of this item stored to take out this amount.
 fluffyalien_asn.ui.storageInterface.search.label=ID Search
@@ -57,21 +57,21 @@ fluffyalien_asn.ui.storageInterface.error.insufficientStorage=Cannot add this it
 fluffyalien_asn.ui.storageInterface.error.bannedItem=%s is a banned item.
 
 fluffyalien_asn.ui.storageCore.title=Storage Core
-fluffyalien_asn.ui.storageCore.body.storageUsed=Storage used (network): %s/%su
-fluffyalien_asn.ui.storageCore.body.connectedInterfaces=Connected interfaces: %s
-fluffyalien_asn.ui.storageCore.body.connectedDrives=Connected drives: %s
+fluffyalien_asn.ui.storageCore.body.storageUsed=Storage Used (Network): %s/%su
+fluffyalien_asn.ui.storageCore.body.connectedInterfaces=Connected Interfaces: %s
+fluffyalien_asn.ui.storageCore.body.connectedDrives=Connected Drives: %s
 
 fluffyalien_asn.ui.exportBus.title=Export Bus
 fluffyalien_asn.ui.exportBus.exportItem=Exporting %s
 fluffyalien_asn.ui.exportBus.noExportItem=Not exporting anything. Interact while holding an item to export that item.
-fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.label=Enchantments filter:
+fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.label=Enchantments Filter
 fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.ignore=Ignore
 fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.with=With
 fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.without=Without
-fluffyalien_asn.ui.exportBus.exportItemMinDamage=Min damage filter (inclusive):
-fluffyalien_asn.ui.exportBus.exportItemMaxDamage=Max damage filter (inclusive):
-fluffyalien_asn.ui.exportBus.error.invalidMinDamage=Invalid value for "Min damage filter (inclusive)" field.
-fluffyalien_asn.ui.exportBus.error.invalidMaxDamage=Invalid value for "Max damage filter (inclusive)" field.
+fluffyalien_asn.ui.exportBus.exportItemMinDamage=Min Damage Filter (Inclusive)
+fluffyalien_asn.ui.exportBus.exportItemMaxDamage=Max Damage Filter (Inclusive)
+fluffyalien_asn.ui.exportBus.error.invalidMinDamage=Invalid min damage filter.
+fluffyalien_asn.ui.exportBus.error.invalidMaxDamage=Invalid max damage filter.
 
 fluffyalien_asn.ui.levelEmitter.title=Level Emitter
 fluffyalien_asn.ui.levelEmitter.noItem=Not testing anything. Interact while holding an item to test that item.
@@ -84,9 +84,9 @@ fluffyalien_asn.ui.tutorialBook.title=Tutorial Book
 
 fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.title=Storage Network
 fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet0=A network of devices that can hold an infinite amount of items.
-fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet1=Comprises one Storage Core and any number of Storage Drives and Storage Interfaces. Can also contain many other optional devices.
-fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet2=Devices in the network must be placed next to each other or be connected with Storage Cables.
-fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet3=To get started, you will need one Storage Core, one Storage Drive, and one Storage Interface or Wireless Storage Interface. Read their respective tutorial entries for more information.
+fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet1=Comprises one storage core and any number of storage drives and storage interfaces. Can also contain many other optional devices.
+fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet2=Devices in the network must be placed next to each other or be connected with storage cables.
+fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet3=To get started, you will need one storage core, one storage drive, and one storage interface or wireless storage interface. Read their respective tutorial entries for more information.
 
 fluffyalien_asn.ui.tutorialBook.entry.storageCore.title=Storage Core
 fluffyalien_asn.ui.tutorialBook.entry.storageCore.bullet0=The core of a storage network.
@@ -98,7 +98,7 @@ fluffyalien_asn.ui.tutorialBook.entry.storageCable.bullet0=Connects devices in a
 
 fluffyalien_asn.ui.tutorialBook.entry.storageDrive.title=Storage Drive
 fluffyalien_asn.ui.tutorialBook.entry.storageDrive.bullet0=Provides the network it's connected to with 3,000u of storage space.
-fluffyalien_asn.ui.tutorialBook.entry.storageDrive.bullet1=Drops a Storage Disk (With Data) when destroyed that contains the items the drive had before it was broken.
+fluffyalien_asn.ui.tutorialBook.entry.storageDrive.bullet1=Drops a storage disk when destroyed that contains the items the drive had before it was broken.
 fluffyalien_asn.ui.tutorialBook.entry.storageDrive.bullet2=Any number of these devices can exist in a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.storageInterface.title=Storage Interface
@@ -126,13 +126,13 @@ fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet4=Any number of these d
 
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.title=Wireless Storage Interface
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet0=Allows players to add, remove, or view items in a storage network wirelessly.
-fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet1=Interact with a Storage Core while holding this item to link it to that network.
+fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet1=Interact with a storage core while holding this item to link it to that network.
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet2=The `forceLoadNetworks` rule must be enabled to use this item. Enable it with `/scriptevent fluffyalien_asn:addonrule forceLoadNetworks true`
 
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.title=Storage Disk
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet0=A crafting item.
-fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet1=Can contain data (will say "Storage Disk (With Data)").
-fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet2=Interact with an empty Storage Drive while holding a disk with data to deposit the items inside of the disk into the drive.
+fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet1=Can contain data.
+fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet2=Interact with an empty storage drive while holding a disk with data to deposit the items inside of the disk into the drive.
 
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.title=Add-on Configuration
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet0=Use the `/scriptevent fluffyalien_asn:addonrule <rule> [value]` command to change a rule.
