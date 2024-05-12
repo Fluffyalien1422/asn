@@ -14,7 +14,7 @@
     },
     "components": {
       "minecraft:custom_components": ["fluffyalien_asn:storage_drive"],
-      "tag:fluffyalien_asn:storage_cable_connectable": {},
+      "tag:fluffyalien_asn:storage_network_connectable": {},
 
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {

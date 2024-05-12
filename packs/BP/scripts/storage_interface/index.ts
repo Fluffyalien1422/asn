@@ -373,7 +373,7 @@ export const storageInterfaceComponent: BlockCustomComponent = {
     updateBlockConnectStates(
       e.block,
       STR_DIRECTIONS,
-      (other) => other.typeId === "fluffyalien_asn:storage_cable",
+      (other) => other.hasTag("fluffyalien_asn:storage_network_connectable"),
       (direction) => {
         if (direction === "up" || direction === "down") {
           return direction;

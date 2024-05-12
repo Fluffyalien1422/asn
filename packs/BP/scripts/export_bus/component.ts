@@ -63,7 +63,7 @@ export const exportBusComponent: BlockCustomComponent = {
     updateBlockConnectStates(
       e.block,
       STR_DIRECTIONS,
-      (other) => other.typeId === "fluffyalien_asn:storage_cable",
+      (other) => other.hasTag("fluffyalien_asn:storage_network_connectable"),
       busUpdateBlockConnectStatesTransformer(
         e.block.permutation.getState(
           "minecraft:cardinal_direction",

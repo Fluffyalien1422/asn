@@ -31,7 +31,10 @@ export function updateImportBus(block: Block, network: StorageNetwork): void {
     const result = network.addItemStack(
       StorageSystemItemStack.fromItemStack(item),
     );
-    if (!result.success) return;
+    if (!result.success) {
+      if (result.error.type === "bannedItem") continue;
+      else return;
+    }
 
     container.setItem(i);
   }
@@ -51,7 +54,7 @@ export const importBusComponent: BlockCustomComponent = {
     updateBlockConnectStates(
       e.block,
       STR_DIRECTIONS,
-      (other) => other.typeId === "fluffyalien_asn:storage_cable",
+      (other) => other.hasTag("fluffyalien_asn:storage_network_connectable"),
       busUpdateBlockConnectStatesTransformer(
         e.block.permutation.getState(
           "minecraft:cardinal_direction",

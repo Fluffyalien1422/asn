@@ -46,15 +46,7 @@ export async function discoverCableNetworkConnections(
     block: Block,
   ): Result<null, DiscoverCableNetworkConnectionsError> {
     if (
-      ![
-        "fluffyalien_asn:storage_cable",
-        "fluffyalien_asn:storage_core",
-        "fluffyalien_asn:storage_drive",
-        "fluffyalien_asn:storage_interface",
-        "fluffyalien_asn:import_bus",
-        "fluffyalien_asn:export_bus",
-        "fluffyalien_asn:level_emitter",
-      ].includes(block.typeId) ||
+      !block.hasTag("fluffyalien_asn:storage_network_connectable") ||
       visitedLocations.some((vector) =>
         Vector3Utils.equals(block.location, vector),
       )
@@ -63,10 +55,10 @@ export async function discoverCableNetworkConnections(
     }
 
     visitedLocations.push(block.location);
+    stack.push(block);
 
     if (block.typeId === "fluffyalien_asn:storage_cable") {
       cables.push(block.location);
-      stack.push(block);
 
       return success(null);
     }
@@ -134,9 +126,6 @@ export async function discoverCableNetworkConnections(
   }
 
   handleBlock(origin);
-  if (origin.typeId !== "fluffyalien_asn:storage_cable") {
-    stack.push(origin);
-  }
 
   while (stack.length) {
     const block = stack.pop()!;

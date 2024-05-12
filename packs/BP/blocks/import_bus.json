@@ -21,7 +21,7 @@
     },
     "components": {
       "minecraft:custom_components": ["fluffyalien_asn:import_bus"],
-      "tag:fluffyalien_asn:storage_cable_connectable": {},
+      "tag:fluffyalien_asn:storage_network_connectable": {},
 
       "minecraft:geometry": {
         "identifier": "geometry.fluffyalien_asn.storage_bus",

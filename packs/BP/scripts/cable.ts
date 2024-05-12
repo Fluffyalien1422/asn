@@ -15,7 +15,7 @@ export const storageCableComponent: BlockCustomComponent = {
   },
   onTick(e) {
     updateBlockConnectStates(e.block, STR_DIRECTIONS, (other) =>
-      other.hasTag("fluffyalien_asn:storage_cable_connectable"),
+      other.hasTag("fluffyalien_asn:storage_network_connectable"),
     );
   },
 };
