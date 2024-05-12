@@ -66,7 +66,7 @@ function isDisplayItem(itemStack: ItemStack): boolean {
   return !!itemStack.getLore()[0]?.endsWith(DISPLAY_ITEM_LORE_STR_END);
 }
 
-export function forceCloseInventory(entity: Entity): Promise<void> {
+function forceCloseInventory(entity: Entity): Promise<void> {
   const ogLocation = { ...entity.location };
 
   entity.teleport({

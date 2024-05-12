@@ -1,4 +1,4 @@
-import { Entity, Vector3, system, world } from "@minecraft/server";
+import { Entity, Player, Vector3, system, world } from "@minecraft/server";
 import { MinecraftDimensionTypes } from "@minecraft/vanilla-data";
 import { DynamicProperty } from "./dynamic_property";
 import { forceLoadNetworksRule } from "./addon_rules";
@@ -9,7 +9,7 @@ import {
 import { StorageNetwork } from "./storage_network";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
-import { forceCloseInventory, refreshInterface } from "./storage_interface";
+import { refreshInterface } from "./storage_interface";
 
 /**
  * key = player ID
@@ -27,6 +27,11 @@ export const wirelessInterfaceLinkDimensionProperty =
     "fluffyalien_asn:wireless_interface_link_dimension",
   );
 
+function removeWirelessInterfaceEntity(player: Player, entity: Entity): void {
+  wirelessInterfaceEntities.delete(player.id);
+  entity.remove();
+}
+
 system.runInterval(() => {
   for (const player of world.getAllPlayers()) {
     let entity = wirelessInterfaceEntities.get(player.id);
@@ -41,8 +46,7 @@ system.runInterval(() => {
       })
     ) {
       if (entity) {
-        wirelessInterfaceEntities.delete(player.id);
-        entity.remove();
+        removeWirelessInterfaceEntity(player, entity);
       }
       return;
     }
@@ -67,12 +71,12 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
 
   const mainHandSlot = getPlayerMainhandSlot(e.player);
   if (!mainHandSlot.getItem()) {
-    void forceCloseInventory(e.target);
+    removeWirelessInterfaceEntity(e.player, e.target);
     return;
   }
 
   if (!forceLoadNetworksRule.get()) {
-    void forceCloseInventory(e.target);
+    removeWirelessInterfaceEntity(e.player, e.target);
     e.player.sendMessage({
       rawtext: [
         {
@@ -92,7 +96,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     wirelessInterfaceLinkDimensionProperty.get(mainHandSlot);
 
   if (!linkLocation || !linkDimension) {
-    void forceCloseInventory(e.target);
+    removeWirelessInterfaceEntity(e.player, e.target);
     e.player.sendMessage({
       rawtext: [
         {
@@ -107,7 +111,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   }
 
   function sendLinkedNetworkNotFound(): void {
-    void forceCloseInventory(e.target);
+    removeWirelessInterfaceEntity(e.player, e.target);
     e.player.sendMessage({
       rawtext: [
         {
