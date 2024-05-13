@@ -125,7 +125,7 @@ fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet4=Any number of these d
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.title=Wireless Storage Interface
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet0=Allows players to add, remove, or view items in a storage network wirelessly.
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet1=Interact with a storage core while holding this item to link it to that network.
-fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet2=The `forceLoadNetworks` rule must be enabled to use this item. Enable it with `/scriptevent fluffyalien_asn:addonrule forceLoadNetworks true`
+fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet2=The `forceLoadNetworks` rule must be enabled to use this item. Enable it with `/scriptevent fluffyalien_asn:addonrule forceLoadNetworks true`.
 
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.title=Storage Disk
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet0=A crafting item.
