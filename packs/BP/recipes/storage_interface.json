@@ -5,7 +5,12 @@
       "identifier": "fluffyalien_asn:storage_interface"
     },
     "tags": ["crafting_table"],
-    "pattern": ["ECD", "CLC", "DCE"],
+    // prettier-ignore
+    "pattern": [
+      "ECD", 
+      "CLC",
+      "DCE"
+    ],
     "key": {
       "D": {
         "item": "diamond"

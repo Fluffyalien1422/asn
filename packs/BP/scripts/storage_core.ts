@@ -1,0 +1,177 @@
+import { Vector3Utils } from "@minecraft/math";
+import { StorageNetwork } from "./storage_network";
+import {
+  BlockCustomComponent,
+  DimensionLocation,
+  Entity,
+  Player,
+  system,
+  world,
+} from "@minecraft/server";
+import { Logger } from "./log";
+import { showEstablishNetworkError } from "./cable_network";
+import {
+  wirelessInterfaceLinkDimensionProperty,
+  wirelessInterfaceLinkLocationProperty,
+} from "./wireless_interface";
+import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
+import { getPlayerMainhandSlot } from "./utils/item";
+import { MinecraftDimensionTypes } from "@minecraft/vanilla-data";
+
+const log = new Logger("storage_core.ts");
+
+function showStorageCoreUi(
+  player: Player,
+  network: StorageNetwork,
+): Promise<ActionFormResponse> {
+  const form = new ActionFormData();
+
+  form.title({
+    translate: "fluffyalien_asn.ui.storageCore.title",
+  });
+
+  form.body({
+    rawtext: [
+      {
+        translate: "fluffyalien_asn.ui.storageCore.body.storageUsed",
+        with: {
+          rawtext: [
+            {
+              text: network.getUsedDataLength().toString(),
+            },
+            {
+              text: network.getMaxDataLength().toString(),
+            },
+          ],
+        },
+      },
+      {
+        text: "\n\n",
+      },
+      {
+        translate: "fluffyalien_asn.ui.storageCore.body.connectedInterfaces",
+        with: {
+          rawtext: [
+            {
+              text: network
+                .getConnections()
+                .storageInterfaces.length.toString(),
+            },
+          ],
+        },
+      },
+      {
+        text: "\n\n",
+      },
+      {
+        translate: "fluffyalien_asn.ui.storageCore.body.connectedDrives",
+        with: {
+          rawtext: [
+            {
+              text: network.getConnections().storageDrives.length.toString(),
+            },
+          ],
+        },
+      },
+    ],
+  });
+
+  form.button({
+    translate: "fluffyalien_asn.ui.common.close",
+  });
+
+  return form.show(player);
+}
+
+/**
+ * Gets the storage core dummy entity at a {@link DimensionLocation}
+ * @param location the block location of the storage core
+ * @returns the {@link Entity} or undefined if it could not be found
+ */
+function getStorageCoreEntity(location: DimensionLocation): Entity | undefined {
+  return location.dimension
+    .getEntitiesAtBlockLocation(location)
+    .find((v) => v.typeId === "fluffyalien_asn:storage_core_entity");
+}
+
+export const storageCoreComponent: BlockCustomComponent = {
+  onPlace(e) {
+    e.block.dimension.spawnEntity("fluffyalien_asn:storage_core_entity", {
+      x: e.block.x + 0.5,
+      y: e.block.y,
+      z: e.block.z + 0.5,
+    });
+
+    StorageNetwork.updateConnectableNetworks(e.block);
+  },
+  onPlayerDestroy(e) {
+    getStorageCoreEntity(e.block)?.triggerEvent("fluffyalien_asn:despawn");
+    StorageNetwork.getNetwork(
+      e.block,
+      e.destroyedBlockPermutation.type.id,
+    )?.destroy();
+  },
+  onPlayerInteract(e) {
+    if (!e.player) return;
+    const player = e.player;
+
+    const mainhandSlot = getPlayerMainhandSlot(e.player);
+
+    if (
+      mainhandSlot.hasItem() &&
+      mainhandSlot.typeId === "fluffyalien_asn:wireless_interface"
+    ) {
+      wirelessInterfaceLinkLocationProperty.set(mainhandSlot, e.block.location);
+      wirelessInterfaceLinkDimensionProperty.set(
+        mainhandSlot,
+        e.block.dimension.id as MinecraftDimensionTypes,
+      );
+
+      player.sendMessage({
+        rawtext: [
+          {
+            text: "§a",
+          },
+          {
+            translate: "fluffyalien_asn.message.wirelessInterface.linked",
+          },
+        ],
+      });
+      return;
+    }
+
+    void StorageNetwork.getOrEstablishNetwork(e.block).then((networkResult) => {
+      if (!networkResult.success) {
+        void showEstablishNetworkError(player, networkResult.error);
+        return;
+      }
+
+      const network = networkResult.value;
+
+      void showStorageCoreUi(player, network);
+    });
+  },
+};
+
+world.afterEvents.entityLoad.subscribe((e) => {
+  if (e.entity.typeId !== "fluffyalien_asn:storage_core_entity") return;
+
+  const entity = e.entity;
+
+  system.runTimeout(() => {
+    const block = entity.dimension.getBlock(entity.location);
+    if (!block) {
+      log.warn(
+        "entityLoad event",
+        `could not get storage core block at (${Vector3Utils.toString(
+          entity.location,
+        )}) in ${entity.dimension.id}`,
+      );
+      return;
+    }
+
+    // establish a network when the storage core entity is loaded so that the processes
+    // will start running without having to open an interface
+    void StorageNetwork.getOrEstablishNetwork(block);
+  }, 100);
+});

@@ -4,7 +4,7 @@ import {
   DiscoverCableNetworkConnectionsError,
   discoverCableNetworkConnections,
 } from "./cable_network";
-import { vector3AsDimensionLocation } from "./utils";
+import { vector3AsDimensionLocation } from "./utils/location";
 import { Result, failure, success } from "./result";
 import {
   MAX_STORAGE_DRIVE_DATA_LENGTH,
@@ -23,7 +23,14 @@ import { updateLevelEmitter } from "./level_emitter";
 
 const log = new Logger("storage_network.ts");
 
-export type AddItemStackToStorageError = "insufficientStorage";
+export type AddItemStackToStorageError =
+  | {
+      type: "insufficientStorage";
+    }
+  | {
+      type: "bannedItem";
+      itemId: string;
+    };
 
 export class StorageNetwork {
   private static readonly storageNetworks: StorageNetwork[] = [];
@@ -68,9 +75,13 @@ export class StorageNetwork {
   static getConnectableNetworks(block: Block): StorageNetwork[] {
     const networks: StorageNetwork[] = [];
 
+    function checkBlock(other: Block): boolean {
+      return other.hasTag("fluffyalien_asn:storage_network_connectable");
+    }
+
     {
       const north = block.north();
-      if (north && north.typeId === "fluffyalien_asn:storage_cable") {
+      if (north && checkBlock(north)) {
         const network = StorageNetwork.getNetwork(north);
         if (network) networks.push(network);
       }
@@ -78,7 +89,7 @@ export class StorageNetwork {
 
     {
       const east = block.east();
-      if (east && east.typeId === "fluffyalien_asn:storage_cable") {
+      if (east && checkBlock(east)) {
         const network = StorageNetwork.getNetwork(east);
         if (network) networks.push(network);
       }
@@ -86,7 +97,7 @@ export class StorageNetwork {
 
     {
       const south = block.south();
-      if (south && south.typeId === "fluffyalien_asn:storage_cable") {
+      if (south && checkBlock(south)) {
         const network = StorageNetwork.getNetwork(south);
         if (network) networks.push(network);
       }
@@ -94,7 +105,7 @@ export class StorageNetwork {
 
     {
       const west = block.west();
-      if (west && west.typeId === "fluffyalien_asn:storage_cable") {
+      if (west && checkBlock(west)) {
         const network = StorageNetwork.getNetwork(west);
         if (network) networks.push(network);
       }
@@ -102,7 +113,7 @@ export class StorageNetwork {
 
     {
       const above = block.above();
-      if (above && above.typeId === "fluffyalien_asn:storage_cable") {
+      if (above && checkBlock(above)) {
         const network = StorageNetwork.getNetwork(above);
         if (network) networks.push(network);
       }
@@ -110,7 +121,7 @@ export class StorageNetwork {
 
     {
       const below = block.below();
-      if (below && below.typeId === "fluffyalien_asn:storage_cable") {
+      if (below && checkBlock(below)) {
         const network = StorageNetwork.getNetwork(below);
         if (network) networks.push(network);
       }
@@ -477,6 +488,16 @@ export class StorageNetwork {
   ): Result<null, AddItemStackToStorageError> {
     this.ensureValidity();
 
+    if (
+      itemStack.typeId.startsWith("minecraft:") &&
+      itemStack.typeId.endsWith("_shulker_box")
+    ) {
+      return failure({
+        type: "bannedItem",
+        itemId: itemStack.typeId,
+      });
+    }
+
     const storedItems = this.getStoredItemStacksMutable();
 
     const existingItemStack = storedItems.find((other) =>
@@ -489,7 +510,7 @@ export class StorageNetwork {
       const length = serialize(itemStack).length;
 
       if (this.getUsedDataLength() + length > this.getMaxDataLength()) {
-        return failure("insufficientStorage");
+        return failure({ type: "insufficientStorage" });
       }
 
       storedItems.push(itemStack);

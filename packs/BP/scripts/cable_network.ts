@@ -1,7 +1,6 @@
 import { Block, Direction, Player, Vector3 } from "@minecraft/server";
 import { Result, failure, success } from "./result";
 import { Vector3Utils } from "@minecraft/math";
-import { getBlockInDirection, makeErrorMessageUi, wait } from "./utils";
 import { ActionFormResponse } from "@minecraft/server-ui";
 import { Logger } from "./log";
 import {
@@ -9,6 +8,8 @@ import {
   removeAnonymousTickingArea,
 } from "./tickingarea";
 import { forceLoadNetworksRule } from "./addon_rules";
+import { getBlockInDirection } from "./utils/direction";
+import { makeErrorMessageUi } from "./utils/ui";
 
 const log = new Logger("cable_network.ts");
 
@@ -44,15 +45,7 @@ export async function discoverCableNetworkConnections(
     block: Block,
   ): Result<null, DiscoverCableNetworkConnectionsError> {
     if (
-      ![
-        "fluffyalien_asn:storage_cable",
-        "fluffyalien_asn:storage_core",
-        "fluffyalien_asn:storage_drive",
-        "fluffyalien_asn:storage_interface",
-        "fluffyalien_asn:import_bus",
-        "fluffyalien_asn:export_bus",
-        "fluffyalien_asn:level_emitter",
-      ].includes(block.typeId) ||
+      !block.hasTag("fluffyalien_asn:storage_network_connectable") ||
       visitedLocations.some((vector) =>
         Vector3Utils.equals(block.location, vector),
       )
@@ -61,10 +54,10 @@ export async function discoverCableNetworkConnections(
     }
 
     visitedLocations.push(block.location);
+    stack.push(block);
 
     if (block.typeId === "fluffyalien_asn:storage_cable") {
       cables.push(block.location);
-      stack.push(block);
 
       return success(null);
     }
@@ -112,9 +105,8 @@ export async function discoverCableNetworkConnections(
         return success(null);
       }
 
-      addAnonymousTickingArea(block.dimension, block.location, 2);
+      await addAnonymousTickingArea(block.dimension, block.location, 2);
 
-      await wait(1);
       nextBlock = getBlockInDirection(block, nextDirection);
 
       removeAnonymousTickingArea(block.dimension, block.location);
@@ -132,9 +124,6 @@ export async function discoverCableNetworkConnections(
   }
 
   handleBlock(origin);
-  if (origin.typeId !== "fluffyalien_asn:storage_cable") {
-    stack.push(origin);
-  }
 
   while (stack.length) {
     const block = stack.pop()!;

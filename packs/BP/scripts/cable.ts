@@ -1,18 +1,21 @@
 import { StorageNetwork } from "./storage_network";
-import { world } from "@minecraft/server";
+import { BlockCustomComponent } from "@minecraft/server";
+import { updateBlockConnectStates } from "./utils/block_connect";
+import { STR_DIRECTIONS } from "./utils/direction";
 
-world.afterEvents.playerPlaceBlock.subscribe((e) => {
-  if (e.block.typeId !== "fluffyalien_asn:storage_cable") return;
-
-  StorageNetwork.updateConnectableNetworks(e.block);
-});
-
-world.afterEvents.playerBreakBlock.subscribe((e) => {
-  if (e.brokenBlockPermutation.type.id !== "fluffyalien_asn:storage_cable")
-    return;
-
-  void StorageNetwork.getNetwork(
-    e.block,
-    e.brokenBlockPermutation.type.id,
-  )?.updateConnections();
-});
+export const storageCableComponent: BlockCustomComponent = {
+  onPlace(e) {
+    StorageNetwork.updateConnectableNetworks(e.block);
+  },
+  onPlayerDestroy(e) {
+    void StorageNetwork.getNetwork(
+      e.block,
+      e.destroyedBlockPermutation.type.id,
+    )?.updateConnections();
+  },
+  onTick(e) {
+    updateBlockConnectStates(e.block, STR_DIRECTIONS, (other) =>
+      other.hasTag("fluffyalien_asn:storage_network_connectable"),
+    );
+  },
+};

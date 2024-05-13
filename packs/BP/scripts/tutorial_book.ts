@@ -1,5 +1,5 @@
 import { ItemStack, Player, RawMessage, world } from "@minecraft/server";
-import { makeMessageUi } from "./utils";
+import { makeMessageUi } from "./utils/ui";
 import { ActionFormData } from "@minecraft/server-ui";
 
 const NOT_FIRST_JOIN_DYNAMIC_PROPERTY_ID = "fluffyalien_asn:not_first_join";
@@ -14,7 +14,7 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
   {
     id: "storageNetwork",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon",
-    bullets: 3,
+    bullets: 4,
   },
   {
     id: "storageCore",
@@ -24,7 +24,7 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
   {
     id: "storageCable",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_cable_icon",
-    bullets: 2,
+    bullets: 1,
   },
   {
     id: "storageDrive",
@@ -34,7 +34,7 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
   {
     id: "storageInterface",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_interface_icon",
-    bullets: 3,
+    bullets: 2,
   },
   {
     id: "importBus",
@@ -52,14 +52,14 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
     bullets: 5,
   },
   {
-    id: "storageDisk",
-    icon: "textures/fluffyalien/asn/items/storage_disk",
+    id: "wirelessInterface",
+    icon: "textures/fluffyalien/asn/items/wireless_interface",
     bullets: 3,
   },
   {
-    id: "storageCrystal",
-    icon: "textures/fluffyalien/asn/items/storage_crystal",
-    bullets: 2,
+    id: "storageDisk",
+    icon: "textures/fluffyalien/asn/items/storage_disk",
+    bullets: 3,
   },
   {
     id: "addonRules",

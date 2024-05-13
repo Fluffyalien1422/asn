@@ -7,16 +7,18 @@
         "category": "items"
       },
       "states": {
-        "fluffyalien_asn:north": [0, 1],
-        "fluffyalien_asn:east": [0, 1],
-        "fluffyalien_asn:south": [0, 1],
-        "fluffyalien_asn:west": [0, 1],
-        "fluffyalien_asn:up": [0, 1],
-        "fluffyalien_asn:down": [0, 1]
+        "fluffyalien_asn:north": [false, true],
+        "fluffyalien_asn:east": [false, true],
+        "fluffyalien_asn:south": [false, true],
+        "fluffyalien_asn:west": [false, true],
+        "fluffyalien_asn:up": [false, true],
+        "fluffyalien_asn:down": [false, true]
       }
     },
     "components": {
-      "tag:fluffyalien_asn:storage_cable_connectable": {},
+      "minecraft:custom_components": ["fluffyalien_asn:storage_cable"],
+      "tag:fluffyalien_asn:storage_network_connectable": {},
+
       "minecraft:geometry": {
         "identifier": "geometry.fluffyalien_asn.storage_cable",
         "bone_visibility": {
@@ -46,24 +48,8 @@
       "minecraft:destructible_by_mining": {
         "seconds_to_destroy": 1
       },
-      "minecraft:queued_ticking": {
-        "looping": true,
-        "interval_range": [0, 0],
-        "on_tick": {
-          "event": "fluffyalien_asn:update"
-        }
-      }
-    },
-    "events": {
-      "fluffyalien_asn:update": {
-        "set_block_state": {
-          "fluffyalien_asn:north": "q.block_neighbor_has_any_tag(0, 0, -1, 'fluffyalien_asn:storage_cable_connectable')",
-          "fluffyalien_asn:east": "q.block_neighbor_has_any_tag(1, 0, 0, 'fluffyalien_asn:storage_cable_connectable')",
-          "fluffyalien_asn:south": "q.block_neighbor_has_any_tag(0, 0, 1, 'fluffyalien_asn:storage_cable_connectable')",
-          "fluffyalien_asn:west": "q.block_neighbor_has_any_tag(-1, 0, 0, 'fluffyalien_asn:storage_cable_connectable')",
-          "fluffyalien_asn:up": "q.block_neighbor_has_any_tag(0, 1, 0, 'fluffyalien_asn:storage_cable_connectable')",
-          "fluffyalien_asn:down": "q.block_neighbor_has_any_tag(0, -1, 0, 'fluffyalien_asn:storage_cable_connectable')"
-        }
+      "minecraft:tick": {
+        "interval_range": [5, 5]
       }
     }
   }

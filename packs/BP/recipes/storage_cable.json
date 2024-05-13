@@ -5,7 +5,12 @@
       "identifier": "fluffyalien_asn:storage_cable"
     },
     "tags": ["crafting_table"],
-    "pattern": ["IRI", "RER", "IRI"],
+    // prettier-ignore
+    "pattern": [
+      "IRC",
+      "GEG",
+      "CRI"
+    ],
     "key": {
       "R": {
         "item": "redstone"
@@ -15,6 +20,12 @@
       },
       "I": {
         "item": "iron_ingot"
+      },
+      "C": {
+        "item": "copper_ingot"
+      },
+      "G": {
+        "item": "gold_ingot"
       }
     },
     "result": {

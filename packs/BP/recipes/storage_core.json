@@ -5,7 +5,12 @@
       "identifier": "fluffyalien_asn:storage_core"
     },
     "tags": ["crafting_table"],
-    "pattern": ["DDD", "REC", "ISI"],
+    // prettier-ignore
+    "pattern": [
+      "DAD",
+      "REC",
+      "ISI"
+    ],
     "key": {
       "D": {
         "item": "diamond"
@@ -20,10 +25,13 @@
         "item": "comparator"
       },
       "S": {
-        "item": "smooth_stone"
+        "item": "fluffyalien_asn:storage_cable"
       },
       "I": {
         "item": "iron_block"
+      },
+      "A": {
+        "item": "amethyst_shard"
       }
     },
     "result": {

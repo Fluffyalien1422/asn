@@ -1,0 +1,43 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "fluffyalien_asn:wireless_interface_antenna"
+    },
+    "tags": ["crafting_table"],
+    // prettier-ignore
+    "pattern": [
+      "GAG", 
+      "CPC",
+      "IDI"
+    ],
+    "key": {
+      "P": {
+        "item": "ender_eye"
+      },
+      "D": {
+        "item": "diamond"
+      },
+      "A": {
+        "item": "amethyst_shard"
+      },
+      "I": {
+        "item": "iron_ingot"
+      },
+      "C": {
+        "item": "copper_ingot"
+      },
+      "G": {
+        "item": "gold_nugget"
+      }
+    },
+    "result": {
+      "item": "fluffyalien_asn:wireless_interface_antenna"
+    },
+    "unlock": [
+      {
+        "item": "diamond"
+      }
+    ]
+  }
+}

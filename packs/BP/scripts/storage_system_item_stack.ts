@@ -1,6 +1,6 @@
 import { Enchantment, ItemStack, Vector3 } from "@minecraft/server";
 import { DeepReadonly } from "ts-essentials";
-import { getEnchantmentTypeId } from "./utils";
+import { getEnchantmentTypeId } from "./utils/item";
 import { Vector3Utils } from "@minecraft/math";
 
 export interface StorageSystemItemStackDynamicProperty {
@@ -74,6 +74,18 @@ export class StorageSystemItemStack {
       this.nameTag,
       this.damage,
       this.lore,
+      this.dynamicProperties,
+      this.enchantments,
+    );
+  }
+
+  withLore(lore: string[]): StorageSystemItemStack {
+    return new StorageSystemItemStack(
+      this.typeId,
+      this.amount,
+      this.nameTag,
+      this.damage,
+      lore,
       this.dynamicProperties,
       this.enchantments,
     );

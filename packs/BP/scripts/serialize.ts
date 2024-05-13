@@ -28,12 +28,17 @@ minecraft:dirt(1  0   )
 minecraft:wooden_sword(1  0   sharpness@1,unbreaking@2)
 */
 
-import { Enchantment, EnchantmentType, Vector3 } from "@minecraft/server";
+import {
+  Enchantment,
+  EnchantmentType,
+  ItemTypes,
+  Vector3,
+} from "@minecraft/server";
 import {
   StorageSystemItemStack,
   StorageSystemItemStackDynamicProperty,
 } from "./storage_system_item_stack";
-import { getEnchantmentTypeId } from "./utils";
+import { getEnchantmentTypeId } from "./utils/item";
 import { Logger } from "./log";
 
 const log = new Logger("serialize.ts");
@@ -316,7 +321,10 @@ class DeserializeParser {
     return dynamicProperties;
   }
 
-  private parseSingle(): StorageSystemItemStack {
+  /**
+   * @returns the parsed StorageSystemItemStack or undefined if the item ID doesn't exist
+   */
+  private parseSingle(): StorageSystemItemStack | undefined {
     // parse
 
     const id = this.read(["("]);
@@ -361,6 +369,9 @@ class DeserializeParser {
 
     // make result
 
+    if (!ItemTypes.get(id)) {
+      return;
+    }
     return new StorageSystemItemStack(
       id,
       amount,
@@ -376,7 +387,8 @@ class DeserializeParser {
     const itemStacks: StorageSystemItemStack[] = [];
 
     while (!this.isEoi()) {
-      itemStacks.push(this.parseSingle());
+      const item = this.parseSingle();
+      if (item) itemStacks.push(item);
 
       if (this.isEoi()) {
         break;

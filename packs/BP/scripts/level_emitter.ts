@@ -1,26 +1,28 @@
 import { StorageNetwork } from "./storage_network";
 import {
   Block,
+  BlockCustomComponent,
   BlockPermutation,
   Entity,
   ItemStack,
   Player,
-  world,
 } from "@minecraft/server";
-import {
-  CardinalDirection,
-  getBlockInDirection,
-  getEntityAtBlockLocation,
-  getItemTranslationKey,
-  getPlayerMainhandSlot,
-  makeErrorMessageUi,
-  makeMessageUi,
-  reverseDirection,
-} from "./utils";
 import { Logger } from "./log";
 import { ModalFormData } from "@minecraft/server-ui";
-import { onPlayerInteractWithBlockNoSpam } from "./interact_with_block_no_spam";
 import { DynamicProperty } from "./dynamic_property";
+import {
+  STR_DIRECTIONS,
+  StrCardinalDirection,
+  getBlockInDirection,
+  reverseDirection,
+} from "./utils/direction";
+import { getEntityAtBlockLocation } from "./utils/location";
+import { getItemTranslationKey, getPlayerMainhandSlot } from "./utils/item";
+import { makeErrorMessageUi, makeMessageUi } from "./utils/ui";
+import {
+  busUpdateBlockConnectStatesTransformer,
+  updateBlockConnectStates,
+} from "./utils/block_connect";
 
 const log = new Logger("level_emitter.ts");
 
@@ -64,59 +66,65 @@ const levelEmitterItemMaxDamage = new DynamicProperty<number>(
   "fluffyalien_asn:level_emitter_item_max_damage",
 );
 
-world.afterEvents.playerPlaceBlock.subscribe((e) => {
-  if (e.block.typeId !== "fluffyalien_asn:level_emitter") return;
+export const levelEmitterComponent: BlockCustomComponent = {
+  onPlace(e) {
+    e.block.dimension.spawnEntity("fluffyalien_asn:level_emitter_entity", {
+      x: e.block.x + 0.5,
+      y: e.block.y,
+      z: e.block.z + 0.5,
+    });
 
-  e.block.dimension.spawnEntity("fluffyalien_asn:level_emitter_entity", {
-    x: e.block.x + 0.5,
-    y: e.block.y,
-    z: e.block.z + 0.5,
-  });
+    StorageNetwork.updateConnectableNetworks(e.block);
+  },
+  onPlayerDestroy(e) {
+    getEntityAtBlockLocation(
+      e.block,
+      "fluffyalien_asn:level_emitter_entity",
+    )?.remove();
 
-  StorageNetwork.updateConnectableNetworks(e.block);
-});
+    void StorageNetwork.getNetwork(
+      e.block,
+      e.destroyedBlockPermutation.type.id,
+    )?.updateConnections();
+  },
+  onPlayerInteract(e) {
+    if (!e.player) return;
 
-world.afterEvents.playerBreakBlock.subscribe((e) => {
-  if (e.brokenBlockPermutation.type.id !== "fluffyalien_asn:level_emitter")
-    return;
+    const entity = getEntityAtBlockLocation(
+      e.block,
+      "fluffyalien_asn:level_emitter_entity",
+    );
+    if (!entity) {
+      log.warn("playerInteractWithBlock event", "could not get dummy entity");
+      return;
+    }
 
-  getEntityAtBlockLocation(
-    e.block,
-    "fluffyalien_asn:level_emitter_entity",
-  )?.remove();
+    const mainhandSlot = getPlayerMainhandSlot(e.player);
+    const heldItem = mainhandSlot.getItem();
+    if (heldItem) {
+      levelEmitterItem.set(entity, heldItem.typeId);
 
-  void StorageNetwork.getNetwork(
-    e.block,
-    e.brokenBlockPermutation.type.id,
-  )?.updateConnections();
-});
+      // reset optional values
+      levelEmitterTestEnchantments.set(entity);
+      levelEmitterItemMinDamage.set(entity);
+      levelEmitterItemMaxDamage.set(entity);
+    }
 
-onPlayerInteractWithBlockNoSpam((e) => {
-  if (e.block.typeId !== "fluffyalien_asn:level_emitter" || e.player.isSneaking)
-    return;
-
-  const entity = getEntityAtBlockLocation(
-    e.block,
-    "fluffyalien_asn:level_emitter_entity",
-  );
-  if (!entity) {
-    log.warn("playerInteractWithBlock event", "could not get dummy entity");
-    return;
-  }
-
-  const mainhandSlot = getPlayerMainhandSlot(e.player);
-  const heldItem = mainhandSlot?.getItem();
-  if (heldItem) {
-    levelEmitterItem.set(entity, heldItem.typeId);
-
-    // reset optional values
-    levelEmitterTestEnchantments.set(entity);
-    levelEmitterItemMinDamage.set(entity);
-    levelEmitterItemMaxDamage.set(entity);
-  }
-
-  void showLevelEmitterUi(e.player, entity);
-});
+    void showLevelEmitterUi(e.player, entity);
+  },
+  onTick(e) {
+    updateBlockConnectStates(
+      e.block,
+      STR_DIRECTIONS,
+      (other) => other.hasTag("fluffyalien_asn:storage_network_connectable"),
+      busUpdateBlockConnectStatesTransformer(
+        e.block.permutation.getState(
+          "minecraft:cardinal_direction",
+        ) as StrCardinalDirection,
+      ),
+    );
+  },
+};
 
 async function showLevelEmitterUi(
   player: Player,
@@ -343,7 +351,7 @@ export function updateLevelEmitter(
 
   const cardinalDirection = block.permutation.getState(
     "minecraft:cardinal_direction",
-  ) as CardinalDirection;
+  ) as StrCardinalDirection;
 
   const target = getBlockInDirection(block, cardinalDirection);
 

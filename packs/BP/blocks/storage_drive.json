@@ -13,7 +13,9 @@
       }
     },
     "components": {
-      "tag:fluffyalien_asn:storage_cable_connectable": {},
+      "minecraft:custom_components": ["fluffyalien_asn:storage_drive"],
+      "tag:fluffyalien_asn:storage_network_connectable": {},
+
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {
         "north": {
@@ -29,16 +31,10 @@
         "west": "north",
         "down": "up"
       },
-      "minecraft:on_interact": {
-        "event": "fluffyalien_asn:empty"
-      },
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {
         "seconds_to_destroy": 1
       }
-    },
-    "events": {
-      "fluffyalien_asn:empty": {}
     },
     "permutations": [
       {
