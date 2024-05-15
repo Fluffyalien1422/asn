@@ -18,6 +18,7 @@ import {
   BlockCustomComponent,
   Entity,
   EntityQueryOptions,
+  EquipmentSlot,
   ItemStack,
   Player,
   system,
@@ -300,11 +301,25 @@ function clearTakenItemFromPlayer(
     }
   }
 
+  const playerEquipmentInventory = player.getComponent("equippable")!;
+
+  const playerRecoverEquipment = new Map<EquipmentSlot, ItemStack>();
+  for (const equipmentSlot of Object.values(EquipmentSlot)) {
+    const item = playerEquipmentInventory.getEquipment(equipmentSlot);
+    if (item) {
+      playerRecoverEquipment.set(equipmentSlot, item);
+    }
+  }
+
   player.runCommand("clear @s"); // clearing with script does not remove the item from the player's selection but this does
 
   for (let i = 0; i < playerInventory.size; i++) {
     const item = playerRecoverItems[i];
     if (item) playerInventory.setItem(i, item);
+  }
+
+  for (const [equipmentSlot, item] of playerRecoverEquipment) {
+    playerEquipmentInventory.setEquipment(equipmentSlot, item);
   }
 }
 
