@@ -98,6 +98,8 @@ function showStorageDriveUi(
 
 export const storageDriveComponent: BlockCustomComponent = {
   onPlace(e) {
+    if (e.previousBlock.type.id === "fluffyalien_asn:storage_drive") return;
+
     e.block.dimension.spawnEntity("fluffyalien_asn:storage_drive_entity", {
       x: e.block.x + 0.5,
       y: e.block.y,

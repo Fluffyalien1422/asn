@@ -19,6 +19,8 @@ const log = new Logger("export_bus/component.ts");
 
 export const exportBusComponent: BlockCustomComponent = {
   onPlace(e) {
+    if (e.previousBlock.type.id === "fluffyalien_asn:export_bus") return;
+
     e.block.dimension.spawnEntity("fluffyalien_asn:export_bus_entity", {
       x: e.block.x + 0.5,
       y: e.block.y,

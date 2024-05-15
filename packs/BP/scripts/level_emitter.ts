@@ -68,6 +68,8 @@ const levelEmitterItemMaxDamage = new DynamicProperty<number>(
 
 export const levelEmitterComponent: BlockCustomComponent = {
   onPlace(e) {
+    if (e.previousBlock.type.id === "fluffyalien_asn:level_emitter") return;
+
     e.block.dimension.spawnEntity("fluffyalien_asn:level_emitter_entity", {
       x: e.block.x + 0.5,
       y: e.block.y,

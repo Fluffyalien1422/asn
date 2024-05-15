@@ -5,6 +5,8 @@ import { STR_DIRECTIONS } from "./utils/direction";
 
 export const storageCableComponent: BlockCustomComponent = {
   onPlace(e) {
+    if (e.previousBlock.type.id === "fluffyalien_asn:storage_cable") return;
+
     StorageNetwork.updateConnectableNetworks(e.block);
   },
   onPlayerDestroy(e) {

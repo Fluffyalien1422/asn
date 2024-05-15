@@ -96,6 +96,8 @@ function getStorageCoreEntity(location: DimensionLocation): Entity | undefined {
 
 export const storageCoreComponent: BlockCustomComponent = {
   onPlace(e) {
+    if (e.previousBlock.type.id === "fluffyalien_asn:storage_core") return;
+
     e.block.dimension.spawnEntity("fluffyalien_asn:storage_core_entity", {
       x: e.block.x + 0.5,
       y: e.block.y,
