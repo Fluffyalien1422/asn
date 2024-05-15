@@ -19,9 +19,10 @@ module.exports = {
       parser: "@typescript-eslint/parser",
       plugins: ["@typescript-eslint"],
       rules: {
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/no-unsafe-enum-comparison": "off",
         "@typescript-eslint/explicit-function-return-type": "error",
         "@typescript-eslint/prefer-readonly": "error",
-        "@typescript-eslint/no-non-null-assertion": "off",
         "@typescript-eslint/switch-exhaustiveness-check": "error",
       },
     },
