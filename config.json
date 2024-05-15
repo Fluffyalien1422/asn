@@ -11,7 +11,7 @@
     "filterDefinitions": {
       "simple_manifest": {
         "runWith": "shell",
-        "command": "npm run tsx ./filters/simple_manifest"
+        "command": "npm run tsx ./scripts/filters/simple_manifest"
       },
       "build_scripts": {
         "runWith": "shell",

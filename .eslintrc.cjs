@@ -7,7 +7,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
-    project: ["./tsconfig.json", "./filters/tsconfig.json"],
+    project: ["./tsconfig.json", "./scripts/tsconfig.json"],
   },
   overrides: [
     {

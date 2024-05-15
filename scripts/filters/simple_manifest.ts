@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as simpleManifest from "@/data/simple_manifest.json";
-import { TMP_DIR } from "../common";
+import { TMP_DIR } from "./common";
 
 const BP_HEADER_UUID = "b12feea5-4a14-473c-9995-66ae2c0f7e53";
 const BP_DATA_UUID = "0ed16116-03ca-496d-b51b-85b0a9af6f7d";
