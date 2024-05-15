@@ -286,6 +286,7 @@ function clearTakenItemFromPlayer(
   takenItem: StorageSystemItemStack,
 ): void {
   const playerInventory = player.getComponent("inventory")!.container!;
+  const playerEquipmentInventory = player.getComponent("equippable")!;
 
   const playerRecoverItems: (ItemStack | null)[] = [];
   for (let i = 0; i < playerInventory.size; i++) {
@@ -301,13 +302,17 @@ function clearTakenItemFromPlayer(
     }
   }
 
-  const playerEquipmentInventory = player.getComponent("equippable")!;
-
-  const playerRecoverEquipment = new Map<EquipmentSlot, ItemStack>();
-  for (const equipmentSlot of Object.values(EquipmentSlot)) {
+  const playerRecoverEquipment: Record<string, ItemStack> = {};
+  for (const equipmentSlot of [
+    EquipmentSlot.Chest,
+    EquipmentSlot.Feet,
+    EquipmentSlot.Head,
+    EquipmentSlot.Legs,
+    EquipmentSlot.Offhand,
+  ]) {
     const item = playerEquipmentInventory.getEquipment(equipmentSlot);
     if (item) {
-      playerRecoverEquipment.set(equipmentSlot, item);
+      playerRecoverEquipment[equipmentSlot] = item;
     }
   }
 
@@ -318,8 +323,8 @@ function clearTakenItemFromPlayer(
     if (item) playerInventory.setItem(i, item);
   }
 
-  for (const [equipmentSlot, item] of playerRecoverEquipment) {
-    playerEquipmentInventory.setEquipment(equipmentSlot, item);
+  for (const [equipmentSlot, item] of Object.entries(playerRecoverEquipment)) {
+    playerEquipmentInventory.setEquipment(equipmentSlot as EquipmentSlot, item);
   }
 }
 
