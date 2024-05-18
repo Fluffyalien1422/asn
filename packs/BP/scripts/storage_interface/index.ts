@@ -198,7 +198,9 @@ export function refreshInterface(
   const data: InterfaceData = {
     enabled: true,
     hasQuery: oldData?.hasQuery ?? false,
-    items: oldData?.hasQuery ? oldData.items : network.getStoredItemStacks(),
+    items: oldData?.hasQuery
+      ? oldData.items
+      : [...network.getStoredItemStacks()],
     network,
     page: 0,
     playerInUi: player,
