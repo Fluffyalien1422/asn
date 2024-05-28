@@ -346,7 +346,8 @@ function handleTakenItem(
 }
 
 /**
- * add an item to the storage or show the appropriate error. automatically refreshes the interface if the item was added
+ * add an item to the storage or show the appropriate error. automatically refreshes the interface if the item was added.
+ * if the item was not added then the item will be given back to the player
  * @returns whether the item was added or not. note: if this returns false then assume that the inventory has been closed and an error UI is displayed
  */
 function addItemToStorage(
@@ -506,6 +507,15 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   })();
 });
 
+world.afterEvents.entitySpawn.subscribe((e) => {
+  if (e.entity.typeId !== "minecraft:item") return;
+
+  const itemStack = e.entity.getComponent("item")!.itemStack;
+  if (isDisplayItem(itemStack)) {
+    e.entity.remove();
+  }
+});
+
 system.runInterval(() => {
   const entityQueryOptions: EntityQueryOptions = {
     // we also want this to run for the wireless interface, so check families instead of type
@@ -530,8 +540,17 @@ system.runInterval(() => {
     const inventory = entity.getComponent("inventory")!.container!;
 
     const inputSlotItem = inventory.getItem(INPUT_SLOT_INDEX);
-    if (inputSlotItem && !addItemToStorage(entity, data, inputSlotItem)) {
-      continue;
+    if (inputSlotItem) {
+      if (isDisplayItem(inputSlotItem)) {
+        inventory.setItem(INPUT_SLOT_INDEX);
+        data.enabled = false;
+        void forceCloseInventory(entity);
+        continue;
+      }
+
+      if (!addItemToStorage(entity, data, inputSlotItem)) {
+        continue;
+      }
     }
 
     const backBtnSlotItem = inventory.getItem(BACK_BUTTON_INDEX);
