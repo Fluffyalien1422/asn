@@ -8,6 +8,9 @@
       }
     },
     "components": {
+      "minecraft:tags": {
+        "tags": ["fluffyalien_asn:ui_item"]
+      },
       "minecraft:icon": {
         "textures": {
           "default": "fluffyalien_asn:storage_interface_ui_item_back"

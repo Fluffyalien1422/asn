@@ -63,8 +63,11 @@ function getDisplayItemLoreStr(amount: number): string {
   return `§r§2§l${abbreviateNumber(amount)}${DISPLAY_ITEM_LORE_STR_END}`;
 }
 
-function isDisplayItem(itemStack: ItemStack): boolean {
-  return !!itemStack.getLore()[0]?.endsWith(DISPLAY_ITEM_LORE_STR_END);
+function isUiItem(itemStack: ItemStack): boolean {
+  return (
+    itemStack.hasTag("fluffyalien_asn:ui_item") ||
+    !!itemStack.getLore()[0]?.endsWith(DISPLAY_ITEM_LORE_STR_END)
+  );
 }
 
 function forceCloseInventory(entity: Entity): Promise<void> {
@@ -511,7 +514,7 @@ world.afterEvents.entitySpawn.subscribe((e) => {
   if (e.entity.typeId !== "minecraft:item") return;
 
   const itemStack = e.entity.getComponent("item")!.itemStack;
-  if (isDisplayItem(itemStack)) {
+  if (isUiItem(itemStack)) {
     e.entity.remove();
   }
 });
@@ -541,7 +544,7 @@ system.runInterval(() => {
 
     const inputSlotItem = inventory.getItem(INPUT_SLOT_INDEX);
     if (inputSlotItem) {
-      if (isDisplayItem(inputSlotItem)) {
+      if (isUiItem(inputSlotItem)) {
         inventory.setItem(INPUT_SLOT_INDEX);
         data.enabled = false;
         void forceCloseInventory(entity);
@@ -614,7 +617,7 @@ system.runInterval(() => {
       const inventoryItem = inventory.getItem(i);
 
       if (!storageItem) {
-        if (inventoryItem && !isDisplayItem(inventoryItem)) {
+        if (inventoryItem && !isUiItem(inventoryItem)) {
           addItemToStorage(entity, data, inventoryItem);
           break;
         }
