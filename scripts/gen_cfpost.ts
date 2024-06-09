@@ -9,7 +9,7 @@ items, including all modded items.
 <br />
 
 <h2 style="color: red">
-Enable all experimental toggles under "Add-on Creators"
+Enable Beta APIs under Experiments in the world settings
 </h2>
 <br />
 
