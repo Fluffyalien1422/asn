@@ -16,7 +16,6 @@ import {
 } from "./wireless_interface";
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { getPlayerMainhandSlot } from "./utils/item";
-import { MinecraftDimensionTypes } from "@minecraft/vanilla-data";
 
 const log = new Logger("storage_core.ts");
 
@@ -126,7 +125,7 @@ export const storageCoreComponent: BlockCustomComponent = {
       wirelessInterfaceLinkLocationProperty.set(mainhandSlot, e.block.location);
       wirelessInterfaceLinkDimensionProperty.set(
         mainhandSlot,
-        e.block.dimension.id as MinecraftDimensionTypes,
+        e.block.dimension.id,
       );
 
       player.sendMessage({

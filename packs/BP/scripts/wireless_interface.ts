@@ -1,5 +1,4 @@
 import { Entity, Player, Vector3, system, world } from "@minecraft/server";
-import { MinecraftDimensionTypes } from "@minecraft/vanilla-data";
 import { DynamicProperty } from "./dynamic_property";
 import { forceLoadNetworksRule } from "./addon_rules";
 import {
@@ -23,7 +22,7 @@ export const wirelessInterfaceLinkLocationProperty =
   );
 
 export const wirelessInterfaceLinkDimensionProperty =
-  new DynamicProperty<MinecraftDimensionTypes>(
+  new DynamicProperty<string>(
     "fluffyalien_asn:wireless_interface_link_dimension",
   );
 

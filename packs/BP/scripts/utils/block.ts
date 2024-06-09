@@ -5,17 +5,13 @@ import {
   reverseDirection,
 } from "./direction";
 import { Vector3Utils } from "@minecraft/math";
-import { MinecraftBlockTypes } from "@minecraft/vanilla-data";
 
 export function recievingRedstoneSignalFromDirection(
   block: Block,
   direction: Direction,
 ): boolean {
   const target = getBlockInDirection(block, direction);
-  if (
-    !target?.getRedstonePower() ||
-    target.typeId === MinecraftBlockTypes.Hopper
-  ) {
+  if (!target?.getRedstonePower() || target.typeId === "minecraft:hopper") {
     return false;
   }
 
