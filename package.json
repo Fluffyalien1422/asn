@@ -2,15 +2,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "eslint . && tsc && tsc -p ./scripts",
+    "check": "tsc && tsc -p ./scripts && eslint .",
     "fmt": "prettier . -w",
     "fmt-check": "npm run fmt && npm run check",
     "tsx": "tsx",
     "gen-cfpost": "tsx ./scripts/gen_cfpost"
   },
   "devDependencies": {
-    "@minecraft/server": "1.11.0-beta.1.20.80-stable",
-    "@minecraft/server-ui": "1.2.0-beta.1.20.80-stable",
+    "@minecraft/server": "1.12.0-beta.1.21.0-preview.26",
+    "@minecraft/server-ui": "1.2.0-beta.1.21.0-preview.26",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
     "esbuild": "^0.20.2",
@@ -22,6 +22,6 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@minecraft/math": "^1.3.4"
+    "@minecraft/math": "^1.3.5"
   }
 }

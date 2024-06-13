@@ -41,7 +41,7 @@ system.runInterval(() => {
       mainhandSlot.typeId !== "fluffyalien_asn:wireless_interface" ||
       player.getBlockFromViewDirection({
         maxDistance: 7,
-        blockFilter: { includeTypes: ["fluffyalien_asn:storage_core"] },
+        includeTypes: ["fluffyalien_asn:storage_core"],
       })
     ) {
       if (entity) {
