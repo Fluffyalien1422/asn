@@ -1,5 +1,7 @@
 import * as fs from "fs";
 
+const NAMESPACE = "fluffyalien_asn";
+
 const CONTENT_BEGINNING = `
 <p>
 Advanced Storage Network finally fixes your storage problem. This add-on adds
@@ -19,10 +21,6 @@ tutorial book given to players when they spawn. It can also be crafted if you
 lose it.
 </p>
 <br />
-`;
-
-const CONTENT_END = `
-<a href="https://discord.gg/JxpJX2k">Join the Vatonage discord</a>
 `;
 
 function htmlEscape(s: string): string {
@@ -76,12 +74,12 @@ function addBulletToEntry(
 
 for (const line of textsLines) {
   const [key, value] = line.split(/=(.*)/);
-  if (!key.startsWith("fluffyalien_asn.ui.tutorialBook.entry.")) {
+  if (!key.startsWith(`${NAMESPACE}.ui.tutorialBook.entry.`)) {
     continue;
   }
 
   const [entryId, entrySubKey] = key
-    .slice("fluffyalien_asn.ui.tutorialBook.entry.".length)
+    .slice(`${NAMESPACE}.ui.tutorialBook.entry.`.length)
     .split(".");
 
   if (entrySubKey === "title") {
@@ -99,8 +97,7 @@ fs.writeFileSync(
     Object.values(entries)
       .map(
         (entry) =>
-          `<h2>${htmlEscape(entry.title)}</h2><div class="spoiler"><ul><li>${entry.bullets.map((s) => htmlEscape(s)).join("</li><li>")}</li></ul></div><br/>`,
+          `<h2>${htmlEscape(entry.title)}</h2><div class="spoiler"><ul><li>${entry.bullets.map(htmlEscape).join("</li><li>")}</li></ul></div><br/>`,
       )
-      .join("") +
-    CONTENT_END,
+      .join(""),
 );
