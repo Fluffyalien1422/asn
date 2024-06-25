@@ -9,8 +9,8 @@
     "gen-cfpost": "tsx ./scripts/gen_cfpost"
   },
   "devDependencies": {
-    "@minecraft/server": "1.12.0-beta.1.21.0-preview.26",
-    "@minecraft/server-ui": "1.2.0-beta.1.21.0-preview.26",
+    "@minecraft/server": "1.13.0-beta.1.21.10-preview.24",
+    "@minecraft/server-ui": "1.3.0-beta.1.21.10-preview.24",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
     "esbuild": "^0.20.2",

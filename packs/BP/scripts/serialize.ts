@@ -22,6 +22,12 @@ type_id(amount "name tag" damage "lore line 1","lore line 2" "dynamicProperty"@t
 
 - vectors are represent with v<x value>#<y value>#<z value> (eg. v0#0#0)
 
+- dynamic properties are also used to store some additional data
+  - these dynamic properties are fluffyalien_asn namespaced and always start with $
+  - these dynamic properties are
+    fluffyalien_asn:$potion_effect, fluffyalien_asn:$potion_liquid,
+    fluffyalien_asn:$potion_modifier
+
 examples:
 minecraft:dirt(1 "my dirt" 0   )
 minecraft:dirt(1  0   )
@@ -37,6 +43,7 @@ import {
 import {
   StorageSystemItemStack,
   StorageSystemItemStackDynamicProperty,
+  StorageSystemItemStackPotionData,
 } from "./storage_system_item_stack";
 import { getEnchantmentTypeId } from "./utils/item";
 import { Logger } from "./log";
@@ -87,8 +94,26 @@ export function serialize(itemStack: StorageSystemItemStack): string {
   const nameTag = itemStack.nameTag;
   const damage = itemStack.damage;
   const lore = itemStack.lore;
-  const dynamicProperties = itemStack.dynamicProperties;
+  const dynamicProperties = [...itemStack.dynamicProperties];
   const enchantments = itemStack.enchantments;
+
+  // add additional data as dynamic properties
+  if (itemStack.potionData) {
+    dynamicProperties.push(
+      {
+        id: "fluffyalien_asn:$potion_effect",
+        value: itemStack.potionData.effect,
+      },
+      {
+        id: "fluffyalien_asn:$potion_liquid",
+        value: itemStack.potionData.liquid,
+      },
+      {
+        id: "fluffyalien_asn:$potion_modifier",
+        value: itemStack.potionData.modifier,
+      },
+    );
+  }
 
   return `${id}(${amount.toString()} ${
     nameTag ? serializeString(nameTag) : ""
@@ -360,9 +385,31 @@ class DeserializeParser {
     const lore = this.getCurrentChar() === '"' ? this.readLore() : [];
     this.next();
 
-    const dynamicProperties =
+    const dynamicPropertiesRaw =
       this.getCurrentChar() === '"' ? this.readDynamicProperties() : [];
     this.next();
+
+    // process dynamic properties
+    const dynamicProperties: StorageSystemItemStackDynamicProperty[] = [];
+    let potionEffect: string | undefined;
+    let potionLiquid: string | undefined;
+    let potionModifier: string | undefined;
+
+    for (const rawDynamicProp of dynamicPropertiesRaw) {
+      switch (rawDynamicProp.id) {
+        case "fluffyalien_asn:$potion_effect":
+          potionEffect = rawDynamicProp.value as string;
+          break;
+        case "fluffyalien_asn:$potion_liquid":
+          potionLiquid = rawDynamicProp.value as string;
+          break;
+        case "fluffyalien_asn:$potion_modifier":
+          potionModifier = rawDynamicProp.value as string;
+          break;
+        default:
+          dynamicProperties.push(rawDynamicProp);
+      }
+    }
 
     const enchantments =
       this.getCurrentChar() === ")" ? [] : this.readEnchantments();
@@ -372,6 +419,16 @@ class DeserializeParser {
     if (!ItemTypes.get(id)) {
       return;
     }
+
+    const potionData: StorageSystemItemStackPotionData | undefined =
+      potionEffect && potionLiquid && potionModifier
+        ? {
+            effect: potionEffect,
+            liquid: potionLiquid,
+            modifier: potionModifier,
+          }
+        : undefined;
+
     return new StorageSystemItemStack(
       id,
       amount,
@@ -380,6 +437,7 @@ class DeserializeParser {
       lore,
       dynamicProperties,
       enchantments,
+      potionData,
     );
   }
 

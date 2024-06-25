@@ -11,6 +11,12 @@ export interface StorageSystemItemStackDynamicProperty {
   readonly value: string | boolean | number | Vector3;
 }
 
+export interface StorageSystemItemStackPotionData {
+  readonly effect: string;
+  readonly liquid: string;
+  readonly modifier: string;
+}
+
 export class StorageSystemItemStack {
   constructor(
     readonly typeId: string,
@@ -20,6 +26,7 @@ export class StorageSystemItemStack {
     readonly lore: readonly string[] = [],
     readonly dynamicProperties: readonly StorageSystemItemStackDynamicProperty[] = [],
     readonly enchantments: DeepReadonly<Enchantment[]> = [],
+    readonly potionData?: StorageSystemItemStackPotionData,
   ) {}
 
   static fromItemStack(itemStack: ItemStack): StorageSystemItemStack {
@@ -34,6 +41,16 @@ export class StorageSystemItemStack {
     const enchantments =
       itemStack.getComponent("enchantable")?.getEnchantments() ?? [];
 
+    const potionComponent = itemStack.getComponent("potion");
+    let potionData: StorageSystemItemStackPotionData | undefined;
+    if (potionComponent) {
+      potionData = {
+        effect: potionComponent.potionEffectType.id,
+        liquid: potionComponent.potionLiquidType.id,
+        modifier: potionComponent.potionModifierType.id,
+      };
+    }
+
     return new StorageSystemItemStack(
       id,
       amount,
@@ -42,11 +59,14 @@ export class StorageSystemItemStack {
       lore,
       dynamicProperties,
       enchantments,
+      potionData,
     );
   }
 
   toItemStack(amount = 1): ItemStack {
-    const result = new ItemStack(this.typeId, amount);
+    const result = this.potionData
+      ? ItemStack.createPotion(this.potionData)
+      : new ItemStack(this.typeId, amount);
 
     result.nameTag = this.nameTag;
 
@@ -89,6 +109,7 @@ export class StorageSystemItemStack {
       this.lore,
       this.dynamicProperties,
       this.enchantments,
+      this.potionData,
     );
   }
 
@@ -101,6 +122,7 @@ export class StorageSystemItemStack {
       lore,
       this.dynamicProperties,
       this.enchantments,
+      this.potionData,
     );
   }
 
@@ -137,7 +159,11 @@ export class StorageSystemItemStack {
             getEnchantmentTypeId(enchantment) ===
               getEnchantmentTypeId(otherEnchantment),
         ),
-      )
+      ) &&
+      // potion
+      this.potionData?.effect === other.potionData?.effect &&
+      this.potionData?.liquid === other.potionData?.liquid &&
+      this.potionData?.modifier === other.potionData?.modifier
     );
   }
 }

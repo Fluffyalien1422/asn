@@ -1,0 +1,14 @@
+{
+  "version": "0.3.0",
+  "configurations": [
+    {
+      "type": "minecraft-js",
+      "request": "attach",
+      "name": "Debug with Minecraft",
+      "mode": "listen",
+      "targetModuleUuid": "d6b39452-de71-4e5a-9401-a1c48bc1cda2",
+      "localRoot": "%localappdata%/Packages/Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe/LocalState/games/com.mojang/development_behavior_packs/Advanced Storage Network_bp/scripts",
+      "port": 19144
+    }
+  ]
+}
