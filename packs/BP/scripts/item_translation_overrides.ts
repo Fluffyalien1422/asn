@@ -17,4 +17,8 @@ export const ITEM_TRANSLATION_OVERRIDES: Record<string, string> = {
   "minecraft:light_gray_wool": "tile.wool.silver.name",
   "minecraft:white_wool": "tile.wool.white.name",
   "minecraft:yellow_wool": "tile.wool.yellow.name",
+  // potions
+  "minecraft:potion": "entity.splash_potion.name",
+  "minecraft:splash_potion": "entity.splash_potion.name",
+  "minecraft:lingering_potion": "entity.splash_potion.name",
 };

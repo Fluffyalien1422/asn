@@ -18,7 +18,6 @@ import {
   BlockCustomComponent,
   Entity,
   EntityQueryOptions,
-  EquipmentSlot,
   ItemStack,
   Player,
   system,
@@ -287,46 +286,28 @@ function clearTakenItemFromPlayer(
   player: Player,
   takenItem: StorageSystemItemStack,
 ): void {
-  const playerInventory = player.getComponent("inventory")!.container!;
-  const playerEquipmentInventory = player.getComponent("equippable")!;
+  const playerCursorInventory = player.getComponent("cursor_inventory")!;
+  if (
+    playerCursorInventory.item &&
+    takenItem.isStackableWith(
+      StorageSystemItemStack.fromItemStack(playerCursorInventory.item),
+    )
+  ) {
+    playerCursorInventory.clear();
+    return;
+  }
 
-  const playerRecoverItems: (ItemStack | null)[] = [];
+  const playerInventory = player.getComponent("inventory")!.container!;
   for (let i = 0; i < playerInventory.size; i++) {
     const item = playerInventory.getItem(i);
 
     if (
       item &&
-      !takenItem.isStackableWith(StorageSystemItemStack.fromItemStack(item))
+      takenItem.isStackableWith(StorageSystemItemStack.fromItemStack(item))
     ) {
-      playerRecoverItems.push(item);
-    } else {
-      playerRecoverItems.push(null);
+      playerInventory.setItem(i);
+      return;
     }
-  }
-
-  const playerRecoverEquipment: Record<string, ItemStack> = {};
-  for (const equipmentSlot of [
-    EquipmentSlot.Chest,
-    EquipmentSlot.Feet,
-    EquipmentSlot.Head,
-    EquipmentSlot.Legs,
-    EquipmentSlot.Offhand,
-  ]) {
-    const item = playerEquipmentInventory.getEquipment(equipmentSlot);
-    if (item) {
-      playerRecoverEquipment[equipmentSlot] = item;
-    }
-  }
-
-  player.runCommand("clear @s"); // clearing with script does not remove the item from the player's selection but this does
-
-  for (let i = 0; i < playerInventory.size; i++) {
-    const item = playerRecoverItems[i];
-    if (item) playerInventory.setItem(i, item);
-  }
-
-  for (const [equipmentSlot, item] of Object.entries(playerRecoverEquipment)) {
-    playerEquipmentInventory.setEquipment(equipmentSlot as EquipmentSlot, item);
   }
 }
 

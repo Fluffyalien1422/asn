@@ -47,7 +47,7 @@ system.runInterval(() => {
       if (entity) {
         removeWirelessInterfaceEntity(player, entity);
       }
-      return;
+      continue;
     }
 
     if (!entity) {
