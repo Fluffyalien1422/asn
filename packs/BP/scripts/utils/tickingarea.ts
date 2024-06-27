@@ -1,5 +1,5 @@
 import { Dimension } from "@minecraft/server";
-import { wait } from "./utils/async";
+import { wait } from "./async";
 
 export interface ChunkLocation {
   x: number;

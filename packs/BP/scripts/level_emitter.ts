@@ -7,9 +7,9 @@ import {
   ItemStack,
   Player,
 } from "@minecraft/server";
-import { Logger } from "./log";
+import { logWarn } from "./log";
 import { ModalFormData } from "@minecraft/server-ui";
-import { DynamicProperty } from "./dynamic_property";
+import { DynamicProperty } from "./utils/dynamic_property";
 import {
   STR_DIRECTIONS,
   StrCardinalDirection,
@@ -23,8 +23,7 @@ import {
   busUpdateBlockConnectStatesTransformer,
   updateBlockConnectStates,
 } from "./utils/block_connect";
-
-const log = new Logger("level_emitter.ts");
+import { Vector3Utils } from "@minecraft/math";
 
 const OPERATOR_STRS = [">", "<", "==", "!="];
 // Operator enum members should match the order of OPERATOR_STRS
@@ -97,7 +96,9 @@ export const levelEmitterComponent: BlockCustomComponent = {
       "fluffyalien_asn:level_emitter_entity",
     );
     if (!entity) {
-      log.warn("playerInteractWithBlock event", "could not get dummy entity");
+      logWarn(
+        `could not get level emitter entity at ${Vector3Utils.toString(e.block.location)} in ${e.block.dimension.id}`,
+      );
       return;
     }
 
@@ -288,8 +289,7 @@ export function updateLevelEmitter(
     "fluffyalien_asn:level_emitter_entity",
   );
   if (!dummy) {
-    log.warn(
-      "updateLevelEmitter",
+    logWarn(
       `could not update level emitter at (${block.x.toString()}, ${block.y.toString()}, ${block.z.toString()}) in ${
         block.dimension.id
       }: could not get dummy entity`,

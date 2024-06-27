@@ -23,6 +23,9 @@ lose it.
 <br />
 `;
 
+const CONTENT_END =
+  '<a href="https://x.com/Fluffyalien1422">Follow me on X</a>';
+
 function htmlEscape(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -99,5 +102,6 @@ fs.writeFileSync(
         (entry) =>
           `<h2>${htmlEscape(entry.title)}</h2><div class="spoiler"><ul><li>${entry.bullets.map(htmlEscape).join("</li><li>")}</li></ul></div><br/>`,
       )
-      .join(""),
+      .join("") +
+    CONTENT_END,
 );

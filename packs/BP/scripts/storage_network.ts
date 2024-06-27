@@ -5,7 +5,7 @@ import {
   discoverCableNetworkConnections,
 } from "./cable_network";
 import { vector3AsDimensionLocation } from "./utils/location";
-import { Result, failure, success } from "./result";
+import { Result, failure, success } from "./utils/result";
 import {
   MAX_STORAGE_DRIVE_DATA_LENGTH,
   getStorageDriveSerializedData,
@@ -18,10 +18,8 @@ import { DeepReadonly } from "ts-essentials";
 import { updateImportBus } from "./import_bus";
 import { Vector3Utils } from "@minecraft/math";
 import { updateExportBus } from "./export_bus";
-import { Logger } from "./log";
+import { logWarn, makeErrorString } from "./log";
 import { updateLevelEmitter } from "./level_emitter";
-
-const log = new Logger("storage_network.ts");
 
 export type AddItemStackToStorageError =
   | {
@@ -198,12 +196,7 @@ export class StorageNetwork {
    */
   private ensureValidity(): void {
     if (!this.internalIsValid) {
-      throw new Error(
-        log.makeRaiseString(
-          "StorageNetwork#ensureValidity",
-          `this object has been destroyed and is no longer valid`,
-        ),
-      );
+      throw new Error(makeErrorString(`StorageNetwork: object destroyed`));
     }
   }
 
@@ -220,11 +213,10 @@ export class StorageNetwork {
       );
 
       if (serialized === false) {
-        log.warn(
-          "StorageNetwork#getStoredItemStacksMutable",
+        logWarn(
           `could not read data from storage drive at (${driveLocation.x.toString()}, ${driveLocation.y.toString()}, ${driveLocation.z.toString()}) in ${
             this.dimension.id
-          }. skipping. some items may be missing`,
+          } to get stored item stacks in network. skipping. some items may be missing`,
         );
       }
       if (!serialized) {
@@ -273,8 +265,7 @@ export class StorageNetwork {
           serializedData,
         )
       ) {
-        log.warn(
-          "StorageNetwork#saveData",
+        logWarn(
           `could not set data in storage drive at (${driveLocation.x.toString()}, ${driveLocation.y.toString()}, ${driveLocation.z.toString()}) in ${
             this.dimension.id
           }. skipping. some items may be missing or duplicated`,
@@ -286,16 +277,12 @@ export class StorageNetwork {
       if (useRealMaxLength) {
         // if the fallback failed as well, throw an error
         throw new Error(
-          log.makeRaiseString(
-            "StorageNetwork#saveData",
-            "could not save data: reached max storage",
-          ),
+          makeErrorString("could not save data: reached max storage"),
         );
       }
 
       // fall back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH if we could not save everything
-      log.warn(
-        "StorageNetwork#saveData",
+      logWarn(
         "could not save data with default max data length (MAX_STORAGE_DRIVE_DATA_LENGTH). falling back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH",
       );
       this.saveData(true);
@@ -386,8 +373,7 @@ export class StorageNetwork {
     const coreBlock = this.dimension.getBlock(this.connections.storageCore);
     if (!coreBlock) {
       throw new Error(
-        log.makeRaiseString(
-          "StorageNetwork#updateConnections",
+        makeErrorString(
           `cannot update connections: location (${this.connections.storageCore.x.toString()}, ${this.connections.storageCore.y.toString()}, ${this.connections.storageCore.z.toString()}) in ${
             this.dimension.id
           } is not loaded`,
@@ -443,11 +429,10 @@ export class StorageNetwork {
       );
 
       if (serialized === false) {
-        log.warn(
-          "StorageNetwork#getUsedDataLength",
+        logWarn(
           `could not read data from storage drive at (${driveLocation.x.toString()}, ${driveLocation.y.toString()}, ${driveLocation.z.toString()}) in ${
             this.dimension.id
-          }. skipping. some items may be missing`,
+          } to get used data length. skipping. result may not be accurate`,
         );
       }
       if (!serialized) {
@@ -537,9 +522,8 @@ export class StorageNetwork {
     );
 
     if (storedIndex === -1) {
-      log.warn(
-        "StorageNetwork#takeOutItemStack",
-        "no matching StorageSystemItemStack was found",
+      logWarn(
+        `couldn't remove item stack (${itemStack.typeId}): no matching StorageSystemItemStack was found`,
       );
       return 0;
     }

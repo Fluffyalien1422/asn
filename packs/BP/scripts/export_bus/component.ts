@@ -8,14 +8,12 @@ import {
 import { StorageNetwork } from "../storage_network";
 import { getPlayerMainhandSlot } from "../utils/item";
 import { showExportBusUi } from "./ui";
-import { Logger } from "../log";
+import { logWarn } from "../log";
 import {
   busUpdateBlockConnectStatesTransformer,
   updateBlockConnectStates,
 } from "../utils/block_connect";
 import { STR_DIRECTIONS, StrCardinalDirection } from "../utils/direction";
-
-const log = new Logger("export_bus/component.ts");
 
 export const exportBusComponent: BlockCustomComponent = {
   onPlace(e) {
@@ -42,10 +40,7 @@ export const exportBusComponent: BlockCustomComponent = {
 
     const entity = getExportBusEntity(e.block);
     if (!entity) {
-      log.warn(
-        "playerInteractWithBlock event",
-        "cannot get export bus dummy entity",
-      );
+      logWarn("cannot get export bus dummy entity");
       return;
     }
 

@@ -1,5 +1,5 @@
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
-import { Logger } from "./log";
+import { logWarn } from "./log";
 import { StorageNetwork } from "./storage_network";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { makeErrorMessageUi } from "./utils/ui";
@@ -14,8 +14,6 @@ import {
 
 export const MAX_STORAGE_DRIVE_DATA_LENGTH = 3_000;
 export const STORAGE_DATA_DYNAMIC_PROPERTY_ID = "fluffyalien_asn:storage_data";
-
-const log = new Logger("storage_drive.ts");
 
 /**
  * Gets the storage drive dummy entity at a {@link DimensionLocation}
@@ -111,11 +109,10 @@ export const storageDriveComponent: BlockCustomComponent = {
   onPlayerDestroy(e) {
     const data = getStorageDriveSerializedData(e.block);
     if (data === false) {
-      log.warn(
-        "playerBreakBlock",
-        `could not read data from storage drive at (${e.block.x.toString()}, ${e.block.y.toString()}, ${e.block.z.toString()}) in ${
+      logWarn(
+        `couldn't create storage disk with data: could not read data from storage drive at (${e.block.x.toString()}, ${e.block.y.toString()}, ${e.block.z.toString()}) in ${
           e.block.dimension.id
-        }. items will be lost`,
+        }`,
       );
     }
 

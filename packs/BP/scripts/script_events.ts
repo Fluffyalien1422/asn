@@ -1,11 +1,9 @@
 import { getPlayerMainhandSlot } from "./utils/item";
 import { STORAGE_DATA_DYNAMIC_PROPERTY_ID } from "./storage_drive";
 import { system, Player } from "@minecraft/server";
-import { Logger } from "./log";
+import { logWarn } from "./log";
 import { forceLoadNetworksRule } from "./addon_rules";
-import { DynamicPropertyLocked } from "./dynamic_property";
-
-const log = new Logger("script_events.ts");
+import { DynamicPropertyLocked } from "./utils/dynamic_property";
 
 type AddonRuleCommand =
   | {
@@ -36,8 +34,7 @@ system.afterEvents.scriptEventReceive.subscribe(
       const item = getPlayerMainhandSlot(player).getItem();
 
       if (item?.typeId !== "fluffyalien_asn:used_storage_disk") {
-        log.warn(
-          "scriptEventRecieve event",
+        logWarn(
           "could not run script event fluffyalien_asn:debug_log_disk_data: not holding fluffyalien_asn:used_storage_disk",
         );
         return;
@@ -46,11 +43,7 @@ system.afterEvents.scriptEventReceive.subscribe(
       const s = item
         .getDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID)
         ?.toString();
-      if (s)
-        log.msg(
-          "scriptEventRecieve event",
-          `fluffyalien_asn:debug_log_disk_data result: ${s}`,
-        );
+      if (s) logWarn(`fluffyalien_asn:debug_log_disk_data result: ${s}`);
     } else if (e.id === "fluffyalien_asn:addonrule") {
       const args = e.message.split(" ");
 

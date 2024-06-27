@@ -1,5 +1,5 @@
 import { showEstablishNetworkError } from "../cable_network";
-import { Logger } from "../log";
+import { logWarn, makeErrorString } from "../log";
 import { StorageNetwork } from "../storage_network";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { wait } from "../utils/async";
@@ -42,8 +42,6 @@ const CANCEL_SEARCH_BUTTON_ITEM_ID =
   "fluffyalien_asn:storage_interface_ui_item_cancel_search";
 
 const DISPLAY_ITEM_LORE_STR_END = "§a§s§n§r";
-
-const log = new Logger("storage_interface/index.ts");
 
 interface InterfaceData {
   enabled: boolean;
@@ -189,9 +187,8 @@ export function refreshInterface(
     })
   ) {
     throw new Error(
-      log.makeRaiseString(
-        "refreshInterface",
-        "expected `interfaceEntity` to be part of family `fluffyalien_asn:storage_interface`",
+      makeErrorString(
+        "(in refreshInterface) expected `interfaceEntity` to be part of family `fluffyalien_asn:storage_interface`",
       ),
     );
   }
@@ -495,8 +492,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
 
   const block = e.target.dimension.getBlock(e.target.location);
   if (!block) {
-    log.warn(
-      "playerInteractWithEntity event",
+    logWarn(
       `expected a storage interface block at (${e.target.location.x.toString()},${e.target.location.y.toString()},${e.target.location.z.toString()}) in ${e.target.dimension.id}`,
     );
     return;

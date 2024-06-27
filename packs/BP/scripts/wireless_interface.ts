@@ -1,10 +1,10 @@
 import { Entity, Player, Vector3, system, world } from "@minecraft/server";
-import { DynamicProperty } from "./dynamic_property";
+import { DynamicProperty } from "./utils/dynamic_property";
 import { forceLoadNetworksRule } from "./addon_rules";
 import {
   addAnonymousTickingArea,
   removeAnonymousTickingArea,
-} from "./tickingarea";
+} from "./utils/tickingarea";
 import { StorageNetwork } from "./storage_network";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";

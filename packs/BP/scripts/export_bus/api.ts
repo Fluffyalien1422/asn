@@ -1,10 +1,8 @@
 import { Block, DimensionLocation, Entity } from "@minecraft/server";
 import { StorageNetwork } from "../storage_network";
-import { Logger } from "../log";
+import { logWarn } from "../log";
 import { receivingRedstoneSignal } from "../utils/block";
 import { StrCardinalDirection, getBlockInDirection } from "../utils/direction";
-
-const log = new Logger("export_bus/api.ts");
 
 export type ExportBusExportItemEnchantments = "with" | "without" | "ignore";
 
@@ -27,8 +25,7 @@ export function updateExportBus(block: Block, network: StorageNetwork): void {
 
   const dummyEntity = getExportBusEntity(block);
   if (!dummyEntity) {
-    log.warn(
-      "updateExportBus",
+    logWarn(
       `could not update export bus at (${block.x.toString()}, ${block.y.toString()}, ${block.z.toString()}) in ${
         block.dimension.id
       }: could not get dummy entity`,

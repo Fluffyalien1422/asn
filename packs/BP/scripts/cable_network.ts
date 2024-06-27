@@ -1,17 +1,15 @@
 import { Block, Direction, Player, Vector3 } from "@minecraft/server";
-import { Result, failure, success } from "./result";
+import { Result, failure, success } from "./utils/result";
 import { Vector3Utils } from "@minecraft/math";
 import { ActionFormResponse } from "@minecraft/server-ui";
-import { Logger } from "./log";
+import { logWarn } from "./log";
 import {
   addAnonymousTickingArea,
   removeAnonymousTickingArea,
-} from "./tickingarea";
+} from "./utils/tickingarea";
 import { forceLoadNetworksRule } from "./addon_rules";
 import { getBlockInDirection } from "./utils/direction";
 import { makeErrorMessageUi } from "./utils/ui";
-
-const log = new Logger("cable_network.ts");
 
 export interface CableNetworkConnections {
   cables: Vector3[];
@@ -98,9 +96,8 @@ export async function discoverCableNetworkConnections(
 
     if (!nextBlock) {
       if (!forceLoadNetworksRule.get()) {
-        log.warn(
-          "discoverCableNetworkConnections > next",
-          `cable network extends into unloaded chunks and forceLoadNetworks is disabled. some parts of the network may be unloaded`,
+        logWarn(
+          `cable network extends into unloaded chunks at ${Vector3Utils.toString(block.location)} in ${block.dimension.id} and forceLoadNetworks is disabled. some parts of the network may be unloaded`,
         );
         return success(null);
       }
@@ -112,9 +109,8 @@ export async function discoverCableNetworkConnections(
       removeAnonymousTickingArea(block.dimension, block.location);
 
       if (!nextBlock) {
-        log.warn(
-          "discoverCableNetworkConnections > next",
-          `failed to follow the cable network into unloaded chunks. some parts of the network may be unloaded`,
+        logWarn(
+          `failed to follow the cable network into unloaded chunks at ${Vector3Utils.toString(block.location)} in ${block.dimension.id}. some parts of the network may be unloaded`,
         );
         return success(null);
       }

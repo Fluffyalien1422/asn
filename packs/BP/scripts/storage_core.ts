@@ -8,7 +8,7 @@ import {
   system,
   world,
 } from "@minecraft/server";
-import { Logger } from "./log";
+import { logWarn } from "./log";
 import { showEstablishNetworkError } from "./cable_network";
 import {
   wirelessInterfaceLinkDimensionProperty,
@@ -16,8 +16,6 @@ import {
 } from "./wireless_interface";
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { getPlayerMainhandSlot } from "./utils/item";
-
-const log = new Logger("storage_core.ts");
 
 function showStorageCoreUi(
   player: Player,
@@ -162,9 +160,8 @@ world.afterEvents.entityLoad.subscribe((e) => {
   system.runTimeout(() => {
     const block = entity.dimension.getBlock(entity.location);
     if (!block) {
-      log.warn(
-        "entityLoad event",
-        `could not get storage core block at (${Vector3Utils.toString(
+      logWarn(
+        `couldn't establish network (storage core loaded): couldn't get storage core block at (${Vector3Utils.toString(
           entity.location,
         )}) in ${entity.dimension.id}`,
       );

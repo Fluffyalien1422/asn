@@ -46,9 +46,7 @@ import {
   StorageSystemItemStackPotionData,
 } from "./storage_system_item_stack";
 import { getEnchantmentTypeId } from "./utils/item";
-import { Logger } from "./log";
-
-const log = new Logger("serialize.ts");
+import { makeErrorString } from "./log";
 
 export function deserialize(data: string): StorageSystemItemStack[] {
   const parser = new DeserializeParser(data);
@@ -83,7 +81,7 @@ function serializeValue(val: string | number | boolean | Vector3): string {
           ? serializeVector(val as Vector3)
           : ((): never => {
               throw new Error(
-                log.makeRaiseString("serializeValue", `invalid type: ${t}`),
+                makeErrorString(`couldn't serialize value: invalid type: ${t}`),
               );
             })();
 }
@@ -143,8 +141,7 @@ class DeserializeParser {
   private next(): void {
     if (this.isEoi()) {
       throw new Error(
-        log.makeRaiseString(
-          "DeserializeParser#next",
+        makeErrorString(
           "failed to deserialize data: reached EOI before completing parse",
         ),
       );
@@ -183,8 +180,7 @@ class DeserializeParser {
           s += "\n";
         } else {
           throw new Error(
-            log.makeRaiseString(
-              "DeserializeParser#readString",
+            makeErrorString(
               `failed to deserialize data: could not read string: illegal escape code: '\\${char}'`,
             ),
           );
@@ -208,8 +204,7 @@ class DeserializeParser {
     const x = Number(this.read(["#"]));
     if (isNaN(x)) {
       throw new Error(
-        log.makeRaiseString(
-          "DeserializeParser#readVector",
+        makeErrorString(
           "failed to deserialize data: could not read vector: could not convert x value from string to number",
         ),
       );
@@ -219,8 +214,7 @@ class DeserializeParser {
     const y = Number(this.read(["#"]));
     if (isNaN(y)) {
       throw new Error(
-        log.makeRaiseString(
-          "DeserializeParser#readVector",
+        makeErrorString(
           "failed to deserialize data: could not read vector: could not convert y value from string to number",
         ),
       );
@@ -230,8 +224,7 @@ class DeserializeParser {
     const z = Number(this.read([",", " "]));
     if (isNaN(z)) {
       throw new Error(
-        log.makeRaiseString(
-          "DeserializeParser#readVector",
+        makeErrorString(
           "failed to deserialize data: could not read vector: could not convert z value from string to number",
         ),
       );
@@ -247,8 +240,7 @@ class DeserializeParser {
     const level = Number(this.read([",", ")"]));
     if (isNaN(level)) {
       throw new Error(
-        log.makeRaiseString(
-          "DeserializeParser#readEnchantments",
+        makeErrorString(
           "failed to deserialize data: could not read enchantments: could not convert enchantment level string to a number",
         ),
       );
@@ -263,8 +255,7 @@ class DeserializeParser {
       this.readEnchantments(enchantments);
     } else if (char !== ")") {
       throw new Error(
-        log.makeRaiseString(
-          "DeserializeParser#readEnchantments",
+        makeErrorString(
           `failed to deserialize data: could not read enchantments: reached illegal character: '${char}'`,
         ),
       );
@@ -285,8 +276,7 @@ class DeserializeParser {
       this.readLore(lore);
     } else if (char !== " ") {
       throw new Error(
-        log.makeRaiseString(
-          "DeserializeParser#readLore",
+        makeErrorString(
           `failed to deserialize data: could not read lore: reached illegal character: '${char}'`,
         ),
       );
@@ -318,8 +308,7 @@ class DeserializeParser {
         value = Number(this.read([",", " "]));
         if (isNaN(value)) {
           throw new Error(
-            log.makeRaiseString(
-              "DeserializeParser#readDynamicProperties",
+            makeErrorString(
               "failed to deserialize data: could not read value of dynamic property: could not convert value from string to number",
             ),
           );
@@ -336,8 +325,7 @@ class DeserializeParser {
       this.readDynamicProperties(dynamicProperties);
     } else if (char !== " ") {
       throw new Error(
-        log.makeRaiseString(
-          "DeserializeParser#readDynamicProperties",
+        makeErrorString(
           `failed to deserialize data: could not read dynamic properties: reached illegal character: '${char}'`,
         ),
       );
@@ -359,8 +347,7 @@ class DeserializeParser {
     // amount cannot be zero, so use ! instead of isNaN
     if (!amount) {
       throw new Error(
-        log.makeRaiseString(
-          "DeserializeParser#parseSingle",
+        makeErrorString(
           "failed to deserialize data: could not convert item stack amount string to a number",
         ),
       );
@@ -374,8 +361,7 @@ class DeserializeParser {
     const damage = Number(this.read([" "]));
     if (isNaN(damage)) {
       throw new Error(
-        log.makeRaiseString(
-          "DeserializeParser#parseSingle",
+        makeErrorString(
           "failed to deserialize data: could not convert item stack damage string to a number",
         ),
       );

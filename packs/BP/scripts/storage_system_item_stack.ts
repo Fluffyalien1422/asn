@@ -2,9 +2,7 @@ import { Enchantment, ItemStack, Vector3 } from "@minecraft/server";
 import { DeepReadonly } from "ts-essentials";
 import { getEnchantmentTypeId } from "./utils/item";
 import { Vector3Utils } from "@minecraft/math";
-import { Logger } from "./log";
-
-const log = new Logger("storage_system_item_stack.ts");
+import { logWarn } from "./log";
 
 export interface StorageSystemItemStackDynamicProperty {
   readonly id: string;
@@ -90,9 +88,8 @@ export class StorageSystemItemStack {
         .getComponent("enchantable")
         ?.addEnchantments(this.enchantments as Enchantment[]);
     } catch (e) {
-      log.warn(
-        "StorageSystemItemStack#toItemStack",
-        "an error occured while attempting to add enchantments to the result ItemStack: " +
+      logWarn(
+        "an error occured while attempting to add enchantments to the result ItemStack when converting StorageSystemItemStack to ItemStack: " +
           (e instanceof Error ? `${e.name}: ${e.message}` : "unknown error"),
       );
     }
