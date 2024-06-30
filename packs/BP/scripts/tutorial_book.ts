@@ -52,9 +52,14 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
     bullets: 5,
   },
   {
+    id: "relay",
+    icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_relay_icon",
+    bullets: 3,
+  },
+  {
     id: "wirelessInterface",
     icon: "textures/fluffyalien/asn/items/wireless_interface",
-    bullets: 3,
+    bullets: 2,
   },
   {
     id: "storageDisk",

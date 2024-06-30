@@ -69,6 +69,8 @@ export const storageRelayComponent: BlockCustomComponent = {
       return;
     }
 
-    void showRelayUi(e.player, entity);
+    void showRelayUi(e.player, entity).then(() => {
+      void StorageNetwork.getNetwork(e.block)?.updateConnections();
+    });
   },
 };

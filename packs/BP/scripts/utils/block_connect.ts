@@ -17,6 +17,8 @@ export function updateBlockConnectStates<TDirection extends StrDirection>(
 ): void {
   let permutation = block.permutation;
 
+  let anyStatesChanged = false;
+
   for (const direction of directions) {
     const blockInDirection = getBlockInDirection(block, direction);
     if (!blockInDirection) {
@@ -30,13 +32,20 @@ export function updateBlockConnectStates<TDirection extends StrDirection>(
       continue;
     }
 
-    permutation = permutation.withState(
-      `fluffyalien_asn:${transformedDirection}`,
-      condition(blockInDirection),
-    );
+    const stateName = `fluffyalien_asn:${transformedDirection}`;
+    const newValue = condition(blockInDirection);
+
+    if (permutation.getState(stateName) === newValue) {
+      continue;
+    }
+
+    permutation = permutation.withState(stateName, newValue);
+    anyStatesChanged = true;
   }
 
-  block.setPermutation(permutation);
+  if (anyStatesChanged) {
+    block.setPermutation(permutation);
+  }
 }
 
 export function busUpdateBlockConnectStatesTransformer(

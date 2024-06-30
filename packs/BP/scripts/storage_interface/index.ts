@@ -632,4 +632,4 @@ system.runInterval(() => {
       break;
     }
   }
-});
+}, 5);

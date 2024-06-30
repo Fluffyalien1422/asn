@@ -105,8 +105,10 @@ export async function discoverCableNetworkConnections(
 
       for (const otherEntity of block.dimension.getEntities({
         type: "fluffyalien_asn:relay_entity",
+        minDistance: 2,
+        location: entity.location,
       })) {
-        const otherName = relayName.get(entity);
+        const otherName = relayName.get(otherEntity);
         if (name !== otherName) continue;
 
         let nextBlock = block.dimension.getBlock(otherEntity.location);

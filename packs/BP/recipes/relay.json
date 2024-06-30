@@ -1,0 +1,37 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "fluffyalien_asn:storage_relay"
+    },
+    "tags": ["crafting_table"],
+    // prettier-ignore
+    "pattern": [
+      "DAD", 
+      "EEE",
+      "III"
+    ],
+    "key": {
+      "D": {
+        "item": "copper_ingot"
+      },
+      "I": {
+        "item": "iron_ingot"
+      },
+      "E": {
+        "item": "emerald"
+      },
+      "A": {
+        "item": "fluffyalien_asn:wireless_interface_antenna"
+      }
+    },
+    "result": {
+      "item": "fluffyalien_asn:storage_relay"
+    },
+    "unlock": [
+      {
+        "item": "diamond"
+      }
+    ]
+  }
+}
