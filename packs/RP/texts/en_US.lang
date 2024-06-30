@@ -21,6 +21,7 @@ tile.fluffyalien_asn:storage_cable.name=Storage Cable
 tile.fluffyalien_asn:import_bus.name=Storage Import Bus
 tile.fluffyalien_asn:export_bus.name=Storage Export Bus
 tile.fluffyalien_asn:level_emitter.name=Storage Level Emitter
+tile.fluffyalien_asn:storage_relay.name=Storage Relay
 
 fluffyalien_asn.message.wirelessInterface.linked=Wireless storage interface linked.
 fluffyalien_asn.message.wirelessInterface.notLinked=This wireless storage interface is not linked to a storage network.
@@ -77,6 +78,10 @@ fluffyalien_asn.ui.levelEmitter.testItem=Testing %s
 fluffyalien_asn.ui.levelEmitter.operator=Operator
 fluffyalien_asn.ui.levelEmitter.amount=Amount
 fluffyalien_asn.ui.levelEmitter.error.invalidAmount=Invalid value for amount field. Amount must be a valid number and greater than zero.
+
+fluffyalien_asn.ui.relay.title=Storage Relay
+fluffyalien_asn.ui.relay.name=Relay Name
+fluffyalien_asn.ui.relay.error.invalidName=Relay name must be at least one character.
 
 fluffyalien_asn.ui.tutorialBook.title=Tutorial Book
 

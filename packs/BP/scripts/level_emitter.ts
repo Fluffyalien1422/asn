@@ -143,6 +143,7 @@ async function showLevelEmitterUi(
   }
 
   const form = new ModalFormData();
+  form.title({ translate: "fluffyalien_asn.ui.levelEmitter.title" });
 
   form.dropdown(
     {

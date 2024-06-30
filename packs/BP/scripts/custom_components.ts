@@ -6,6 +6,7 @@ import { storageCableComponent } from "./cable";
 import { levelEmitterComponent } from "./level_emitter";
 import { importBusComponent } from "./import_bus";
 import { exportBusComponent } from "./export_bus";
+import { storageRelayComponent } from "./relay";
 
 world.beforeEvents.worldInitialize.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(
@@ -41,5 +42,10 @@ world.beforeEvents.worldInitialize.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(
     "fluffyalien_asn:export_bus",
     exportBusComponent,
+  );
+
+  e.blockComponentRegistry.registerCustomComponent(
+    "fluffyalien_asn:storage_relay",
+    storageRelayComponent,
   );
 });

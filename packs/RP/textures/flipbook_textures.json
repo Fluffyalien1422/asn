@@ -1,0 +1,12 @@
+[
+  {
+    "atlas_tile": "fluffyalien_asn:storage_core",
+    "flipbook_texture": "textures/fluffyalien/asn/blocks/storage_core",
+    "ticks_per_frame": 10
+  },
+  {
+    "atlas_tile": "fluffyalien_asn:storage_relay",
+    "flipbook_texture": "textures/fluffyalien/asn/blocks/storage_relay",
+    "ticks_per_frame": 20
+  }
+]

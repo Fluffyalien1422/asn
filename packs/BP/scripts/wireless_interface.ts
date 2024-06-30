@@ -74,7 +74,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     return;
   }
 
-  if (!forceLoadNetworksRule.get()) {
+  if (forceLoadNetworksRule.get() === false) {
     removeWirelessInterfaceEntity(e.player, e.target);
     e.player.sendMessage({
       rawtext: [

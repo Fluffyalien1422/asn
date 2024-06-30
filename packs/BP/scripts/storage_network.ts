@@ -327,6 +327,7 @@ export class StorageNetwork {
     const typeId = typeIdOverride ?? block.typeId;
 
     switch (typeId) {
+      case "fluffyalien_asn:storage_relay":
       case "fluffyalien_asn:storage_cable":
         return this.connections.cables.some((v) =>
           Vector3Utils.equals(v, block.location),

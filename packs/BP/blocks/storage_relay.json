@@ -2,19 +2,19 @@
   "format_version": "1.20.70",
   "minecraft:block": {
     "description": {
-      "identifier": "fluffyalien_asn:storage_core",
+      "identifier": "fluffyalien_asn:storage_relay",
       "menu_category": {
         "category": "items"
       }
     },
     "components": {
-      "minecraft:custom_components": ["fluffyalien_asn:storage_core"],
+      "minecraft:custom_components": ["fluffyalien_asn:storage_relay"],
       "tag:fluffyalien_asn:storage_network_connectable": {},
 
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {
         "*": {
-          "texture": "fluffyalien_asn:storage_core"
+          "texture": "fluffyalien_asn:storage_relay"
         }
       },
       "minecraft:destructible_by_explosion": false,

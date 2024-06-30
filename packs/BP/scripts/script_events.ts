@@ -21,7 +21,7 @@ const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
   forceLoadNetworks: {
     type: "bool",
     property: forceLoadNetworksRule,
-    default: false,
+    default: true,
   },
 };
 

@@ -29,6 +29,9 @@
     },
     "fluffyalien_asn:level_emitter_on": {
       "textures": "textures/fluffyalien/asn/blocks/level_emitter_on"
+    },
+    "fluffyalien_asn:storage_relay": {
+      "textures": "textures/fluffyalien/asn/blocks/storage_relay"
     }
   }
 }

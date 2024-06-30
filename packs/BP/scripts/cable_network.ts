@@ -10,6 +10,8 @@ import {
 import { forceLoadNetworksRule } from "./addon_rules";
 import { getBlockInDirection } from "./utils/direction";
 import { makeErrorMessageUi } from "./utils/ui";
+import { getEntityAtBlockLocation } from "./utils/location";
+import { relayName } from "./relay";
 
 export interface CableNetworkConnections {
   cables: Vector3[];
@@ -39,9 +41,9 @@ export async function discoverCableNetworkConnections(
   const levelEmitters: Vector3[] = [];
   let storageCore: Vector3 | undefined;
 
-  function handleBlock(
+  async function handleBlock(
     block: Block,
-  ): Result<null, DiscoverCableNetworkConnectionsError> {
+  ): Promise<Result<null, DiscoverCableNetworkConnectionsError>> {
     if (
       !block.hasTag("fluffyalien_asn:storage_network_connectable") ||
       visitedLocations.some((vector) =>
@@ -84,6 +86,63 @@ export async function discoverCableNetworkConnections(
       return success(null);
     }
 
+    if (block.typeId === "fluffyalien_asn:storage_relay") {
+      cables.push(block.location);
+
+      const entity = getEntityAtBlockLocation(
+        block,
+        "fluffyalien_asn:relay_entity",
+      );
+      if (!entity) {
+        logWarn(
+          `couldn't add matching relays to discovery stack: couldn't get relay entity at ${Vector3Utils.toString(block.location)} in ${block.dimension.id}`,
+        );
+        return success(null);
+      }
+
+      const name = relayName.get(entity);
+      if (!name) return success(null);
+
+      for (const otherEntity of block.dimension.getEntities({
+        type: "fluffyalien_asn:relay_entity",
+      })) {
+        const otherName = relayName.get(entity);
+        if (name !== otherName) continue;
+
+        let nextBlock = block.dimension.getBlock(otherEntity.location);
+
+        if (!nextBlock) {
+          if (forceLoadNetworksRule.get() === false) {
+            logWarn(
+              `cable network extends into unloaded chunks at ${Vector3Utils.toString(block.location)} in ${block.dimension.id} and forceLoadNetworks is disabled. some parts of the network may be unloaded`,
+            );
+            continue;
+          }
+
+          await addAnonymousTickingArea(
+            block.dimension,
+            otherEntity.location,
+            2,
+          );
+
+          nextBlock = block.dimension.getBlock(otherEntity.location);
+
+          removeAnonymousTickingArea(block.dimension, otherEntity.location);
+
+          if (!nextBlock) {
+            logWarn(
+              `failed to follow the cable network into unloaded chunks at ${Vector3Utils.toString(block.location)} in ${block.dimension.id}. some parts of the network may be unloaded`,
+            );
+            continue;
+          }
+        }
+
+        stack.push(nextBlock);
+      }
+
+      return success(null);
+    }
+
     buses.push(block.location);
     return success(null);
   }
@@ -95,7 +154,7 @@ export async function discoverCableNetworkConnections(
     let nextBlock = getBlockInDirection(block, nextDirection);
 
     if (!nextBlock) {
-      if (!forceLoadNetworksRule.get()) {
+      if (forceLoadNetworksRule.get() === false) {
         logWarn(
           `cable network extends into unloaded chunks at ${Vector3Utils.toString(block.location)} in ${block.dimension.id} and forceLoadNetworks is disabled. some parts of the network may be unloaded`,
         );
@@ -119,7 +178,7 @@ export async function discoverCableNetworkConnections(
     return handleBlock(nextBlock);
   }
 
-  handleBlock(origin);
+  await handleBlock(origin);
 
   while (stack.length) {
     const block = stack.pop()!;

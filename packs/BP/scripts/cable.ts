@@ -5,7 +5,7 @@ import { STR_DIRECTIONS } from "./utils/direction";
 
 export const storageCableComponent: BlockCustomComponent = {
   onPlace(e) {
-    if (e.previousBlock.type.id === "fluffyalien_asn:storage_cable") return;
+    if (e.previousBlock.type.id === e.block.typeId) return;
 
     StorageNetwork.updateConnectableNetworks(e.block);
   },

@@ -1,4 +1,5 @@
 import { showEstablishNetworkError } from "../cable_network";
+import { end, nether, overworld } from "../dimensions";
 import { logWarn, makeErrorString } from "../log";
 import { StorageNetwork } from "../storage_network";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
@@ -503,9 +504,9 @@ system.runInterval(() => {
   };
 
   for (const entity of [
-    ...world.getDimension("overworld").getEntities(entityQueryOptions),
-    ...world.getDimension("nether").getEntities(entityQueryOptions),
-    ...world.getDimension("the_end").getEntities(entityQueryOptions),
+    ...overworld.getEntities(entityQueryOptions),
+    ...nether.getEntities(entityQueryOptions),
+    ...end.getEntities(entityQueryOptions),
   ]) {
     const data = interfaceData.get(entity.id);
     if (
