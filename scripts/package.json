@@ -3,5 +3,8 @@
   "type": "module",
   "devDependencies": {
     "@types/node": "^20.12.7"
+  },
+  "dependencies": {
+    "imagescript": "^1.3.0"
   }
 }

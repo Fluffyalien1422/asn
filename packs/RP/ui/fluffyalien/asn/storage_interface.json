@@ -116,15 +116,31 @@
         }
       },
       {
+        "page_num_digit1_slot@fluffyalien_asn:storage_interface.item_slot": {
+          "$index": 31,
+          "offset": [66, 22.5],
+          "$slot_size": [0, 0],
+          "$slot_image_size": [0, 0]
+        }
+      },
+      {
+        "page_num_digit2_slot@fluffyalien_asn:storage_interface.item_slot": {
+          "$index": 32,
+          "offset": [70, 22.5],
+          "$slot_size": [0, 0],
+          "$slot_image_size": [0, 0]
+        }
+      },
+      {
         "next_btn_slot@fluffyalien_asn:storage_interface.item_slot": {
           "$index": 29,
-          "offset": [54, 8]
+          "offset": [69, 8]
         }
       },
       {
         "search_btn_slot@fluffyalien_asn:storage_interface.item_slot": {
           "$index": 30,
-          "offset": [81, 8]
+          "offset": [99, 8]
         }
       },
       {

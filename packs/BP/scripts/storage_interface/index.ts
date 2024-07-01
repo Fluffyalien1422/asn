@@ -35,6 +35,9 @@ const BACK_BUTTON_ITEM_ID = "fluffyalien_asn:storage_interface_ui_item_back";
 const NEXT_BUTTON_INDEX = 29;
 const NEXT_BUTTON_ITEM_ID = "fluffyalien_asn:storage_interface_ui_item_next";
 
+const PAGE_NUM_DIGIT1_INDEX = 31;
+const PAGE_NUM_DIGIT2_INDEX = 32;
+
 const SEARCH_BUTTON_INDEX = 30;
 const SEARCH_BUTTON_ITEM_ID =
   "fluffyalien_asn:storage_interface_ui_item_search";
@@ -115,6 +118,39 @@ function fillInterfaceInventory(entity: Entity, data: InterfaceData): void {
     ),
   );
   inventory.setItem(NEXT_BUTTON_INDEX, new ItemStack(NEXT_BUTTON_ITEM_ID));
+
+  // page is 0-indexed
+  if (data.page < 9) {
+    inventory.setItem(
+      PAGE_NUM_DIGIT1_INDEX,
+      new ItemStack("fluffyalien_asn:ui_page_number0"),
+    );
+    inventory.setItem(
+      PAGE_NUM_DIGIT2_INDEX,
+      new ItemStack(
+        `fluffyalien_asn:ui_page_number${(data.page + 1).toString()}`,
+      ),
+    );
+  } else if (data.page >= 99) {
+    inventory.setItem(
+      PAGE_NUM_DIGIT1_INDEX,
+      new ItemStack("fluffyalien_asn:ui_page_number9"),
+    );
+    inventory.setItem(
+      PAGE_NUM_DIGIT2_INDEX,
+      new ItemStack("fluffyalien_asn:ui_page_number10"),
+    );
+  } else {
+    const pageNumStr = (data.page + 1).toString();
+    inventory.setItem(
+      PAGE_NUM_DIGIT1_INDEX,
+      new ItemStack(`fluffyalien_asn:ui_page_number${pageNumStr[0]}`),
+    );
+    inventory.setItem(
+      PAGE_NUM_DIGIT2_INDEX,
+      new ItemStack(`fluffyalien_asn:ui_page_number${pageNumStr[1]}`),
+    );
+  }
 }
 
 async function getNetworkOrShowError(
@@ -585,6 +621,34 @@ system.runInterval(() => {
       data.hasQuery = false;
       refreshInterface(entity, data.playerInUi, data.network);
 
+      continue;
+    }
+
+    const pageNumDigit1SlotItem = inventory.getItem(PAGE_NUM_DIGIT1_INDEX);
+    if (
+      pageNumDigit1SlotItem &&
+      !pageNumDigit1SlotItem.hasTag("fluffyalien_asn:ui_item")
+    ) {
+      handleTakenItem(
+        data.playerInUi,
+        pageNumDigit1SlotItem.typeId,
+        pageNumDigit1SlotItem,
+      );
+      fillInterfaceInventory(entity, data);
+      continue;
+    }
+
+    const pageNumDigit2SlotItem = inventory.getItem(PAGE_NUM_DIGIT2_INDEX);
+    if (
+      pageNumDigit2SlotItem &&
+      !pageNumDigit2SlotItem.hasTag("fluffyalien_asn:ui_item")
+    ) {
+      handleTakenItem(
+        data.playerInUi,
+        pageNumDigit2SlotItem.typeId,
+        pageNumDigit2SlotItem,
+      );
+      fillInterfaceInventory(entity, data);
       continue;
     }
 

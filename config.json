@@ -20,6 +20,10 @@
       "minify_and_clean_scripts": {
         "runWith": "shell",
         "command": "npx terser ./BP/scripts/__bundle.js --module -cmo ./BP/scripts/__bundle.js; Remove-Item ./BP/scripts/* -Recurse -Exclude __bundle.js"
+      },
+      "gen_page_number_items": {
+        "runWith": "shell",
+        "command": "npm run tsx ./scripts/filters/page_number_items"
       }
     },
     "profiles": {
@@ -33,6 +37,9 @@
           },
           {
             "filter": "build_scripts"
+          },
+          {
+            "filter": "gen_page_number_items"
           }
         ]
       },
