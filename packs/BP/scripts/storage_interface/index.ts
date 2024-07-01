@@ -696,4 +696,4 @@ system.runInterval(() => {
       break;
     }
   }
-}, 5);
+}, 4);
