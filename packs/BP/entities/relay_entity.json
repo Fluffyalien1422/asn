@@ -15,14 +15,9 @@
         "has_gravity": false,
         "has_collision": false
       },
-      "minecraft:custom_hit_test": {
-        "hitboxes": [
-          {
-            "pivot": [0, 99, 0],
-            "width": 0,
-            "height": 0
-          }
-        ]
+      "minecraft:tick_world": {
+        "never_despawn": true,
+        "radius": 2
       },
       "minecraft:damage_sensor": {
         "triggers": {
