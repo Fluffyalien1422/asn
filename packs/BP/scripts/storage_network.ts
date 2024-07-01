@@ -3,6 +3,7 @@ import {
   CableNetworkConnections,
   DiscoverCableNetworkConnectionsError,
   discoverCableNetworkConnections,
+  tryForceGetBlock,
 } from "./cable_network";
 import { vector3AsDimensionLocation } from "./utils/location";
 import { Result, failure, success } from "./utils/result";
@@ -371,13 +372,16 @@ export class StorageNetwork {
   > {
     this.ensureValidity();
 
-    const coreBlock = this.dimension.getBlock(this.connections.storageCore);
+    const coreBlock = await tryForceGetBlock(
+      this.dimension,
+      this.connections.storageCore,
+    );
     if (!coreBlock) {
       throw new Error(
         makeErrorString(
           `cannot update connections: location (${this.connections.storageCore.x.toString()}, ${this.connections.storageCore.y.toString()}, ${this.connections.storageCore.z.toString()}) in ${
             this.dimension.id
-          } is not loaded`,
+          } could not be loaded`,
         ),
       );
     }

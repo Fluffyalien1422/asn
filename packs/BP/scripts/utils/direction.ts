@@ -1,4 +1,12 @@
-import { Block, Direction } from "@minecraft/server";
+import {
+  VECTOR3_DOWN,
+  VECTOR3_EAST,
+  VECTOR3_NORTH,
+  VECTOR3_SOUTH,
+  VECTOR3_UP,
+  VECTOR3_WEST,
+} from "@minecraft/math";
+import { Block, Direction, Vector3 } from "@minecraft/server";
 
 export const STR_CARDINAL_DIRECTIONS = [
   "north",
@@ -44,6 +52,31 @@ export function getBlockInDirection(
     case "down":
     case Direction.Down:
       return block.below();
+  }
+}
+
+export function directionToVector3(
+  direction: Direction | StrDirection,
+): Vector3 {
+  switch (direction) {
+    case "north":
+    case Direction.North:
+      return VECTOR3_NORTH;
+    case "east":
+    case Direction.East:
+      return VECTOR3_EAST;
+    case "south":
+    case Direction.South:
+      return VECTOR3_SOUTH;
+    case "west":
+    case Direction.West:
+      return VECTOR3_WEST;
+    case "up":
+    case Direction.Up:
+      return VECTOR3_UP;
+    case "down":
+    case Direction.Down:
+      return VECTOR3_DOWN;
   }
 }
 

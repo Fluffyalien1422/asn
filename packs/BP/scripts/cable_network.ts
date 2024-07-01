@@ -1,4 +1,10 @@
-import { Block, Direction, Player, Vector3 } from "@minecraft/server";
+import {
+  Block,
+  Dimension,
+  Direction,
+  Player,
+  Vector3,
+} from "@minecraft/server";
 import { Result, failure, success } from "./utils/result";
 import { Vector3Utils } from "@minecraft/math";
 import { ActionFormResponse } from "@minecraft/server-ui";
@@ -8,7 +14,7 @@ import {
   removeAnonymousTickingArea,
 } from "./utils/tickingarea";
 import { forceLoadNetworksRule } from "./addon_rules";
-import { getBlockInDirection } from "./utils/direction";
+import { directionToVector3 } from "./utils/direction";
 import { makeErrorMessageUi } from "./utils/ui";
 import { getEntityAtBlockLocation } from "./utils/location";
 import { relayName } from "./relay";
@@ -25,6 +31,37 @@ export interface CableNetworkConnections {
 export type DiscoverCableNetworkConnectionsError =
   | "multipleStorageCores"
   | "noStorageCore";
+
+export async function tryForceGetBlock(
+  dimension: Dimension,
+  location: Vector3,
+): Promise<Block | undefined> {
+  let nextBlock = dimension.getBlock(location);
+
+  if (!nextBlock) {
+    if (forceLoadNetworksRule.get() === false) {
+      logWarn(
+        `storage network extends into unloaded chunks at ${Vector3Utils.toString(location)} in ${dimension.id} and forceLoadNetworks is disabled. some parts of the network may be unloaded`,
+      );
+      return;
+    }
+
+    await addAnonymousTickingArea(dimension, location, 2);
+
+    nextBlock = dimension.getBlock(location);
+
+    removeAnonymousTickingArea(dimension, location);
+
+    if (!nextBlock) {
+      logWarn(
+        `failed to follow the storage network into unloaded chunks at ${Vector3Utils.toString(location)} in ${dimension.id}. some parts of the network may be unloaded`,
+      );
+      return;
+    }
+  }
+
+  return nextBlock;
+}
 
 export async function discoverCableNetworkConnections(
   origin: Block,
@@ -111,35 +148,14 @@ export async function discoverCableNetworkConnections(
         const otherName = relayName.get(otherEntity);
         if (name !== otherName) continue;
 
-        let nextBlock = block.dimension.getBlock(otherEntity.location);
+        const nextBlock = await tryForceGetBlock(
+          otherEntity.dimension,
+          otherEntity.location,
+        );
 
-        if (!nextBlock) {
-          if (forceLoadNetworksRule.get() === false) {
-            logWarn(
-              `cable network extends into unloaded chunks at ${Vector3Utils.toString(block.location)} in ${block.dimension.id} and forceLoadNetworks is disabled. some parts of the network may be unloaded`,
-            );
-            continue;
-          }
-
-          await addAnonymousTickingArea(
-            block.dimension,
-            otherEntity.location,
-            2,
-          );
-
-          nextBlock = block.dimension.getBlock(otherEntity.location);
-
-          removeAnonymousTickingArea(block.dimension, otherEntity.location);
-
-          if (!nextBlock) {
-            logWarn(
-              `failed to follow the cable network into unloaded chunks at ${Vector3Utils.toString(block.location)} in ${block.dimension.id}. some parts of the network may be unloaded`,
-            );
-            continue;
-          }
+        if (nextBlock) {
+          stack.push(nextBlock);
         }
-
-        stack.push(nextBlock);
       }
 
       return success(null);
@@ -153,28 +169,12 @@ export async function discoverCableNetworkConnections(
     block: Block,
     nextDirection: Direction,
   ): Promise<Result<null, DiscoverCableNetworkConnectionsError>> {
-    let nextBlock = getBlockInDirection(block, nextDirection);
-
+    const nextBlock = await tryForceGetBlock(
+      block.dimension,
+      Vector3Utils.add(block.location, directionToVector3(nextDirection)),
+    );
     if (!nextBlock) {
-      if (forceLoadNetworksRule.get() === false) {
-        logWarn(
-          `cable network extends into unloaded chunks at ${Vector3Utils.toString(block.location)} in ${block.dimension.id} and forceLoadNetworks is disabled. some parts of the network may be unloaded`,
-        );
-        return success(null);
-      }
-
-      await addAnonymousTickingArea(block.dimension, block.location, 2);
-
-      nextBlock = getBlockInDirection(block, nextDirection);
-
-      removeAnonymousTickingArea(block.dimension, block.location);
-
-      if (!nextBlock) {
-        logWarn(
-          `failed to follow the cable network into unloaded chunks at ${Vector3Utils.toString(block.location)} in ${block.dimension.id}. some parts of the network may be unloaded`,
-        );
-        return success(null);
-      }
+      return success(null);
     }
 
     return handleBlock(nextBlock);
