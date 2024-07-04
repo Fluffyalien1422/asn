@@ -14,13 +14,6 @@ items, including all modded items.
 Enable Beta APIs under Experiments in the world settings
 </h2>
 <br />
-
-<p>
-The following information is all available in the Advanced Storage Network
-tutorial book given to players when they spawn. It can also be crafted if you
-lose it.
-</p>
-<br />
 `;
 
 const CONTENT_END =
