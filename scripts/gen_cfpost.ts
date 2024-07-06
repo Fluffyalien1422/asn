@@ -8,16 +8,22 @@ Advanced Storage Network finally fixes your storage problem. This add-on adds
 new devices that you can use to build a storage network that can hold infinite
 items, including all modded items.
 </p>
-<br />
 
-<h2 style="color: red">
+<p><a href="https://legacy.curseforge.com/minecraft-bedrock/addons/advanced-storage-network-2/issues">Issue Tracker</a></p>
+
+<h2>
 Enable Beta APIs under Experiments in the world settings
 </h2>
-<br />
+<h2>
+Requires Minecraft 1.21.x
+</h2>
+<h2>
+No official realms support
+</h2>
 `;
 
 const CONTENT_END =
-  '<a href="https://x.com/Fluffyalien1422">Follow me on X</a>';
+  '<p><a href="https://x.com/Fluffyalien1422">Follow me on X</a></p>';
 
 function htmlEscape(s: string): string {
   return s
@@ -93,7 +99,7 @@ fs.writeFileSync(
     Object.values(entries)
       .map(
         (entry) =>
-          `<h2>${htmlEscape(entry.title)}</h2><div class="spoiler"><ul><li>${entry.bullets.map(htmlEscape).join("</li><li>")}</li></ul></div><br/>`,
+          `<h2>${htmlEscape(entry.title)}</h2><div class="spoiler"><ul><li>${entry.bullets.map(htmlEscape).join("</li><li>")}</li></ul></div>`,
       )
       .join("") +
     CONTENT_END,
