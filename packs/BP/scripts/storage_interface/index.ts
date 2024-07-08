@@ -216,6 +216,7 @@ export function refreshInterface(
   interfaceEntity: Entity,
   player: Player,
   network: StorageNetwork,
+  preservePage = false,
 ): InterfaceData {
   if (
     !interfaceEntity.matches({
@@ -238,7 +239,7 @@ export function refreshInterface(
       ? oldData.items
       : [...network.getStoredItemStacks()],
     network,
-    page: 0,
+    page: preservePage ? oldData?.page ?? 0 : 0,
     playerInUi: player,
   };
 
@@ -385,7 +386,7 @@ function addItemToStorage(
     return false;
   }
 
-  refreshInterface(interfaceEntity, data.playerInUi, data.network);
+  refreshInterface(interfaceEntity, data.playerInUi, data.network, true);
   return true;
 }
 

@@ -120,7 +120,8 @@
           "$index": 31,
           "offset": [66, 22.5],
           "$slot_size": [0, 0],
-          "$slot_image_size": [0, 0]
+          "$slot_image_size": [0, 0],
+          "enabled": false
         }
       },
       {
@@ -128,7 +129,8 @@
           "$index": 32,
           "offset": [70, 22.5],
           "$slot_size": [0, 0],
-          "$slot_image_size": [0, 0]
+          "$slot_image_size": [0, 0],
+          "enabled": false
         }
       },
       {
