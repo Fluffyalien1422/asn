@@ -1,11 +1,9 @@
-import { system, Block, Dimension, Player } from "@minecraft/server";
+import { system, Block, Player } from "@minecraft/server";
 import {
   CableNetworkConnections,
   DiscoverCableNetworkConnectionsError,
   discoverCableNetworkConnections,
-  tryForceGetBlock,
 } from "./cable_network";
-import { vector3AsDimensionLocation } from "./utils/location";
 import { Result, failure, success } from "./utils/result";
 import {
   MAX_STORAGE_DRIVE_DATA_LENGTH,
@@ -50,7 +48,7 @@ export class StorageNetwork {
 
     const connections = result.value;
 
-    return success(new StorageNetwork(origin.dimension, connections));
+    return success(new StorageNetwork(connections));
   }
 
   /**
@@ -159,19 +157,15 @@ export class StorageNetwork {
   private readonly updateIntervalRunId: number;
   private readonly levelEmitterUpdateIntervalRunId: number;
 
-  private constructor(
-    private readonly dimension: Dimension,
-    private connections: CableNetworkConnections,
-  ) {
+  private constructor(private connections: CableNetworkConnections) {
     StorageNetwork.storageNetworks.push(this);
     logInfo(
       `created StorageNetwork, new count: ${StorageNetwork.storageNetworks.length.toString()}`,
     );
 
     this.updateIntervalRunId = system.runInterval(() => {
-      for (const connection of this.connections.buses) {
-        const block = this.dimension.getBlock(connection);
-        if (!block) continue;
+      for (const block of this.connections.buses) {
+        if (!block.isValid()) continue;
 
         switch (block.typeId) {
           case "fluffyalien_asn:import_bus":
@@ -185,9 +179,8 @@ export class StorageNetwork {
     }, 10);
 
     this.levelEmitterUpdateIntervalRunId = system.runInterval(() => {
-      for (const connection of this.connections.levelEmitters) {
-        const block = this.dimension.getBlock(connection);
-        if (!block) continue;
+      for (const block of this.connections.levelEmitters) {
+        if (!block.isValid()) continue;
 
         updateLevelEmitter(block, this);
       }
@@ -211,15 +204,13 @@ export class StorageNetwork {
 
     const itemStacks: StorageSystemItemStack[] = [];
 
-    for (const driveLocation of this.connections.storageDrives) {
-      const serialized = getStorageDriveSerializedData(
-        vector3AsDimensionLocation(driveLocation, this.dimension),
-      );
+    for (const drive of this.connections.storageDrives) {
+      const serialized = getStorageDriveSerializedData(drive);
 
       if (serialized === false) {
         logWarn(
-          `could not read data from storage drive at (${driveLocation.x.toString()}, ${driveLocation.y.toString()}, ${driveLocation.z.toString()}) in ${
-            this.dimension.id
+          `could not read data from storage drive at (${drive.x.toString()}, ${drive.y.toString()}, ${drive.z.toString()}) in ${
+            drive.dimension.id
           } to get stored item stacks in network. skipping. some items may be missing`,
         );
       }
@@ -246,7 +237,7 @@ export class StorageNetwork {
 
     let itemsStored = 0;
 
-    for (const driveLocation of this.connections.storageDrives) {
+    for (const drive of this.connections.storageDrives) {
       let serializedData = "";
 
       while (itemsStored < storedItems.length) {
@@ -263,15 +254,10 @@ export class StorageNetwork {
         itemsStored++;
       }
 
-      if (
-        !setStorageDriveSerializedData(
-          vector3AsDimensionLocation(driveLocation, this.dimension),
-          serializedData,
-        )
-      ) {
+      if (!setStorageDriveSerializedData(drive, serializedData)) {
         logWarn(
-          `could not set data in storage drive at (${driveLocation.x.toString()}, ${driveLocation.y.toString()}, ${driveLocation.z.toString()}) in ${
-            this.dimension.id
+          `could not set data in storage drive at (${drive.x.toString()}, ${drive.y.toString()}, ${drive.z.toString()}) in ${
+            drive.dimension.id
           }. skipping. some items may be missing or duplicated`,
         );
       }
@@ -328,40 +314,27 @@ export class StorageNetwork {
   isPartOfNetwork(block: Block, typeIdOverride?: string): boolean {
     this.ensureValidity();
 
-    if (block.dimension.id !== this.dimension.id) {
-      return false;
-    }
-
     const typeId = typeIdOverride ?? block.typeId;
+
+    const condition = (v: Block): boolean =>
+      v.dimension.id === block.dimension.id &&
+      Vector3Utils.equals(v, block.location);
 
     switch (typeId) {
       case "fluffyalien_asn:storage_relay":
       case "fluffyalien_asn:storage_cable":
-        return this.connections.cables.some((v) =>
-          Vector3Utils.equals(v, block.location),
-        );
+        return this.connections.cables.some(condition);
       case "fluffyalien_asn:storage_core":
-        return Vector3Utils.equals(
-          block.location,
-          this.connections.storageCore,
-        );
+        return condition(this.connections.storageCore);
       case "fluffyalien_asn:storage_drive":
-        return this.connections.storageDrives.some((v) =>
-          Vector3Utils.equals(v, block.location),
-        );
+        return this.connections.storageDrives.some(condition);
       case "fluffyalien_asn:storage_interface":
-        return this.connections.storageInterfaces.some((v) =>
-          Vector3Utils.equals(v, block.location),
-        );
+        return this.connections.storageInterfaces.some(condition);
       case "fluffyalien_asn:import_bus":
       case "fluffyalien_asn:export_bus":
-        return this.connections.buses.some((v) =>
-          Vector3Utils.equals(v, block.location),
-        );
+        return this.connections.buses.some(condition);
       case "fluffyalien_asn:level_emitter":
-        return this.connections.levelEmitters.some((v) =>
-          Vector3Utils.equals(v, block.location),
-        );
+        return this.connections.levelEmitters.some(condition);
       default:
         return false;
     }
@@ -379,21 +352,9 @@ export class StorageNetwork {
   > {
     this.ensureValidity();
 
-    const coreBlock = await tryForceGetBlock(
-      this.dimension,
+    const result = await discoverCableNetworkConnections(
       this.connections.storageCore,
     );
-    if (!coreBlock) {
-      throw new Error(
-        makeErrorString(
-          `cannot update connections: location (${this.connections.storageCore.x.toString()}, ${this.connections.storageCore.y.toString()}, ${this.connections.storageCore.z.toString()}) in ${
-            this.dimension.id
-          } could not be loaded`,
-        ),
-      );
-    }
-
-    const result = await discoverCableNetworkConnections(coreBlock);
     if (!result.success) {
       this.destroy();
       return result;
@@ -435,15 +396,13 @@ export class StorageNetwork {
 
     let length = 0;
 
-    for (const driveLocation of this.connections.storageDrives) {
-      const serialized = getStorageDriveSerializedData(
-        vector3AsDimensionLocation(driveLocation, this.dimension),
-      );
+    for (const drive of this.connections.storageDrives) {
+      const serialized = getStorageDriveSerializedData(drive);
 
       if (serialized === false) {
         logWarn(
-          `could not read data from storage drive at (${driveLocation.x.toString()}, ${driveLocation.y.toString()}, ${driveLocation.z.toString()}) in ${
-            this.dimension.id
+          `could not read data from storage drive at (${drive.x.toString()}, ${drive.y.toString()}, ${drive.z.toString()}) in ${
+            drive.dimension.id
           } to get used data length. skipping. result may not be accurate`,
         );
       }

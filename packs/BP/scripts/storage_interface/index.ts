@@ -1,5 +1,5 @@
 import { showEstablishNetworkError } from "../cable_network";
-import { end, nether, overworld } from "../dimensions";
+import { end, nether, overworld } from "../utils/dimension";
 import { logWarn, makeErrorString } from "../log";
 import { StorageNetwork } from "../storage_network";
 import { StorageSystemItemStack } from "../storage_system_item_stack";

@@ -18,14 +18,15 @@ import { directionToVector3 } from "./utils/direction";
 import { makeErrorMessageUi } from "./utils/ui";
 import { getEntityAtBlockLocation } from "./utils/location";
 import { relayName } from "./relay";
+import { getEntitiesInAllDimensions } from "./utils/dimension";
 
 export interface CableNetworkConnections {
-  cables: Vector3[];
-  storageCore: Vector3;
-  storageDrives: Vector3[];
-  storageInterfaces: Vector3[];
-  buses: Vector3[];
-  levelEmitters: Vector3[];
+  cables: Block[];
+  storageCore: Block;
+  storageDrives: Block[];
+  storageInterfaces: Block[];
+  buses: Block[];
+  levelEmitters: Block[];
 }
 
 export type DiscoverCableNetworkConnectionsError =
@@ -71,12 +72,12 @@ export async function discoverCableNetworkConnections(
   const visitedLocations: Vector3[] = [];
   const stack: Block[] = [];
 
-  const cables: Vector3[] = [];
-  const storageDrives: Vector3[] = [];
-  const storageInterfaces: Vector3[] = [];
-  const buses: Vector3[] = [];
-  const levelEmitters: Vector3[] = [];
-  let storageCore: Vector3 | undefined;
+  const cables: Block[] = [];
+  const storageDrives: Block[] = [];
+  const storageInterfaces: Block[] = [];
+  const buses: Block[] = [];
+  const levelEmitters: Block[] = [];
+  let storageCore: Block | undefined;
 
   async function handleBlock(
     block: Block,
@@ -94,7 +95,7 @@ export async function discoverCableNetworkConnections(
     stack.push(block);
 
     if (block.typeId === "fluffyalien_asn:storage_cable") {
-      cables.push(block.location);
+      cables.push(block);
 
       return success(null);
     }
@@ -104,27 +105,27 @@ export async function discoverCableNetworkConnections(
         return failure("multipleStorageCores");
       }
 
-      storageCore = block.location;
+      storageCore = block;
       return success(null);
     }
 
     if (block.typeId === "fluffyalien_asn:storage_drive") {
-      storageDrives.push(block.location);
+      storageDrives.push(block);
       return success(null);
     }
 
     if (block.typeId === "fluffyalien_asn:storage_interface") {
-      storageInterfaces.push(block.location);
+      storageInterfaces.push(block);
       return success(null);
     }
 
     if (block.typeId === "fluffyalien_asn:level_emitter") {
-      levelEmitters.push(block.location);
+      levelEmitters.push(block);
       return success(null);
     }
 
     if (block.typeId === "fluffyalien_asn:storage_relay") {
-      cables.push(block.location);
+      cables.push(block);
 
       const entity = getEntityAtBlockLocation(
         block,
@@ -140,7 +141,7 @@ export async function discoverCableNetworkConnections(
       const name = relayName.get(entity);
       if (!name) return success(null);
 
-      for (const otherEntity of block.dimension.getEntities({
+      for (const otherEntity of getEntitiesInAllDimensions({
         type: "fluffyalien_asn:relay_entity",
         minDistance: 2,
         location: entity.location,
@@ -161,7 +162,7 @@ export async function discoverCableNetworkConnections(
       return success(null);
     }
 
-    buses.push(block.location);
+    buses.push(block);
     return success(null);
   }
 
