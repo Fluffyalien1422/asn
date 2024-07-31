@@ -1,10 +1,6 @@
 import { Entity, Player, Vector3, system, world } from "@minecraft/server";
 import { DynamicProperty } from "./dynamic_property";
 import { forceLoadNetworksRule } from "./addon_rules";
-import {
-  addAnonymousTickingArea,
-  removeAnonymousTickingArea,
-} from "./tickingarea";
 import { StorageNetwork } from "./storage_network";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
@@ -47,7 +43,7 @@ system.runInterval(() => {
       if (entity) {
         removeWirelessInterfaceEntity(player, entity);
       }
-      return;
+      continue;
     }
 
     if (!entity) {
@@ -127,19 +123,8 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   void (async (): Promise<void> => {
     const dimension = world.getDimension(linkDimension);
 
-    let block = dimension.getBlock(linkLocation);
-    if (!block) {
-      await addAnonymousTickingArea(dimension, linkLocation, 1);
-      block = dimension.getBlock(linkLocation);
-      removeAnonymousTickingArea(dimension, linkLocation);
-
-      if (!block) {
-        sendLinkedNetworkNotFound();
-        return;
-      }
-    }
-
-    if (block.typeId !== "fluffyalien_asn:storage_core") {
+    const block = dimension.getBlock(linkLocation);
+    if (block?.typeId !== "fluffyalien_asn:storage_core") {
       sendLinkedNetworkNotFound();
       return;
     }
