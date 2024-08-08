@@ -17,7 +17,7 @@ import { DeepReadonly } from "ts-essentials";
 import { updateImportBus } from "./import_bus";
 import { Vector3Utils } from "@minecraft/math";
 import { updateExportBus } from "./export_bus";
-import { logInfo, logWarn, makeErrorString } from "./log";
+import { logWarn, makeErrorString } from "./log";
 import { updateLevelEmitter } from "./level_emitter";
 
 export type AddItemStackToStorageError =
@@ -159,9 +159,6 @@ export class StorageNetwork {
 
   private constructor(private connections: CableNetworkConnections) {
     StorageNetwork.storageNetworks.push(this);
-    logInfo(
-      `created StorageNetwork, new count: ${StorageNetwork.storageNetworks.length.toString()}`,
-    );
 
     this.updateIntervalRunId = system.runInterval(() => {
       for (const block of this.connections.buses) {
@@ -300,10 +297,6 @@ export class StorageNetwork {
     if (i === -1) return;
 
     StorageNetwork.storageNetworks.splice(i, 1);
-
-    logInfo(
-      `removed StorageNetwork, new count: ${StorageNetwork.storageNetworks.length.toString()}`,
-    );
   }
 
   /**
