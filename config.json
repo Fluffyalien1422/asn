@@ -29,7 +29,7 @@
     "profiles": {
       "default": {
         "export": {
-          "target": "preview"
+          "target": "development"
         },
         "filters": [
           {
