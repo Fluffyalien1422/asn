@@ -15,7 +15,7 @@ items, including all modded items.
 Enable Beta APIs under Experiments in the world settings
 </h2>
 <h2>
-Requires Minecraft 1.21.x
+Requires Minecraft 1.21.2x
 </h2>
 <h2>
 No official realms support
