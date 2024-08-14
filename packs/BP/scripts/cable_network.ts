@@ -79,9 +79,9 @@ export async function discoverCableNetworkConnections(
   const levelEmitters: Block[] = [];
   let storageCore: Block | undefined;
 
-  async function handleBlock(
+  function handleBlock(
     block: Block,
-  ): Promise<Result<null, DiscoverCableNetworkConnectionsError>> {
+  ): Result<null, DiscoverCableNetworkConnectionsError> {
     if (
       !block.hasTag("fluffyalien_asn:storage_network_connectable") ||
       visitedLocations.some((vector) =>
@@ -149,10 +149,7 @@ export async function discoverCableNetworkConnections(
         const otherName = relayName.get(otherEntity);
         if (name !== otherName) continue;
 
-        const nextBlock = await tryForceGetBlock(
-          otherEntity.dimension,
-          otherEntity.location,
-        );
+        const nextBlock = otherEntity.dimension.getBlock(otherEntity.location);
 
         if (nextBlock) {
           stack.push(nextBlock);
@@ -181,7 +178,7 @@ export async function discoverCableNetworkConnections(
     return handleBlock(nextBlock);
   }
 
-  await handleBlock(origin);
+  handleBlock(origin);
 
   while (stack.length) {
     const block = stack.pop()!;
