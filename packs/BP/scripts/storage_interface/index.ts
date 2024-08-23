@@ -24,6 +24,7 @@ import {
   system,
   world,
 } from "@minecraft/server";
+import { getUseEnergyRule } from "../addon_rules";
 
 const ITEMS_PER_PAGE = 27;
 
@@ -239,7 +240,7 @@ export function refreshInterface(
       ? oldData.items
       : [...network.getStoredItemStacks()],
     network,
-    page: preservePage ? oldData?.page ?? 0 : 0,
+    page: preservePage ? (oldData?.page ?? 0) : 0,
     playerInUi: player,
   };
 
@@ -394,10 +395,6 @@ export const storageInterfaceComponent: BlockCustomComponent = {
   onPlace(e) {
     if (e.previousBlock.type.id === "fluffyalien_asn:storage_interface") return;
 
-    e.block.setPermutation(
-      e.block.permutation.withState("fluffyalien_asn:update_2_3", true),
-    );
-
     e.block.dimension.spawnEntity("fluffyalien_asn:storage_interface_entity", {
       x: e.block.x + 0.5,
       y: e.block.y,
@@ -405,21 +402,6 @@ export const storageInterfaceComponent: BlockCustomComponent = {
     }).nameTag = "fluffyalien_asn:storage_interface";
 
     StorageNetwork.updateConnectableNetworks(e.block);
-  },
-  onPlayerInteract(e) {
-    if (e.block.permutation.getState("fluffyalien_asn:update_2_3")) {
-      return;
-    }
-
-    e.block.setPermutation(
-      e.block.permutation.withState("fluffyalien_asn:update_2_3", true),
-    );
-
-    e.block.dimension.spawnEntity("fluffyalien_asn:storage_interface_entity", {
-      x: e.block.x + 0.5,
-      y: e.block.y,
-      z: e.block.z + 0.5,
-    }).nameTag = "fluffyalien_asn:storage_interface";
   },
   onTick(e) {
     const cardinalDirection = e.block.permutation.getState(
@@ -520,6 +502,15 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   void (async (): Promise<void> => {
     const network = await getNetworkOrShowError(block, e.target, e.player);
     if (!network) return;
+
+    if (getUseEnergyRule() && network.getStoredEnergy() <= 0) {
+      await forceCloseInventory(e.target);
+      void makeErrorMessageUi({
+        translate:
+          "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
+      }).show(e.player);
+      return;
+    }
 
     refreshInterface(e.target, e.player, network);
   })();

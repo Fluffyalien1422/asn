@@ -32,6 +32,9 @@
     },
     "fluffyalien_asn:storage_relay": {
       "textures": "textures/fluffyalien/asn/blocks/storage_relay"
+    },
+    "fluffyalien_asn:storage_power_bank_front": {
+      "textures": "textures/fluffyalien/asn/blocks/storage_power_bank_front"
     }
   }
 }

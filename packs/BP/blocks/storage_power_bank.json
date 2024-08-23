@@ -2,7 +2,7 @@
   "format_version": "1.20.70",
   "minecraft:block": {
     "description": {
-      "identifier": "fluffyalien_asn:storage_interface",
+      "identifier": "fluffyalien_asn:storage_power_bank",
       "menu_category": {
         "category": "items"
       },
@@ -10,45 +10,33 @@
         "minecraft:placement_direction": {
           "enabled_states": ["minecraft:cardinal_direction"]
         }
-      },
-      "states": {
-        "fluffyalien_asn:north": [false, true],
-        "fluffyalien_asn:east": [false, true],
-        "fluffyalien_asn:west": [false, true],
-        "fluffyalien_asn:up": [false, true],
-        "fluffyalien_asn:down": [false, true]
       }
     },
     "components": {
-      "minecraft:custom_components": ["fluffyalien_asn:storage_interface"],
+      "minecraft:custom_components": ["fluffyalien_energisticscore:machine"],
       "tag:fluffyalien_asn:storage_network_connectable": {},
+      "tag:fluffyalien_energisticscore:machine": {},
+      "tag:fluffyalien_energisticscore:io.energy": {},
+      "tag:fluffyalien_energisticscore:consumer.energy": {},
 
-      "minecraft:geometry": {
-        "identifier": "geometry.fluffyalien_asn.storage_interface",
-        "bone_visibility": {
-          "north": "q.block_state('fluffyalien_asn:north')",
-          "east": "q.block_state('fluffyalien_asn:east')",
-          "west": "q.block_state('fluffyalien_asn:west')",
-          "up": "q.block_state('fluffyalien_asn:up')",
-          "down": "q.block_state('fluffyalien_asn:down')"
-        }
-      },
+      "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {
-        "*": {
-          "texture": "fluffyalien_asn:storage_interface"
-        }
+        "north": {
+          "texture": "fluffyalien_asn:storage_drive_side"
+        },
+        "south": {
+          "texture": "fluffyalien_asn:storage_power_bank_front"
+        },
+        "up": {
+          "texture": "fluffyalien_asn:storage_drive_top"
+        },
+        "east": "north",
+        "west": "north",
+        "down": "up"
       },
-      "minecraft:collision_box": {
-        "origin": [-5, 3, -3],
-        "size": [10, 10, 11]
-      },
-      "minecraft:selection_box": false,
-      "minecraft:light_dampening": 0,
       "minecraft:destructible_by_explosion": false,
-      "minecraft:destructible_by_mining": false,
-
-      "minecraft:tick": {
-        "interval_range": [5, 5]
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 1
       }
     },
     "permutations": [
