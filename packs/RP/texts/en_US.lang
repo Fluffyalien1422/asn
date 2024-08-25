@@ -62,8 +62,6 @@ fluffyalien_asn.ui.storageCore.title=Storage Core
 fluffyalien_asn.ui.storageCore.body.storageUsed=Storage Used (Network): %s/%su
 fluffyalien_asn.ui.storageCore.body.storedEnergy=Stored Energy: %s/%su
 fluffyalien_asn.ui.storageCore.body.energyConsumption=Energy Consumption: %s/t
-fluffyalien_asn.ui.storageCore.body.connectedInterfaces=Connected Interfaces: %s
-fluffyalien_asn.ui.storageCore.body.connectedDrives=Connected Drives: %s
 
 fluffyalien_asn.ui.exportBus.title=Export Bus
 fluffyalien_asn.ui.exportBus.exportItem=Exporting %s

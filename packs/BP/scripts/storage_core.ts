@@ -83,34 +83,6 @@ function showStorageCoreUi(
             },
           ]
         : []),
-      {
-        text: "\n\n",
-      },
-      {
-        translate: "fluffyalien_asn.ui.storageCore.body.connectedInterfaces",
-        with: {
-          rawtext: [
-            {
-              text: network
-                .getConnections()
-                .storageInterfaces.length.toString(),
-            },
-          ],
-        },
-      },
-      {
-        text: "\n\n",
-      },
-      {
-        translate: "fluffyalien_asn.ui.storageCore.body.connectedDrives",
-        with: {
-          rawtext: [
-            {
-              text: network.getConnections().storageDrives.length.toString(),
-            },
-          ],
-        },
-      },
     ],
   });
 
