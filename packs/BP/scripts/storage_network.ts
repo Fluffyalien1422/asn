@@ -6,6 +6,7 @@ import {
 } from "./cable_network";
 import { Result, failure, success } from "./utils/result";
 import {
+  DRIVE_ENERGY_CONSUMPTION,
   MAX_STORAGE_DRIVE_DATA_LENGTH,
   getStorageDriveSerializedData,
   setStorageDriveSerializedData,
@@ -19,6 +20,12 @@ import { Vector3Utils } from "@minecraft/math";
 import { updateExportBus } from "./export_bus";
 import { logWarn, makeErrorString } from "./log";
 import { updateLevelEmitter } from "./level_emitter";
+import {
+  getMachineStorage,
+  MAX_MACHINE_STORAGE,
+  setMachineStorage,
+} from "bedrock-energistics-core-api";
+import { getUseEnergyRule } from "./addon_rules";
 
 export type AddItemStackToStorageError =
   | {
@@ -28,6 +35,8 @@ export type AddItemStackToStorageError =
       type: "bannedItem";
       itemId: string;
     };
+
+export const STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL = 10;
 
 export class StorageNetwork {
   private static readonly storageNetworks: StorageNetwork[] = [];
@@ -171,6 +180,25 @@ export class StorageNetwork {
           case "fluffyalien_asn:export_bus":
             updateExportBus(block, this);
             break;
+        }
+      }
+
+      if (getUseEnergyRule()) {
+        let energyConsumptionRemaining = this.getEnergyConsumption();
+        for (const block of this.connections.powerBanks) {
+          const storedEnergy = getMachineStorage(block, "energy");
+
+          const consumption = Math.min(
+            storedEnergy,
+            energyConsumptionRemaining,
+          );
+          energyConsumptionRemaining -= consumption;
+
+          setMachineStorage(block, "energy", storedEnergy - consumption);
+
+          if (energyConsumptionRemaining <= 0) {
+            break;
+          }
         }
       }
     }, 10);
@@ -328,6 +356,8 @@ export class StorageNetwork {
         return this.connections.buses.some(condition);
       case "fluffyalien_asn:level_emitter":
         return this.connections.levelEmitters.some(condition);
+      case "fluffyalien_asn:storage_power_bank":
+        return this.connections.powerBanks.some(condition);
       default:
         return false;
     }
@@ -418,6 +448,35 @@ export class StorageNetwork {
     return (
       MAX_STORAGE_DRIVE_DATA_LENGTH * this.connections.storageDrives.length
     );
+  }
+
+  getStoredEnergy(): number {
+    let energy = 0;
+
+    for (const powerBank of this.connections.powerBanks) {
+      energy += getMachineStorage(powerBank, "energy");
+    }
+
+    return energy;
+  }
+
+  /**
+   * @throws if this object is not valid
+   */
+  getMaxStoredEnergy(): number {
+    this.ensureValidity();
+
+    return MAX_MACHINE_STORAGE * this.connections.powerBanks.length;
+  }
+
+  /**
+   * @throws if this object is not valid
+   * @returns energy consumption per {@link STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL}
+   */
+  getEnergyConsumption(): number {
+    this.ensureValidity();
+
+    return DRIVE_ENERGY_CONSUMPTION * this.connections.storageDrives.length;
   }
 
   /**

@@ -1,0 +1,106 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:block": {
+    "description": {
+      "identifier": "fluffyalien_asn:storage_power_bank",
+      "menu_category": {
+        "category": "items"
+      },
+      "traits": {
+        "minecraft:placement_direction": {
+          "enabled_states": ["minecraft:cardinal_direction"]
+        }
+      },
+      "states": {
+        "fluffyalien_asn:powered": [false, true]
+      }
+    },
+    "components": {
+      "minecraft:custom_components": [
+        "fluffyalien_energisticscore:machine",
+        "fluffyalien_asn:storage_power_bank"
+      ],
+      "tag:fluffyalien_asn:storage_network_connectable": {},
+      "tag:fluffyalien_energisticscore:machine": {},
+      "tag:fluffyalien_energisticscore:io.energy": {},
+      "tag:fluffyalien_energisticscore:consumer.energy": {},
+
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:destructible_by_explosion": false,
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 1
+      },
+      "minecraft:tick": {
+        "interval_range": [20, 20]
+      }
+    },
+    "permutations": [
+      {
+        "condition": "!q.block_state('fluffyalien_asn:powered')",
+        "components": {
+          "minecraft:material_instances": {
+            "*": {
+              "texture": "fluffyalien_asn:storage_drive_side"
+            },
+            "south": {
+              "texture": "fluffyalien_asn:storage_power_bank_front_off"
+            },
+            "up": {
+              "texture": "fluffyalien_asn:storage_drive_top"
+            },
+            "down": "up"
+          }
+        }
+      },
+      {
+        "condition": "q.block_state('fluffyalien_asn:powered')",
+        "components": {
+          "minecraft:material_instances": {
+            "*": {
+              "texture": "fluffyalien_asn:storage_drive_side"
+            },
+            "south": {
+              "texture": "fluffyalien_asn:storage_power_bank_front_on"
+            },
+            "up": {
+              "texture": "fluffyalien_asn:storage_drive_top"
+            },
+            "down": "up"
+          }
+        }
+      },
+      {
+        "condition": "q.block_state('minecraft:cardinal_direction') == 'north'",
+        "components": {
+          "minecraft:transformation": {
+            "rotation": [0, 0, 0]
+          }
+        }
+      },
+      {
+        "condition": "q.block_state('minecraft:cardinal_direction') == 'south'",
+        "components": {
+          "minecraft:transformation": {
+            "rotation": [0, 180, 0]
+          }
+        }
+      },
+      {
+        "condition": "q.block_state('minecraft:cardinal_direction') == 'west'",
+        "components": {
+          "minecraft:transformation": {
+            "rotation": [0, 90, 0]
+          }
+        }
+      },
+      {
+        "condition": "q.block_state('minecraft:cardinal_direction') == 'east'",
+        "components": {
+          "minecraft:transformation": {
+            "rotation": [0, -90, 0]
+          }
+        }
+      }
+    ]
+  }
+}

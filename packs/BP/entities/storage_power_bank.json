@@ -1,21 +1,28 @@
 {
-  "format_version": "1.20.70",
+  "format_version": "1.21.0",
   "minecraft:entity": {
     "description": {
-      "identifier": "fluffyalien_asn:wireless_interface_entity",
+      "identifier": "fluffyalien_asn:storage_power_bank",
       "is_summonable": true,
       "is_spawnable": false
     },
+    "component_groups": {
+      "fluffyalien_asn:despawn": {
+        "minecraft:instant_despawn": {}
+      }
+    },
     "components": {
-      "minecraft:type_family": {
-        "family": ["fluffyalien_asn:storage_interface"]
-      },
       "minecraft:despawn": {
         "despawn_from_distance": {
           "min_distance": 10,
           "max_distance": 20
-        },
-        "despawn_from_inactivity": false
+        }
+      },
+      "minecraft:timer": {
+        "time": 60,
+        "time_down_event": {
+          "event": "fluffyalien_asn:despawn"
+        }
       },
       "minecraft:breathable": {
         "breathes_water": true
@@ -33,13 +40,26 @@
         "is_pushable": false,
         "is_pushable_by_piston": false
       },
+      "minecraft:knockback_resistance": {
+        "value": 1
+      },
       "minecraft:collision_box": {
-        "width": 3,
-        "height": 3
+        "width": 1,
+        "height": 1
       },
       "minecraft:inventory": {
         "container_type": "container",
-        "inventory_size": 34
+        "inventory_size": 4
+      },
+      "minecraft:type_family": {
+        "family": ["fluffyalien_energisticscore:machine_entity"]
+      }
+    },
+    "events": {
+      "fluffyalien_asn:despawn": {
+        "add": {
+          "component_groups": ["fluffyalien_asn:despawn"]
+        }
       }
     }
   }

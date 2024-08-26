@@ -146,6 +146,12 @@
         }
       },
       {
+        "sort_btn_slot@fluffyalien_asn:storage_interface.item_slot": {
+          "$index": 33,
+          "offset": [117, 8]
+        }
+      },
+      {
         "grid@fluffyalien_asn:storage_interface.grid": {
           "offset": [9, 28]
         }

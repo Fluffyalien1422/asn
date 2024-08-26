@@ -16,8 +16,7 @@
         "fluffyalien_asn:east": [false, true],
         "fluffyalien_asn:west": [false, true],
         "fluffyalien_asn:up": [false, true],
-        "fluffyalien_asn:down": [false, true],
-        "fluffyalien_asn:update_2_3": [false, true]
+        "fluffyalien_asn:down": [false, true]
       }
     },
     "components": {

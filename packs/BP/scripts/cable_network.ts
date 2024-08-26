@@ -27,6 +27,7 @@ export interface CableNetworkConnections {
   storageInterfaces: Block[];
   buses: Block[];
   levelEmitters: Block[];
+  powerBanks: Block[];
 }
 
 export type DiscoverCableNetworkConnectionsError =
@@ -77,6 +78,7 @@ export async function discoverCableNetworkConnections(
   const storageInterfaces: Block[] = [];
   const buses: Block[] = [];
   const levelEmitters: Block[] = [];
+  const powerBanks: Block[] = [];
   let storageCore: Block | undefined;
 
   function handleBlock(
@@ -121,6 +123,11 @@ export async function discoverCableNetworkConnections(
 
     if (block.typeId === "fluffyalien_asn:level_emitter") {
       levelEmitters.push(block);
+      return success(null);
+    }
+
+    if (block.typeId === "fluffyalien_asn:storage_power_bank") {
+      powerBanks.push(block);
       return success(null);
     }
 
@@ -225,6 +232,7 @@ export async function discoverCableNetworkConnections(
     storageInterfaces,
     buses,
     levelEmitters,
+    powerBanks,
   });
 }
 
