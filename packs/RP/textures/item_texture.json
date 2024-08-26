@@ -26,6 +26,9 @@
     },
     "fluffyalien_asn:wireless_interface_antenna": {
       "textures": "textures/fluffyalien/asn/items/wireless_interface_antenna"
+    },
+    "fluffyalien_asn:storage_interface_ui_item_sort": {
+      "textures": "textures/fluffyalien/asn/ui/storage_interface/sort"
     }
   }
 }

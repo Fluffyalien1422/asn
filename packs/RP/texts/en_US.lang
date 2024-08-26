@@ -5,6 +5,8 @@ item.fluffyalien_asn:storage_interface_ui_item_back=Previous
 item.fluffyalien_asn:storage_interface_ui_item_next=Next
 item.fluffyalien_asn:storage_interface_ui_item_search=Search
 item.fluffyalien_asn:storage_interface_ui_item_cancel_search=Cancel Search
+item.fluffyalien_asn:storage_interface_ui_item_sort_insertion=Sorting By: Insertion
+item.fluffyalien_asn:storage_interface_ui_item_sort_amount=Sorting By: Amount
 
 item.fluffyalien_asn:storage_disk=Storage Disk
 item.fluffyalien_asn:storage_disk_casing=Storage Disk Casing

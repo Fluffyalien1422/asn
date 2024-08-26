@@ -45,15 +45,26 @@ const SEARCH_BUTTON_ITEM_ID =
 const CANCEL_SEARCH_BUTTON_ITEM_ID =
   "fluffyalien_asn:storage_interface_ui_item_cancel_search";
 
+const SORT_AMOUNT_ITEM_ID =
+  "fluffyalien_asn:storage_interface_ui_item_sort_amount";
+
+const SORT_INSERTION_ITEM_ID =
+  "fluffyalien_asn:storage_interface_ui_item_sort_insertion";
+
+const SORT_BUTTON_INDEX = 33;
+
 const DISPLAY_ITEM_LORE_STR_END = "§a§s§n§r";
+
+type StorageInterfaceSortOrder = "insertion" | "amount";
 
 interface InterfaceData {
   enabled: boolean;
   hasQuery: boolean;
-  items: readonly StorageSystemItemStack[];
+  items: StorageSystemItemStack[];
   network: StorageNetwork;
   page: number;
   playerInUi: Player;
+  sortOrder: StorageInterfaceSortOrder;
 }
 
 /**
@@ -119,6 +130,15 @@ function fillInterfaceInventory(entity: Entity, data: InterfaceData): void {
     ),
   );
   inventory.setItem(NEXT_BUTTON_INDEX, new ItemStack(NEXT_BUTTON_ITEM_ID));
+
+  inventory.setItem(
+    SORT_BUTTON_INDEX,
+    new ItemStack(
+      data.sortOrder === "insertion"
+        ? SORT_INSERTION_ITEM_ID
+        : SORT_AMOUNT_ITEM_ID,
+    ),
+  );
 
   // page is 0-indexed
   if (data.page < 9) {
@@ -232,16 +252,27 @@ export function refreshInterface(
   }
 
   const oldData = interfaceData.get(interfaceEntity.id);
+  const sortOrder = oldData?.sortOrder ?? "insertion";
+
+  let items: StorageSystemItemStack[];
+  if (oldData?.hasQuery) {
+    items = oldData.items;
+  } else {
+    items = [...network.getStoredItemStacks()];
+
+    if (sortOrder === "amount") {
+      items.sort((a, b) => (a.amount < b.amount ? 1 : -1));
+    }
+  }
 
   const data: InterfaceData = {
     enabled: true,
     hasQuery: oldData?.hasQuery ?? false,
-    items: oldData?.hasQuery
-      ? oldData.items
-      : [...network.getStoredItemStacks()],
+    items,
     network,
     page: preservePage ? (oldData?.page ?? 0) : 0,
     playerInUi: player,
+    sortOrder,
   };
 
   interfaceData.set(interfaceEntity.id, data);
@@ -616,31 +647,33 @@ system.runInterval(() => {
       continue;
     }
 
-    const pageNumDigit1SlotItem = inventory.getItem(PAGE_NUM_DIGIT1_INDEX);
+    const sortButtonSlotItem = inventory.getItem(SORT_BUTTON_INDEX);
+
     if (
-      pageNumDigit1SlotItem &&
-      !pageNumDigit1SlotItem.hasTag("fluffyalien_asn:ui_item")
+      data.sortOrder === "insertion" &&
+      sortButtonSlotItem?.typeId !== SORT_INSERTION_ITEM_ID
     ) {
       handleTakenItem(
         data.playerInUi,
-        pageNumDigit1SlotItem.typeId,
-        pageNumDigit1SlotItem,
+        SORT_INSERTION_ITEM_ID,
+        sortButtonSlotItem,
       );
-      fillInterfaceInventory(entity, data);
+
+      data.sortOrder = "amount";
+      refreshInterface(entity, data.playerInUi, data.network);
+
       continue;
     }
 
-    const pageNumDigit2SlotItem = inventory.getItem(PAGE_NUM_DIGIT2_INDEX);
     if (
-      pageNumDigit2SlotItem &&
-      !pageNumDigit2SlotItem.hasTag("fluffyalien_asn:ui_item")
+      data.sortOrder === "amount" &&
+      sortButtonSlotItem?.typeId !== SORT_AMOUNT_ITEM_ID
     ) {
-      handleTakenItem(
-        data.playerInUi,
-        pageNumDigit2SlotItem.typeId,
-        pageNumDigit2SlotItem,
-      );
-      fillInterfaceInventory(entity, data);
+      handleTakenItem(data.playerInUi, SORT_AMOUNT_ITEM_ID, sortButtonSlotItem);
+
+      data.sortOrder = "insertion";
+      refreshInterface(entity, data.playerInUi, data.network);
+
       continue;
     }
 
