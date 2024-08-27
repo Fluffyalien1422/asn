@@ -51,6 +51,9 @@ const SORT_AMOUNT_ITEM_ID =
 const SORT_INSERTION_ITEM_ID =
   "fluffyalien_asn:storage_interface_ui_item_sort_insertion";
 
+const SORT_RELEVANCY_ITEM_ID =
+  "fluffyalien_asn:storage_interface_ui_item_sort_relevancy";
+
 const SORT_BUTTON_INDEX = 33;
 
 const DISPLAY_ITEM_LORE_STR_END = "§a§s§n§r";
@@ -64,6 +67,9 @@ interface InterfaceData {
   network: StorageNetwork;
   page: number;
   playerInUi: Player;
+  /**
+   * this value should be ignored if `hasQuery` is true, sorting should be relevancy
+   */
   sortOrder: StorageInterfaceSortOrder;
 }
 
@@ -134,9 +140,11 @@ function fillInterfaceInventory(entity: Entity, data: InterfaceData): void {
   inventory.setItem(
     SORT_BUTTON_INDEX,
     new ItemStack(
-      data.sortOrder === "insertion"
-        ? SORT_INSERTION_ITEM_ID
-        : SORT_AMOUNT_ITEM_ID,
+      data.hasQuery
+        ? SORT_RELEVANCY_ITEM_ID
+        : data.sortOrder === "insertion"
+          ? SORT_INSERTION_ITEM_ID
+          : SORT_AMOUNT_ITEM_ID,
     ),
   );
 
@@ -261,7 +269,7 @@ export function refreshInterface(
     items = [...network.getStoredItemStacks()];
 
     if (sortOrder === "amount") {
-      items.sort((a, b) => (a.amount < b.amount ? 1 : -1));
+      items.sort((a, b) => b.amount - a.amount);
     }
   }
 
@@ -309,16 +317,30 @@ async function search(
 
   data.hasQuery = true;
 
-  const keywords = query.toLowerCase().split(" ");
+  const queryKeywords = query.toLowerCase().split(" ");
+
+  const reducer = (matchingCount: number, keyword: string): number =>
+    matchingCount +
+    (queryKeywords.some((queryKeyword) => keyword.includes(queryKeyword))
+      ? 1
+      : 0);
 
   data.items = data.items
-    .filter((item) => keywords.some((keyword) => item.typeId.includes(keyword)))
-    .sort((a, b) =>
-      keywords.filter((keyword) => b.typeId.includes(keyword)).length >
-      keywords.filter((keyword) => a.typeId.includes(keyword)).length
-        ? 1
-        : 0,
-    );
+    .filter((item) =>
+      queryKeywords.some((keyword) => item.typeId.includes(keyword)),
+    )
+    .sort((a, b) => {
+      const aKeywords = a.typeId.split(/:|_/);
+      const bKeywords = b.typeId.split(/:|_/);
+
+      const aMatchingKeywordsCount = aKeywords.reduce(reducer, 0);
+      const bMatchingKeywordsCount = bKeywords.reduce(reducer, 0);
+
+      const aRelevancy = aMatchingKeywordsCount / aKeywords.length;
+      const bRelevancy = bMatchingKeywordsCount / bKeywords.length;
+
+      return bRelevancy - aRelevancy;
+    });
 
   data.playerInUi.onScreenDisplay.setActionBar({
     translate:
@@ -614,67 +636,78 @@ system.runInterval(() => {
     }
 
     const searchButtonSlotItem = inventory.getItem(SEARCH_BUTTON_INDEX);
-
-    if (
-      !data.hasQuery &&
-      searchButtonSlotItem?.typeId !== SEARCH_BUTTON_ITEM_ID
-    ) {
-      handleTakenItem(
-        data.playerInUi,
-        SEARCH_BUTTON_ITEM_ID,
-        searchButtonSlotItem,
-      );
-
-      data.enabled = false;
-      void search(entity, data);
-
-      continue;
-    }
-
-    if (
-      data.hasQuery &&
-      searchButtonSlotItem?.typeId !== CANCEL_SEARCH_BUTTON_ITEM_ID
-    ) {
-      handleTakenItem(
-        data.playerInUi,
-        CANCEL_SEARCH_BUTTON_ITEM_ID,
-        searchButtonSlotItem,
-      );
-
-      data.hasQuery = false;
-      refreshInterface(entity, data.playerInUi, data.network);
-
-      continue;
-    }
-
     const sortButtonSlotItem = inventory.getItem(SORT_BUTTON_INDEX);
 
-    if (
-      data.sortOrder === "insertion" &&
-      sortButtonSlotItem?.typeId !== SORT_INSERTION_ITEM_ID
-    ) {
-      handleTakenItem(
-        data.playerInUi,
-        SORT_INSERTION_ITEM_ID,
-        sortButtonSlotItem,
-      );
+    if (data.hasQuery) {
+      if (searchButtonSlotItem?.typeId !== CANCEL_SEARCH_BUTTON_ITEM_ID) {
+        handleTakenItem(
+          data.playerInUi,
+          CANCEL_SEARCH_BUTTON_ITEM_ID,
+          searchButtonSlotItem,
+        );
 
-      data.sortOrder = "amount";
-      refreshInterface(entity, data.playerInUi, data.network);
+        data.hasQuery = false;
+        refreshInterface(entity, data.playerInUi, data.network);
 
-      continue;
-    }
+        continue;
+      }
 
-    if (
-      data.sortOrder === "amount" &&
-      sortButtonSlotItem?.typeId !== SORT_AMOUNT_ITEM_ID
-    ) {
-      handleTakenItem(data.playerInUi, SORT_AMOUNT_ITEM_ID, sortButtonSlotItem);
+      if (sortButtonSlotItem?.typeId !== SORT_RELEVANCY_ITEM_ID) {
+        handleTakenItem(
+          data.playerInUi,
+          SORT_RELEVANCY_ITEM_ID,
+          sortButtonSlotItem,
+        );
 
-      data.sortOrder = "insertion";
-      refreshInterface(entity, data.playerInUi, data.network);
+        refreshInterface(entity, data.playerInUi, data.network);
 
-      continue;
+        continue;
+      }
+    } else {
+      if (searchButtonSlotItem?.typeId !== SEARCH_BUTTON_ITEM_ID) {
+        handleTakenItem(
+          data.playerInUi,
+          SEARCH_BUTTON_ITEM_ID,
+          searchButtonSlotItem,
+        );
+
+        data.enabled = false;
+        void search(entity, data);
+
+        continue;
+      }
+
+      if (
+        data.sortOrder === "insertion" &&
+        sortButtonSlotItem?.typeId !== SORT_INSERTION_ITEM_ID
+      ) {
+        handleTakenItem(
+          data.playerInUi,
+          SORT_INSERTION_ITEM_ID,
+          sortButtonSlotItem,
+        );
+
+        data.sortOrder = "amount";
+        refreshInterface(entity, data.playerInUi, data.network);
+
+        continue;
+      }
+
+      if (
+        data.sortOrder === "amount" &&
+        sortButtonSlotItem?.typeId !== SORT_AMOUNT_ITEM_ID
+      ) {
+        handleTakenItem(
+          data.playerInUi,
+          SORT_AMOUNT_ITEM_ID,
+          sortButtonSlotItem,
+        );
+
+        data.sortOrder = "insertion";
+        refreshInterface(entity, data.playerInUi, data.network);
+
+        continue;
+      }
     }
 
     const itemsOnPage = getItemsOnPage(data.items, data.page);
