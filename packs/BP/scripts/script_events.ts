@@ -2,7 +2,11 @@ import { getPlayerMainhandSlot } from "./utils/item";
 import { STORAGE_DATA_DYNAMIC_PROPERTY_ID } from "./storage_drive";
 import { system, Player } from "@minecraft/server";
 import { logWarn } from "./log";
-import { forceLoadNetworksRule, useEnergyRule } from "./addon_rules";
+import {
+  forceLoadNetworksRule,
+  showRequestItemDialog,
+  useEnergyRule,
+} from "./addon_rules";
 import { DynamicPropertyLocked } from "./utils/dynamic_property";
 
 type AddonRuleCommand =
@@ -22,6 +26,11 @@ const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
     type: "bool",
     property: forceLoadNetworksRule,
     default: true,
+  },
+  showRequestItemDialog: {
+    type: "bool",
+    property: showRequestItemDialog,
+    default: false,
   },
   useEnergy: {
     type: "bool",

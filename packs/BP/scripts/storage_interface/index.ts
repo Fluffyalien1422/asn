@@ -24,7 +24,7 @@ import {
   system,
   world,
 } from "@minecraft/server";
-import { getUseEnergyRule } from "../addon_rules";
+import { getShowRequestItemDialogRule, getUseEnergyRule } from "../addon_rules";
 
 const ITEMS_PER_PAGE = 27;
 
@@ -290,7 +290,7 @@ export function refreshInterface(
   return data;
 }
 
-async function requestItem(
+async function requestItemLegacy(
   interfaceEntity: Entity,
   player: Player,
   network: StorageNetwork,
@@ -748,8 +748,28 @@ system.runInterval(() => {
         );
       }
 
-      data.enabled = false;
-      void requestItem(entity, data.playerInUi, data.network, storageItem);
+      if (getShowRequestItemDialogRule()) {
+        data.enabled = false;
+        void requestItemLegacy(
+          entity,
+          data.playerInUi,
+          data.network,
+          storageItem,
+        );
+        break;
+      }
+
+      if (storageItem.amount <= 0) {
+        break;
+      }
+
+      data.network.takeOutItemStack(
+        data.playerInUi,
+        // takeOutItemStack will clamp this value
+        storageItem.withAmount(new ItemStack(storageItem.typeId).maxAmount),
+      );
+
+      refreshInterface(entity, data.playerInUi, data.network, true);
 
       break;
     }

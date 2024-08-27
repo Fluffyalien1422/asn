@@ -36,6 +36,7 @@ fluffyalien_asn.message.scriptEvent.addonRule.invalidRule=This rule does not exi
 fluffyalien_asn.message.scriptEvent.addonRule.expectedBoolean=Expected "true" or "false" after rule ID.
 fluffyalien_asn.message.scriptEvent.addonRule.help.forceLoadNetworks=forceLoadNetworks: boolean - When a storage network extends into unloaded chunks, force those chunks to load so the network can fully load. MAY CAUSE LAG! This will not work if all ticking area slots are used.
 fluffyalien_asn.message.scriptEvent.addonRule.help.useEnergy=useEnergy: boolean - (EXPERIMENTAL) Make storage networks require energy to operate. Requires Bedrock Energistics Core.
+fluffyalien_asn.message.scriptEvent.addonRule.help.showRequestItemDialog=showRequestItemDialog: boolean - Show the request item dialog when taking an item out of the storage network instead of immediately removing a stack.
 
 fluffyalien_asn.actionbar.storageInterface.openToViewQueryResults=Open the storage interface again to view search results
 
