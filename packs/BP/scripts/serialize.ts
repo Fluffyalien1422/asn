@@ -127,6 +127,18 @@ export function serialize(itemStack: StorageSystemItemStack): string {
     .join(",")})`;
 }
 
+export function serializeMultiple(
+  itemStacks: StorageSystemItemStack[],
+): string {
+  let result = "";
+
+  for (const itemStack of itemStacks) {
+    result += serialize(itemStack);
+  }
+
+  return result;
+}
+
 class DeserializeParser {
   private index = 0;
   constructor(private readonly data: string) {}

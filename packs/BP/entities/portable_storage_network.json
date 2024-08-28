@@ -1,0 +1,40 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "fluffyalien_asn:portable_storage_network_entity",
+      "is_summonable": true,
+      "is_spawnable": false
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": ["fluffyalien_asn:storage_viewer"]
+      },
+      "minecraft:persistent": {},
+      "minecraft:breathable": {
+        "breathes_water": true
+      },
+      "minecraft:physics": {
+        "has_gravity": false,
+        "has_collision": false
+      },
+      "minecraft:damage_sensor": {
+        "triggers": {
+          "deals_damage": false
+        }
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:collision_box": {
+        "width": 1,
+        "height": 1
+      },
+      "minecraft:inventory": {
+        "container_type": "container",
+        "inventory_size": 34
+      }
+    }
+  }
+}

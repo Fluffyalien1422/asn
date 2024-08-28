@@ -14,10 +14,44 @@ export type AddItemStackToStorageError =
 /**
  * A system that can hold {@link StorageSystemItemStacks}.
  */
-export interface StorageSystem {
-  addItemStack(
+export abstract class StorageSystem {
+  abstract addItemStack(
     itemStack: StorageSystemItemStack,
   ): ErrorResult<AddItemStackToStorageError>;
-  getStoredItemStacks(): readonly StorageSystemItemStack[];
-  takeOutItemStack(player: Player, itemStack: StorageSystemItemStack): void;
+  abstract getStoredItemStacks(): readonly StorageSystemItemStack[];
+  /**
+   * Removes items from storage. Clamps the amount from 1 to the amount available in storage
+   * @returns the amount that was removed
+   */
+  abstract removeItemStack(itemStack: StorageSystemItemStack): number;
+
+  /**
+   * Take items out of storage and gives it to the player. Clamps the amount from 1 to the amount available in storage
+   * @throws if this object is not valid
+   * @see {@link StorageSystem.removeItemStack}
+   */
+  takeOutItemStack(player: Player, itemStack: StorageSystemItemStack): void {
+    const requestAmount = this.removeItemStack(itemStack);
+
+    const mcItemStack = itemStack.toItemStack();
+
+    let amountRemaining = requestAmount;
+
+    while (amountRemaining > 0) {
+      const amount = Math.min(mcItemStack.maxAmount, amountRemaining);
+      amountRemaining -= amount;
+
+      const newItemStack = mcItemStack.clone();
+      newItemStack.amount = amount;
+
+      player.dimension.spawnItem(newItemStack, player.location);
+    }
+  }
+}
+
+export function isBannedItem(itemStack: StorageSystemItemStack): boolean {
+  return (
+    itemStack.typeId.startsWith("minecraft:") &&
+    itemStack.typeId.endsWith("_shulker_box")
+  );
 }

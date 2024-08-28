@@ -1,4 +1,4 @@
-import { system, Block, Player } from "@minecraft/server";
+import { system, Block } from "@minecraft/server";
 import {
   CableNetworkConnections,
   DiscoverCableNetworkConnectionsError,
@@ -26,14 +26,18 @@ import {
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 import { getUseEnergyRule } from "./addon_rules";
-import { AddItemStackToStorageError, StorageSystem } from "./storage_system";
+import {
+  AddItemStackToStorageError,
+  isBannedItem,
+  StorageSystem,
+} from "./storage_system";
 
 export const STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL = 10;
 
 /**
  * A {@link StorageSystem} that is comprised of many devices.
  */
-export class StorageNetwork implements StorageSystem {
+export class StorageNetwork extends StorageSystem {
   private static readonly storageNetworks: StorageNetwork[] = [];
   private internalIsValid = true;
 
@@ -162,6 +166,8 @@ export class StorageNetwork implements StorageSystem {
   private readonly levelEmitterUpdateIntervalRunId: number;
 
   private constructor(private connections: CableNetworkConnections) {
+    super();
+
     StorageNetwork.storageNetworks.push(this);
 
     this.updateIntervalRunId = system.runInterval(() => {
@@ -491,10 +497,7 @@ export class StorageNetwork implements StorageSystem {
   ): ErrorResult<AddItemStackToStorageError> {
     this.ensureValidity();
 
-    if (
-      itemStack.typeId.startsWith("minecraft:") &&
-      itemStack.typeId.endsWith("_shulker_box")
-    ) {
+    if (isBannedItem(itemStack)) {
       return failure({
         type: "bannedItem",
         itemId: itemStack.typeId,
@@ -528,7 +531,6 @@ export class StorageNetwork implements StorageSystem {
    * Removes items from storage. Clamps the amount from 1 to the amount available in storage
    * @throws if this object is not valid
    * @returns the amount that was removed
-   * @see {@link StorageNetwork.takeOutItemStack}
    */
   removeItemStack(itemStack: StorageSystemItemStack): number {
     this.ensureValidity();
@@ -562,28 +564,5 @@ export class StorageNetwork implements StorageSystem {
     this.saveData();
 
     return requestAmount;
-  }
-
-  /**
-   * Take items out of storage and gives it to the player. Clamps the amount from 1 to the amount available in storage
-   * @throws if this object is not valid
-   * @see {@link StorageNetwork.removeItemStack}
-   */
-  takeOutItemStack(player: Player, itemStack: StorageSystemItemStack): void {
-    const requestAmount = this.removeItemStack(itemStack);
-
-    const mcItemStack = itemStack.toItemStack();
-
-    let amountRemaining = requestAmount;
-
-    while (amountRemaining > 0) {
-      const amount = Math.min(mcItemStack.maxAmount, amountRemaining);
-      amountRemaining -= amount;
-
-      const newItemStack = mcItemStack.clone();
-      newItemStack.amount = amount;
-
-      player.dimension.spawnItem(newItemStack, player.location);
-    }
   }
 }
