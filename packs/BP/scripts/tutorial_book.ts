@@ -71,6 +71,11 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon",
     bullets: 3,
   },
+  {
+    id: "energy",
+    icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon",
+    bullets: 5,
+  },
 ];
 
 export async function showTutorialBookUi(player: Player): Promise<void> {

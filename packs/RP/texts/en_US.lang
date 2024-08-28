@@ -47,7 +47,7 @@ fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores=Cannot establish a st
 fluffyalien_asn.ui.cableNetwork.error.noStorageCores=Cannot establish a storage network: no storage cores found.
 
 fluffyalien_asn.ui.storageDrive.title=Storage Drive
-fluffyalien_asn.ui.storageDrive.body.storageUsed=Storage Used (Drive): %s/3000u
+fluffyalien_asn.ui.storageDrive.body.storageUsed=Storage Used (Drive): %s/3000 bytes
 fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk=Cannot add a disk to storage drive with items in it.
 
 fluffyalien_asn.ui.storageInterface.title=Storage Interface
@@ -63,8 +63,8 @@ fluffyalien_asn.ui.storageInterface.error.insufficientEnergy=The storage network
 fluffyalien_asn.ui.storageInterface.error.bannedItem=%s is a banned item.
 
 fluffyalien_asn.ui.storageCore.title=Storage Core
-fluffyalien_asn.ui.storageCore.body.storageUsed=Storage Used (Network): %s/%su
-fluffyalien_asn.ui.storageCore.body.storedEnergy=Stored Energy: %s/%su
+fluffyalien_asn.ui.storageCore.body.storageUsed=Storage Used (Network): %s/%s bytes
+fluffyalien_asn.ui.storageCore.body.storedEnergy=Stored Energy: %s/%s
 fluffyalien_asn.ui.storageCore.body.energyConsumption=Energy Consumption: %s/t
 
 fluffyalien_asn.ui.exportBus.title=Export Bus
@@ -148,7 +148,14 @@ fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet0=A crafting item.
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet1=Can contain data.
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet2=Interact with an empty storage drive while holding a disk with data to deposit the items inside of the disk into the drive.
 
-fluffyalien_asn.ui.tutorialBook.entry.addonRules.title=Add-on Configuration
+fluffyalien_asn.ui.tutorialBook.entry.addonRules.title=Add-On Configuration
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet0=Use the `/scriptevent fluffyalien_asn:addonrule <rule> [value]` command to change a rule.
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet1=Use the `/scriptevent fluffyalien_asn:addonrule help` command for a list of rules.
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet2=Omit `[value]` from the command to get the current value of the rule.
+
+fluffyalien_asn.ui.tutorialBook.entry.energy.title=Energy (EXPERIMENTAL)
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet0=Energy usage can be enabled using the 'useEnergy' rule. See Add-On Configuration for more information.
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet1=Energy is stored in Storage Power Bank blocks.
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet2=Network energy consumption is scaled based on the amount of storage drives.
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet3=Uses Bedrock Energistics Core energy. Requires the Bedrock Energistics Core add-on to be in the world.
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet4=This add-on does not add any power generators, you must include another Bedrock Energistics Core powered add-on to generate energy for your system.
