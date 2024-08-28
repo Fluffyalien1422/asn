@@ -4,7 +4,7 @@ import { forceLoadNetworksRule } from "./addon_rules";
 import { StorageNetwork } from "./storage_network";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
-import { refreshInterface } from "./storage_interface";
+import { refreshInterface } from "./storage_ui";
 
 /**
  * key = player ID

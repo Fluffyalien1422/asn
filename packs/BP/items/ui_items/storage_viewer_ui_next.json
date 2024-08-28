@@ -2,7 +2,7 @@
   "format_version": "1.20.70",
   "minecraft:item": {
     "description": {
-      "identifier": "fluffyalien_asn:storage_interface_ui_item_sort_insertion",
+      "identifier": "fluffyalien_asn:storage_viewer_ui_next",
       "menu_category": {
         "category": "none"
       }
@@ -13,7 +13,7 @@
       },
       "minecraft:icon": {
         "textures": {
-          "default": "fluffyalien_asn:storage_interface_ui_item_sort"
+          "default": "fluffyalien_asn:storage_viewer_ui_next"
         }
       }
     }

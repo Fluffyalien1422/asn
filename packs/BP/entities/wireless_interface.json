@@ -8,7 +8,7 @@
     },
     "components": {
       "minecraft:type_family": {
-        "family": ["fluffyalien_asn:storage_interface"]
+        "family": ["fluffyalien_asn:storage_viewer"]
       },
       "minecraft:despawn": {
         "despawn_from_distance": {

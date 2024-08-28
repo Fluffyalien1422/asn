@@ -1,13 +1,13 @@
 pack.name=Advanced Storage Network
 pack.description=A fix for your storage problem.
 
-item.fluffyalien_asn:storage_interface_ui_item_back=Previous
-item.fluffyalien_asn:storage_interface_ui_item_next=Next
-item.fluffyalien_asn:storage_interface_ui_item_search=Search
-item.fluffyalien_asn:storage_interface_ui_item_cancel_search=Cancel Search
-item.fluffyalien_asn:storage_interface_ui_item_sort_insertion=Sorting By: Insertion
-item.fluffyalien_asn:storage_interface_ui_item_sort_amount=Sorting By: Amount
-item.fluffyalien_asn:storage_interface_ui_item_sort_relevancy=Sorting By: Relevancy
+item.fluffyalien_asn:storage_viewer_ui_back=Previous
+item.fluffyalien_asn:storage_viewer_ui_next=Next
+item.fluffyalien_asn:storage_viewer_ui_search=Search
+item.fluffyalien_asn:storage_viewer_ui_cancel_search=Cancel Search
+item.fluffyalien_asn:storage_viewer_ui_sort_insertion=Sorting By: Insertion
+item.fluffyalien_asn:storage_viewer_ui_sort_amount=Sorting By: Amount
+item.fluffyalien_asn:storage_viewer_ui_sort_relevancy=Sorting By: Relevancy
 
 item.fluffyalien_asn:storage_disk=Storage Disk
 item.fluffyalien_asn:storage_disk_casing=Storage Disk Casing
