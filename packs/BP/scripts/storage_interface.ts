@@ -1,5 +1,7 @@
 import {
+  Block,
   BlockCustomComponent,
+  Entity,
   ItemStack,
   Player,
   world,
@@ -12,13 +14,26 @@ import {
 } from "./utils/direction";
 import { updateBlockConnectStates } from "./utils/block_connect";
 import { logWarn } from "./log";
-import {
-  forceCloseInventory,
-  getNetworkOrShowError,
-  refreshInterface,
-} from "./storage_ui";
+import { forceCloseInventory, refreshStorageViewer } from "./storage_ui";
 import { getUseEnergyRule } from "./addon_rules";
 import { makeErrorMessageUi } from "./utils/ui";
+import { showEstablishNetworkError } from "./cable_network";
+
+async function getNetworkOrShowError(
+  block: Block,
+  interfaceEntity: Entity,
+  player: Player,
+): Promise<StorageNetwork | undefined> {
+  const networkResult = await StorageNetwork.getOrEstablishNetwork(block);
+  if (!networkResult.success) {
+    await forceCloseInventory(interfaceEntity);
+    void showEstablishNetworkError(player, networkResult.error);
+
+    return;
+  }
+
+  return networkResult.value;
+}
 
 export const storageInterfaceComponent: BlockCustomComponent = {
   onPlace(e) {
@@ -141,6 +156,6 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
       return;
     }
 
-    refreshInterface(e.target, e.player, network);
+    refreshStorageViewer(e.target, e.player, network);
   })();
 });

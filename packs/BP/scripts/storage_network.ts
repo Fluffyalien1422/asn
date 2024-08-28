@@ -4,7 +4,7 @@ import {
   DiscoverCableNetworkConnectionsError,
   discoverCableNetworkConnections,
 } from "./cable_network";
-import { Result, failure, success } from "./utils/result";
+import { ErrorResult, Result, failure, success } from "./utils/result";
 import {
   DRIVE_ENERGY_CONSUMPTION,
   MAX_STORAGE_DRIVE_DATA_LENGTH,
@@ -26,19 +26,14 @@ import {
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 import { getUseEnergyRule } from "./addon_rules";
-
-export type AddItemStackToStorageError =
-  | {
-      type: "insufficientStorage";
-    }
-  | {
-      type: "bannedItem";
-      itemId: string;
-    };
+import { AddItemStackToStorageError, StorageSystem } from "./storage_system";
 
 export const STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL = 10;
 
-export class StorageNetwork {
+/**
+ * A {@link StorageSystem} that is comprised of many devices.
+ */
+export class StorageNetwork implements StorageSystem {
   private static readonly storageNetworks: StorageNetwork[] = [];
   private internalIsValid = true;
 
@@ -493,7 +488,7 @@ export class StorageNetwork {
    */
   addItemStack(
     itemStack: StorageSystemItemStack,
-  ): Result<null, AddItemStackToStorageError> {
+  ): ErrorResult<AddItemStackToStorageError> {
     this.ensureValidity();
 
     if (
@@ -526,7 +521,7 @@ export class StorageNetwork {
 
     this.saveData();
 
-    return success(null);
+    return success();
   }
 
   /**

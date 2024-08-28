@@ -1,7 +1,5 @@
-import { showEstablishNetworkError } from "../cable_network";
 import { end, nether, overworld } from "../utils/dimension";
 import { makeErrorString } from "../log";
-import { StorageNetwork } from "../storage_network";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { wait } from "../utils/async";
 import { getItemTranslationKey } from "../utils/item";
@@ -9,7 +7,6 @@ import { abbreviateNumber } from "../utils/string";
 import { makeErrorMessageUi } from "../utils/ui";
 import { showRequestItemUi, showSearchUi } from "./form";
 import {
-  Block,
   Entity,
   EntityQueryOptions,
   ItemStack,
@@ -18,6 +15,7 @@ import {
   world,
 } from "@minecraft/server";
 import { getShowRequestItemDialogRule } from "../addon_rules";
+import { StorageSystem } from "../storage_system";
 
 const ITEMS_PER_PAGE = 27;
 
@@ -49,25 +47,25 @@ const SORT_BUTTON_INDEX = 33;
 
 const DISPLAY_ITEM_LORE_STR_END = "§a§s§n§r";
 
-type StorageInterfaceSortOrder = "insertion" | "amount";
+type StorageViewerSortOrder = "insertion" | "amount";
 
-interface InterfaceData {
+interface ViewerData {
   enabled: boolean;
   hasQuery: boolean;
   items: StorageSystemItemStack[];
-  network: StorageNetwork;
+  storageSystem: StorageSystem;
   page: number;
   playerInUi: Player;
   /**
    * this value should be ignored if `hasQuery` is true, sorting should be relevancy
    */
-  sortOrder: StorageInterfaceSortOrder;
+  sortOrder: StorageViewerSortOrder;
 }
 
 /**
  * key = dummy entity ID
  */
-const interfaceData = new Map<string, InterfaceData>();
+const viewerData = new Map<string, ViewerData>();
 
 function getDisplayItemLoreStr(amount: number): string {
   return `§r§2§l${abbreviateNumber(amount)}${DISPLAY_ITEM_LORE_STR_END}`;
@@ -101,7 +99,7 @@ function getItemsOnPage(
   return items.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
 }
 
-function fillInterfaceInventory(entity: Entity, data: InterfaceData): void {
+function fillViewerInventory(entity: Entity, data: ViewerData): void {
   const inventory = entity.getComponent("inventory")!.container!;
   inventory.clearAll();
 
@@ -173,28 +171,12 @@ function fillInterfaceInventory(entity: Entity, data: InterfaceData): void {
   }
 }
 
-export async function getNetworkOrShowError(
-  block: Block,
+function addItemToStorageOrShowError(
   interfaceEntity: Entity,
-  player: Player,
-): Promise<StorageNetwork | undefined> {
-  const networkResult = await StorageNetwork.getOrEstablishNetwork(block);
-  if (!networkResult.success) {
-    await forceCloseInventory(interfaceEntity);
-    void showEstablishNetworkError(player, networkResult.error);
-
-    return;
-  }
-
-  return networkResult.value;
-}
-
-function addItemToNetworkOrShowError(
-  interfaceEntity: Entity,
-  data: InterfaceData,
+  data: ViewerData,
   itemStack: StorageSystemItemStack,
 ): boolean {
-  const res = data.network.addItemStack(itemStack);
+  const res = data.storageSystem.addItemStack(itemStack);
   if (res.success) return true;
 
   void forceCloseInventory(interfaceEntity).then(() => {
@@ -229,15 +211,15 @@ function addItemToNetworkOrShowError(
 
 /**
  * resets interface data and inventory
- * @returns the new InterfaceData
+ * @returns the new ViewerData
  * @throws if the passed entity is not part of the "fluffyalien_asn:storage_viewer" type family
  */
-export function refreshInterface(
+export function refreshStorageViewer(
   interfaceEntity: Entity,
   player: Player,
-  network: StorageNetwork,
+  storageSystem: StorageSystem,
   preservePage = false,
-): InterfaceData {
+): ViewerData {
   if (
     !interfaceEntity.matches({
       families: ["fluffyalien_asn:storage_viewer"],
@@ -245,38 +227,38 @@ export function refreshInterface(
   ) {
     throw new Error(
       makeErrorString(
-        "(in refreshInterface) expected `interfaceEntity` to be part of family `fluffyalien_asn:storage_viewer`",
+        "(in refreshStorageViewer) expected `interfaceEntity` to be part of family `fluffyalien_asn:storage_viewer`",
       ),
     );
   }
 
-  const oldData = interfaceData.get(interfaceEntity.id);
+  const oldData = viewerData.get(interfaceEntity.id);
   const sortOrder = oldData?.sortOrder ?? "insertion";
 
   let items: StorageSystemItemStack[];
   if (oldData?.hasQuery) {
     items = oldData.items;
   } else {
-    items = [...network.getStoredItemStacks()];
+    items = [...storageSystem.getStoredItemStacks()];
 
     if (sortOrder === "amount") {
       items.sort((a, b) => b.amount - a.amount);
     }
   }
 
-  const data: InterfaceData = {
+  const data: ViewerData = {
     enabled: true,
     hasQuery: oldData?.hasQuery ?? false,
     items,
-    network,
+    storageSystem,
     page: preservePage ? (oldData?.page ?? 0) : 0,
     playerInUi: player,
     sortOrder,
   };
 
-  interfaceData.set(interfaceEntity.id, data);
+  viewerData.set(interfaceEntity.id, data);
 
-  fillInterfaceInventory(interfaceEntity, data);
+  fillViewerInventory(interfaceEntity, data);
 
   return data;
 }
@@ -284,7 +266,7 @@ export function refreshInterface(
 async function requestItemLegacy(
   interfaceEntity: Entity,
   player: Player,
-  network: StorageNetwork,
+  network: StorageSystem,
   item: StorageSystemItemStack,
 ): Promise<void> {
   await forceCloseInventory(interfaceEntity);
@@ -297,7 +279,7 @@ async function requestItemLegacy(
 
 async function search(
   interfaceEntity: Entity,
-  data: InterfaceData,
+  data: ViewerData,
 ): Promise<void> {
   await forceCloseInventory(interfaceEntity);
 
@@ -416,10 +398,10 @@ function handleTakenItem(
  */
 function addItemToStorage(
   interfaceEntity: Entity,
-  data: InterfaceData,
+  data: ViewerData,
   itemStack: ItemStack,
 ): boolean {
-  const added = addItemToNetworkOrShowError(
+  const added = addItemToStorageOrShowError(
     interfaceEntity,
     data,
     StorageSystemItemStack.fromItemStack(itemStack),
@@ -431,7 +413,12 @@ function addItemToStorage(
     return false;
   }
 
-  refreshInterface(interfaceEntity, data.playerInUi, data.network, true);
+  refreshStorageViewer(
+    interfaceEntity,
+    data.playerInUi,
+    data.storageSystem,
+    true,
+  );
   return true;
 }
 
@@ -455,7 +442,7 @@ system.runInterval(() => {
     ...nether.getEntities(entityQueryOptions),
     ...end.getEntities(entityQueryOptions),
   ]) {
-    const data = interfaceData.get(entity.id);
+    const data = viewerData.get(entity.id);
     if (
       !data?.enabled ||
       !entity.dimension.getPlayers({
@@ -486,7 +473,7 @@ system.runInterval(() => {
       handleTakenItem(data.playerInUi, BACK_BUTTON_ITEM_ID, backBtnSlotItem);
 
       data.page = Math.max(data.page - 1, 0);
-      fillInterfaceInventory(entity, data);
+      fillViewerInventory(entity, data);
 
       continue;
     }
@@ -496,7 +483,7 @@ system.runInterval(() => {
       handleTakenItem(data.playerInUi, NEXT_BUTTON_ITEM_ID, nextBtnSlotItem);
 
       data.page++;
-      fillInterfaceInventory(entity, data);
+      fillViewerInventory(entity, data);
 
       continue;
     }
@@ -513,7 +500,7 @@ system.runInterval(() => {
         );
 
         data.hasQuery = false;
-        refreshInterface(entity, data.playerInUi, data.network);
+        refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
 
         continue;
       }
@@ -525,7 +512,7 @@ system.runInterval(() => {
           sortButtonSlotItem,
         );
 
-        refreshInterface(entity, data.playerInUi, data.network);
+        refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
 
         continue;
       }
@@ -554,7 +541,7 @@ system.runInterval(() => {
         );
 
         data.sortOrder = "amount";
-        refreshInterface(entity, data.playerInUi, data.network);
+        refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
 
         continue;
       }
@@ -570,7 +557,7 @@ system.runInterval(() => {
         );
 
         data.sortOrder = "insertion";
-        refreshInterface(entity, data.playerInUi, data.network);
+        refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
 
         continue;
       }
@@ -619,7 +606,7 @@ system.runInterval(() => {
         void requestItemLegacy(
           entity,
           data.playerInUi,
-          data.network,
+          data.storageSystem,
           storageItem,
         );
         break;
@@ -629,13 +616,13 @@ system.runInterval(() => {
         break;
       }
 
-      data.network.takeOutItemStack(
+      data.storageSystem.takeOutItemStack(
         data.playerInUi,
         // takeOutItemStack will clamp this value
         storageItem.withAmount(new ItemStack(storageItem.typeId).maxAmount),
       );
 
-      refreshInterface(entity, data.playerInUi, data.network, true);
+      refreshStorageViewer(entity, data.playerInUi, data.storageSystem, true);
 
       break;
     }
