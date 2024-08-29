@@ -30,4 +30,10 @@ world.afterEvents.worldInitialize.subscribe(() => {
       },
     },
   });
+
+  beCore.registerMachine({
+    description: {
+      id: "fluffyalien_asn:portable_storage_network",
+    },
+  });
 });

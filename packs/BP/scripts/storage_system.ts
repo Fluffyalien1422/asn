@@ -7,6 +7,9 @@ export type AddItemStackToStorageError =
       type: "insufficientStorage";
     }
   | {
+      type: "insufficientEnergy";
+    }
+  | {
       type: "bannedItem";
       itemId: string;
     };
@@ -15,15 +18,24 @@ export type AddItemStackToStorageError =
  * A system that can hold {@link StorageSystemItemStacks}.
  */
 export abstract class StorageSystem {
-  abstract addItemStack(
+  // this must be a property so subclasses will be forced to take player as optional.
+  // subclasses are allowed to take less specific argument types for methods.
+  // same for removeItemStack.
+  abstract addItemStack: (
     itemStack: StorageSystemItemStack,
-  ): ErrorResult<AddItemStackToStorageError>;
-  abstract getStoredItemStacks(): readonly StorageSystemItemStack[];
+    player?: Player,
+  ) => ErrorResult<AddItemStackToStorageError>;
+
   /**
    * Removes items from storage. Clamps the amount from 1 to the amount available in storage
    * @returns the amount that was removed
    */
-  abstract removeItemStack(itemStack: StorageSystemItemStack): number;
+  abstract removeItemStack: (
+    itemStack: StorageSystemItemStack,
+    player?: Player,
+  ) => number;
+
+  abstract getStoredItemStacks(): readonly StorageSystemItemStack[];
 
   /**
    * Take items out of storage and gives it to the player. Clamps the amount from 1 to the amount available in storage
@@ -31,7 +43,7 @@ export abstract class StorageSystem {
    * @see {@link StorageSystem.removeItemStack}
    */
   takeOutItemStack(player: Player, itemStack: StorageSystemItemStack): void {
-    const requestAmount = this.removeItemStack(itemStack);
+    const requestAmount = this.removeItemStack(itemStack, player);
 
     const mcItemStack = itemStack.toItemStack();
 

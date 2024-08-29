@@ -176,7 +176,7 @@ function addItemToStorageOrShowError(
   data: ViewerData,
   itemStack: StorageSystemItemStack,
 ): boolean {
-  const res = data.storageSystem.addItemStack(itemStack);
+  const res = data.storageSystem.addItemStack(itemStack, data.playerInUi);
   if (res.success) return true;
 
   void forceCloseInventory(interfaceEntity).then(() => {
@@ -185,6 +185,12 @@ function addItemToStorageOrShowError(
         void makeErrorMessageUi({
           translate:
             "fluffyalien_asn.ui.storageInterface.error.insufficientStorage",
+        }).show(data.playerInUi);
+        break;
+      case "insufficientEnergy":
+        void makeErrorMessageUi({
+          translate:
+            "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
         }).show(data.playerInUi);
         break;
       case "bannedItem":

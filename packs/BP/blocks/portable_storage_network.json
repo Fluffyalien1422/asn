@@ -14,8 +14,12 @@
     },
     "components": {
       "minecraft:custom_components": [
+        "fluffyalien_energisticscore:machine",
         "fluffyalien_asn:portable_storage_network"
       ],
+      "tag:fluffyalien_energisticscore:machine": {},
+      "tag:fluffyalien_energisticscore:io.energy": {},
+      "tag:fluffyalien_energisticscore:consumer.energy": {},
 
       "minecraft:geometry": "geometry.fluffyalien_asn.portable_storage_network",
       "minecraft:material_instances": {

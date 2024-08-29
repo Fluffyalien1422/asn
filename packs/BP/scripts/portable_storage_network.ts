@@ -1,4 +1,5 @@
 import {
+  Block,
   BlockCustomComponent,
   Entity,
   ItemStack,
@@ -18,8 +19,17 @@ import {
   MAX_STORAGE_DRIVE_DATA_LENGTH,
   STORAGE_DATA_DYNAMIC_PROPERTY_ID,
 } from "./storage_drive";
-import { refreshStorageViewer } from "./storage_ui";
+import { forceCloseInventory, refreshStorageViewer } from "./storage_ui";
 import { getPlayerMainhandSlot } from "./utils/item";
+import { makeErrorMessageUi, makeMessageUi } from "./utils/ui";
+import { useEnergyRule } from "./addon_rules";
+import {
+  getMachineStorage,
+  removeMachine,
+  setMachineStorage,
+} from "bedrock-energistics-core-api";
+
+const ENERGY_CONSUMPTION = 10;
 
 /**
  * key = entity ID
@@ -30,7 +40,10 @@ class PortableStorageNetwork extends StorageSystem {
   private items: StorageSystemItemStack[] | undefined;
   private internalIsValid = true;
 
-  constructor(private readonly entity: Entity) {
+  constructor(
+    private readonly entity: Entity,
+    private readonly block: Block,
+  ) {
     super();
 
     if (portableStorageNetworks.has(entity.id)) {
@@ -105,11 +118,54 @@ class PortableStorageNetwork extends StorageSystem {
   }
 
   /**
+   * tries to consume energy
+   * if use energy rule is disabled, this function does nothing and returns true
+   * @returns whether energy was successfully consumed or not, returns true if use energy is disabled
+   */
+  consumeEnergy(): boolean {
+    if (!useEnergyRule.get(world)) {
+      return true;
+    }
+
+    const storedEnergy = getMachineStorage(this.block, "energy");
+
+    if (storedEnergy >= ENERGY_CONSUMPTION) {
+      setMachineStorage(
+        this.block,
+        "energy",
+        storedEnergy - ENERGY_CONSUMPTION,
+      );
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * tries to consume energy, if energy cannot be consumed then shows an error.
+   * if use energy rule is disabled, this function does nothing and returns true
+   * @returns whether energy was successfully consumed or not, returns true if use energy is disabled
+   */
+  consumeEnergyOrShowError(player: Player): boolean {
+    if (this.consumeEnergy()) return true;
+
+    void forceCloseInventory(this.entity).then(() => {
+      void makeErrorMessageUi({
+        translate:
+          "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
+      }).show(player);
+    });
+
+    return false;
+  }
+
+  /**
    * @throws if this object is not valid
    */
-  addItemStack(
+  addItemStack = (
     itemStack: StorageSystemItemStack,
-  ): ErrorResult<AddItemStackToStorageError> {
+    player?: Player,
+  ): ErrorResult<AddItemStackToStorageError> => {
     this.ensureValidity();
 
     if (isBannedItem(itemStack)) {
@@ -117,6 +173,20 @@ class PortableStorageNetwork extends StorageSystem {
         type: "bannedItem",
         itemId: itemStack.typeId,
       });
+    }
+
+    if (player) {
+      if (!this.consumeEnergyOrShowError(player)) {
+        return failure({
+          type: "insufficientEnergy",
+        });
+      }
+    } else {
+      if (!this.consumeEnergy()) {
+        return failure({
+          type: "insufficientEnergy",
+        });
+      }
     }
 
     const storedItems = this.getStoredItemStacksMutable();
@@ -143,15 +213,28 @@ class PortableStorageNetwork extends StorageSystem {
     this.saveData();
 
     return success();
-  }
+  };
 
   /**
    * Removes items from storage. Clamps the amount from 1 to the amount available in storage
    * @throws if this object is not valid
    * @returns the amount that was removed
    */
-  removeItemStack(itemStack: StorageSystemItemStack): number {
+  removeItemStack = (
+    itemStack: StorageSystemItemStack,
+    player?: Player,
+  ): number => {
     this.ensureValidity();
+
+    if (player) {
+      if (!this.consumeEnergyOrShowError(player)) {
+        return 0;
+      }
+    } else {
+      if (!this.consumeEnergy()) {
+        return 0;
+      }
+    }
 
     const storedItems = this.getStoredItemStacksMutable();
 
@@ -182,16 +265,16 @@ class PortableStorageNetwork extends StorageSystem {
     this.saveData();
 
     return requestAmount;
-  }
+  };
 
   static get(entityId: string): PortableStorageNetwork | undefined {
     return portableStorageNetworks.get(entityId);
   }
 
-  static getOrCreate(entity: Entity): PortableStorageNetwork {
+  static getOrCreate(entity: Entity, block: Block): PortableStorageNetwork {
     return (
       PortableStorageNetwork.get(entity.id) ??
-      new PortableStorageNetwork(entity)
+      new PortableStorageNetwork(entity, block)
     );
   }
 }
@@ -228,6 +311,8 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
       new ItemStack("fluffyalien_asn:portable_storage_network"),
       e.hitEntity.location,
     );
+
+    removeMachine(block);
   }
 
   const network = PortableStorageNetwork.get(e.hitEntity.id);
@@ -259,25 +344,73 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     return;
   }
 
-  const network = PortableStorageNetwork.getOrCreate(e.target);
+  const network = PortableStorageNetwork.getOrCreate(e.target, block);
 
-  if (
-    e.player.isSneaking &&
-    e.itemStack?.typeId === "fluffyalien_asn:used_storage_disk" &&
-    network.getSerializedData() === undefined
-  ) {
-    const mainHandSlot = getPlayerMainhandSlot(e.player);
+  if (e.player.isSneaking) {
+    if (!e.itemStack) {
+      void forceCloseInventory(e.target).then(() => {
+        void makeMessageUi(
+          {
+            translate: "tile.fluffyalien_asn:portable_storage_network.name",
+          },
+          {
+            rawtext: [
+              {
+                translate:
+                  "fluffyalien_asn.ui.portableStorageNetwork.body.storageUsed",
+                with: {
+                  rawtext: [
+                    {
+                      text: (
+                        network.getSerializedData()?.length ?? 0
+                      ).toString(),
+                    },
+                  ],
+                },
+              },
+              ...(useEnergyRule.get(world)
+                ? [
+                    {
+                      text: "\n\n",
+                    },
+                    {
+                      translate:
+                        "fluffyalien_asn.ui.portableStorageNetwork.body.storedEnergy",
+                      with: {
+                        rawtext: [
+                          {
+                            text: getMachineStorage(block, "energy").toString(),
+                          },
+                        ],
+                      },
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ).show(e.player);
+      });
 
-    const diskData = mainHandSlot.getDynamicProperty(
-      STORAGE_DATA_DYNAMIC_PROPERTY_ID,
-    ) as string | undefined;
-
-    if (diskData) {
-      network.setSerializedData(diskData);
-      network.clearItemsCache();
+      return;
     }
 
-    mainHandSlot.setItem();
+    if (
+      e.itemStack.typeId === "fluffyalien_asn:used_storage_disk" &&
+      network.getSerializedData() === undefined
+    ) {
+      const mainHandSlot = getPlayerMainhandSlot(e.player);
+
+      const diskData = mainHandSlot.getDynamicProperty(
+        STORAGE_DATA_DYNAMIC_PROPERTY_ID,
+      ) as string | undefined;
+
+      if (diskData) {
+        network.setSerializedData(diskData);
+        network.clearItemsCache();
+      }
+
+      mainHandSlot.setItem();
+    }
   }
 
   refreshStorageViewer(e.target, e.player, network);

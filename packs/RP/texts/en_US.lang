@@ -74,6 +74,9 @@ fluffyalien_asn.ui.storageCore.body.storageUsed=Storage Used (Network): %s/%s by
 fluffyalien_asn.ui.storageCore.body.storedEnergy=Stored Energy: %s/%s
 fluffyalien_asn.ui.storageCore.body.energyConsumption=Energy Consumption: %s/t
 
+fluffyalien_asn.ui.portableStorageNetwork.body.storageUsed=Storage Used: %s/3000 bytes
+fluffyalien_asn.ui.portableStorageNetwork.body.storedEnergy=Stored Energy: %s/6400
+
 fluffyalien_asn.ui.exportBus.title=Export Bus
 fluffyalien_asn.ui.exportBus.exportItem=Exporting %s
 fluffyalien_asn.ui.exportBus.noExportItem=Not exporting anything. Interact while holding an item to export that item.

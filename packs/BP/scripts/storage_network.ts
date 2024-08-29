@@ -494,9 +494,9 @@ export class StorageNetwork extends StorageSystem {
   /**
    * @throws if this object is not valid
    */
-  addItemStack(
+  addItemStack = (
     itemStack: StorageSystemItemStack,
-  ): ErrorResult<AddItemStackToStorageError> {
+  ): ErrorResult<AddItemStackToStorageError> => {
     this.ensureValidity();
 
     if (isBannedItem(itemStack)) {
@@ -527,14 +527,14 @@ export class StorageNetwork extends StorageSystem {
     this.saveData();
 
     return success();
-  }
+  };
 
   /**
    * Removes items from storage. Clamps the amount from 1 to the amount available in storage
    * @throws if this object is not valid
    * @returns the amount that was removed
    */
-  removeItemStack(itemStack: StorageSystemItemStack): number {
+  removeItemStack = (itemStack: StorageSystemItemStack): number => {
     this.ensureValidity();
 
     const storedItems = this.getStoredItemStacksMutable();
@@ -566,5 +566,5 @@ export class StorageNetwork extends StorageSystem {
     this.saveData();
 
     return requestAmount;
-  }
+  };
 }
