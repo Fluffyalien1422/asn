@@ -1,4 +1,4 @@
-import { system, Block } from "@minecraft/server";
+import { system, Block, world } from "@minecraft/server";
 import {
   CableNetworkConnections,
   DiscoverCableNetworkConnectionsError,
@@ -25,7 +25,7 @@ import {
   MAX_MACHINE_STORAGE,
   setMachineStorage,
 } from "bedrock-energistics-core-api";
-import { getUseEnergyRule } from "./addon_rules";
+import { useEnergyRule } from "./addon_rules";
 import {
   AddItemStackToStorageError,
   isBannedItem,
@@ -184,7 +184,7 @@ export class StorageNetwork extends StorageSystem {
         }
       }
 
-      if (getUseEnergyRule()) {
+      if (useEnergyRule.get(world)) {
         let energyConsumptionRemaining = this.getEnergyConsumption();
         for (const block of this.connections.powerBanks) {
           const storedEnergy = getMachineStorage(block, "energy");
@@ -359,6 +359,8 @@ export class StorageNetwork extends StorageSystem {
         return this.connections.levelEmitters.some(condition);
       case "fluffyalien_asn:storage_power_bank":
         return this.connections.powerBanks.some(condition);
+      case "fluffyalien_asn:wireless_transmitter":
+        return this.connections.wirelessTransmitters.some(condition);
       default:
         return false;
     }

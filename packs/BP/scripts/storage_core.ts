@@ -19,7 +19,7 @@ import {
 } from "./wireless_interface";
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { getPlayerMainhandSlot } from "./utils/item";
-import { getUseEnergyRule } from "./addon_rules";
+import { useEnergyRule } from "./addon_rules";
 
 function showStorageCoreUi(
   player: Player,
@@ -46,7 +46,7 @@ function showStorageCoreUi(
           ],
         },
       },
-      ...(getUseEnergyRule()
+      ...(useEnergyRule.get(world)
         ? [
             {
               text: "\n\n",

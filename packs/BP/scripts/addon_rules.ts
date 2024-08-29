@@ -1,25 +1,24 @@
-import { world } from "@minecraft/server";
-import { DynamicPropertyLocked } from "./utils/dynamic_property";
+import { DynamicPropertyAccessor } from "./utils/dynamic_property";
 
-export const forceLoadNetworksRule = new DynamicPropertyLocked<false>(
-  "fluffyalien_asn:rule_force_load_networks",
-  world,
-);
+export const forceLoadNetworksRule =
+  DynamicPropertyAccessor.withDefault<boolean>(
+    "fluffyalien_asn:rule_force_load_networks",
+    true,
+  );
 
-export const useEnergyRule = new DynamicPropertyLocked<true>(
+export const useEnergyRule = DynamicPropertyAccessor.withDefault<boolean>(
   "fluffyalien_asn:rule_use_energy",
-  world,
+  false,
 );
 
-export function getUseEnergyRule(): boolean {
-  return useEnergyRule.get() ?? false;
-}
+export const showRequestItemDialogRule =
+  DynamicPropertyAccessor.withDefault<boolean>(
+    "fluffyalien_asn:rule_show_request_item_dialog",
+    false,
+  );
 
-export const showRequestItemDialog = new DynamicPropertyLocked<true>(
-  "fluffyalien_asn:rule_show_request_item_dialog",
-  world,
-);
-
-export function getShowRequestItemDialogRule(): boolean {
-  return showRequestItemDialog.get() ?? false;
-}
+export const wirelessInterfaceRangeRule =
+  DynamicPropertyAccessor.withDefault<number>(
+    "fluffyalien_asn:rule_wireless_interface_range",
+    500,
+  );

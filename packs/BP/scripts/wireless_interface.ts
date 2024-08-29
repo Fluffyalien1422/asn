@@ -1,6 +1,9 @@
 import { Entity, Player, Vector3, system, world } from "@minecraft/server";
-import { DynamicProperty } from "./utils/dynamic_property";
-import { forceLoadNetworksRule } from "./addon_rules";
+import { DynamicPropertyAccessor } from "./utils/dynamic_property";
+import {
+  forceLoadNetworksRule,
+  wirelessInterfaceRangeRule,
+} from "./addon_rules";
 import { StorageNetwork } from "./storage_network";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
@@ -13,12 +16,12 @@ import { refreshStorageViewer } from "./storage_ui";
 const wirelessInterfaceEntities = new Map<string, Entity>();
 
 export const wirelessInterfaceLinkLocationProperty =
-  new DynamicProperty<Vector3>(
+  DynamicPropertyAccessor.withoutDefault<Vector3>(
     "fluffyalien_asn:wireless_interface_link_location",
   );
 
 export const wirelessInterfaceLinkDimensionProperty =
-  new DynamicProperty<string>(
+  DynamicPropertyAccessor.withoutDefault<string>(
     "fluffyalien_asn:wireless_interface_link_dimension",
   );
 
@@ -70,7 +73,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     return;
   }
 
-  if (forceLoadNetworksRule.get() === false) {
+  if (!forceLoadNetworksRule.get(world)) {
     removeWirelessInterfaceEntity(e.player, e.target);
     e.player.sendMessage({
       rawtext: [
@@ -120,6 +123,21 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     });
   }
 
+  function sendNoTransmittersInRange(): void {
+    removeWirelessInterfaceEntity(e.player, e.target);
+    e.player.sendMessage({
+      rawtext: [
+        {
+          text: "§c",
+        },
+        {
+          translate:
+            "fluffyalien_asn.message.wirelessInterface.noTransmittersInRange",
+        },
+      ],
+    });
+  }
+
   void (async (): Promise<void> => {
     const dimension = world.getDimension(linkDimension);
 
@@ -136,6 +154,27 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     }
 
     const network = networkResult.value;
+
+    const maxDistance = wirelessInterfaceRangeRule.get(world);
+
+    const anyTransmittersInRange =
+      maxDistance === -1
+        ? true
+        : network
+            .getConnections()
+            .wirelessTransmitters.some(
+              (transmitter) =>
+                transmitter.dimension.id === e.player.dimension.id &&
+                Vector3Utils.distance(
+                  e.player.location,
+                  transmitter.location,
+                ) <= maxDistance,
+            );
+
+    if (!anyTransmittersInRange) {
+      sendNoTransmittersInRange();
+      return;
+    }
 
     refreshStorageViewer(e.target, e.player, network);
   })();

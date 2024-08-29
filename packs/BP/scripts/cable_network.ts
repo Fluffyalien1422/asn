@@ -4,6 +4,7 @@ import {
   Direction,
   Player,
   Vector3,
+  world,
 } from "@minecraft/server";
 import { Result, failure, success } from "./utils/result";
 import { Vector3Utils } from "@minecraft/math";
@@ -28,6 +29,7 @@ export interface CableNetworkConnections {
   buses: Block[];
   levelEmitters: Block[];
   powerBanks: Block[];
+  wirelessTransmitters: Block[];
 }
 
 export type DiscoverCableNetworkConnectionsError =
@@ -41,7 +43,7 @@ export async function tryForceGetBlock(
   let nextBlock = dimension.getBlock(location);
 
   if (!nextBlock) {
-    if (forceLoadNetworksRule.get() === false) {
+    if (!forceLoadNetworksRule.get(world)) {
       logWarn(
         `storage network extends into unloaded chunks at ${Vector3Utils.toString(location)} in ${dimension.id} and forceLoadNetworks is disabled. some parts of the network may be unloaded`,
       );
@@ -79,6 +81,7 @@ export async function discoverCableNetworkConnections(
   const buses: Block[] = [];
   const levelEmitters: Block[] = [];
   const powerBanks: Block[] = [];
+  const wirelessTransmitters: Block[] = [];
   let storageCore: Block | undefined;
 
   function handleBlock(
@@ -128,6 +131,11 @@ export async function discoverCableNetworkConnections(
 
     if (block.typeId === "fluffyalien_asn:storage_power_bank") {
       powerBanks.push(block);
+      return success(null);
+    }
+
+    if (block.typeId === "fluffyalien_asn:wireless_transmitter") {
+      wirelessTransmitters.push(block);
       return success(null);
     }
 
@@ -233,6 +241,7 @@ export async function discoverCableNetworkConnections(
     buses,
     levelEmitters,
     powerBanks,
+    wirelessTransmitters,
   });
 }
 

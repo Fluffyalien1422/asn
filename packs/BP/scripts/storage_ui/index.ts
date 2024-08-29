@@ -14,7 +14,7 @@ import {
   system,
   world,
 } from "@minecraft/server";
-import { getShowRequestItemDialogRule } from "../addon_rules";
+import { showRequestItemDialogRule } from "../addon_rules";
 import { StorageSystem } from "../storage_system";
 
 const ITEMS_PER_PAGE = 27;
@@ -601,7 +601,7 @@ system.runInterval(() => {
         );
       }
 
-      if (getShowRequestItemDialogRule()) {
+      if (showRequestItemDialogRule.get(world)) {
         data.enabled = false;
         void requestItemLegacy(
           entity,

@@ -7,29 +7,36 @@ interface HasDynamicProperties {
   setDynamicProperty(id: string, value?: DynamicPropertyValue): unknown;
 }
 
-export class DynamicProperty<TValue extends DynamicPropertyValue> {
-  constructor(readonly id: string) {}
+export class DynamicPropertyAccessor<
+  TValue extends DynamicPropertyValue,
+  TDefault extends TValue | undefined = undefined,
+> {
+  protected constructor(
+    readonly id: string,
+    readonly defaultValue: TDefault,
+  ) {}
 
-  get(target: HasDynamicProperties): TValue | undefined {
-    return target.getDynamicProperty(this.id) as TValue | undefined;
+  static withDefault<TValue extends DynamicPropertyValue>(
+    id: string,
+    defaultValue: TValue,
+  ): DynamicPropertyAccessor<TValue, TValue> {
+    return new DynamicPropertyAccessor(id, defaultValue);
+  }
+
+  static withoutDefault<TValue extends DynamicPropertyValue>(
+    id: string,
+  ): DynamicPropertyAccessor<TValue> {
+    return new DynamicPropertyAccessor(id, undefined);
+  }
+
+  get(target: HasDynamicProperties): TValue | TDefault {
+    return (
+      (target.getDynamicProperty(this.id) as TValue | undefined) ??
+      this.defaultValue
+    );
   }
 
   set(target: HasDynamicProperties, value?: TValue): void {
     target.setDynamicProperty(this.id, value);
-  }
-}
-
-export class DynamicPropertyLocked<TValue extends DynamicPropertyValue> {
-  constructor(
-    readonly id: string,
-    private readonly target: HasDynamicProperties,
-  ) {}
-
-  get(): TValue | undefined {
-    return this.target.getDynamicProperty(this.id) as TValue | undefined;
-  }
-
-  set(value?: TValue): void {
-    this.target.setDynamicProperty(this.id, value);
   }
 }

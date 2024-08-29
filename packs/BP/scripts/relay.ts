@@ -1,13 +1,13 @@
 import { StorageNetwork } from "./storage_network";
 import { BlockCustomComponent, Entity, Player } from "@minecraft/server";
 import { getEntityAtBlockLocation } from "./utils/location";
-import { DynamicProperty } from "./utils/dynamic_property";
+import { DynamicPropertyAccessor } from "./utils/dynamic_property";
 import { ModalFormData } from "@minecraft/server-ui";
 import { makeErrorMessageUi } from "./utils/ui";
 import { logWarn } from "./log";
 import { Vector3Utils } from "@minecraft/math";
 
-export const relayName = new DynamicProperty<string>(
+export const relayName = DynamicPropertyAccessor.withoutDefault<string>(
   "fluffyalien_asn:relay_name",
 );
 

@@ -41,6 +41,9 @@
     },
     "fluffyalien_asn:portable_storage_network": {
       "textures": "textures/fluffyalien/asn/blocks/portable_storage_network"
+    },
+    "fluffyalien_asn:wireless_transmitter": {
+      "textures": "textures/fluffyalien/asn/blocks/wireless_transmitter"
     }
   }
 }

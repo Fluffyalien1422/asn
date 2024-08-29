@@ -9,7 +9,7 @@ import {
 } from "@minecraft/server";
 import { logWarn } from "./log";
 import { ModalFormData } from "@minecraft/server-ui";
-import { DynamicProperty } from "./utils/dynamic_property";
+import { DynamicPropertyAccessor } from "./utils/dynamic_property";
 import {
   STR_DIRECTIONS,
   StrCardinalDirection,
@@ -40,30 +40,32 @@ enum TestItemEnchantableStatus {
   WithoutEnchantments,
 }
 
-const levelEmitterItem = new DynamicProperty<string>(
+const levelEmitterItem = DynamicPropertyAccessor.withoutDefault<string>(
   "fluffyalien_asn:level_emitter_item",
 );
 
-const levelEmitterTestAmount = new DynamicProperty<number>(
+const levelEmitterTestAmount = DynamicPropertyAccessor.withoutDefault<number>(
   "fluffyalien_asn:level_emitter_test_amount",
 );
 
-const levelEmitterOperator = new DynamicProperty<Operator>(
+const levelEmitterOperator = DynamicPropertyAccessor.withoutDefault<Operator>(
   "fluffyalien_asn:level_emitter_operator",
 );
 
 const levelEmitterTestEnchantments =
-  new DynamicProperty<TestItemEnchantableStatus>(
+  DynamicPropertyAccessor.withoutDefault<TestItemEnchantableStatus>(
     "fluffyalien_asn:level_emitter_test_enchantments",
   );
 
-const levelEmitterItemMinDamage = new DynamicProperty<number>(
-  "fluffyalien_asn:level_emitter_item_min_damage",
-);
+const levelEmitterItemMinDamage =
+  DynamicPropertyAccessor.withoutDefault<number>(
+    "fluffyalien_asn:level_emitter_item_min_damage",
+  );
 
-const levelEmitterItemMaxDamage = new DynamicProperty<number>(
-  "fluffyalien_asn:level_emitter_item_max_damage",
-);
+const levelEmitterItemMaxDamage =
+  DynamicPropertyAccessor.withoutDefault<number>(
+    "fluffyalien_asn:level_emitter_item_max_damage",
+  );
 
 export const levelEmitterComponent: BlockCustomComponent = {
   onPlace(e) {

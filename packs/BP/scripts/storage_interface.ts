@@ -15,7 +15,7 @@ import {
 import { updateBlockConnectStates } from "./utils/block_connect";
 import { logWarn } from "./log";
 import { forceCloseInventory, refreshStorageViewer } from "./storage_ui";
-import { getUseEnergyRule } from "./addon_rules";
+import { useEnergyRule } from "./addon_rules";
 import { makeErrorMessageUi } from "./utils/ui";
 import { showEstablishNetworkError } from "./cable_network";
 
@@ -147,7 +147,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     const network = await getNetworkOrShowError(block, e.target, e.player);
     if (!network) return;
 
-    if (getUseEnergyRule() && network.getStoredEnergy() <= 0) {
+    if (useEnergyRule.get(world) && network.getStoredEnergy() <= 0) {
       await forceCloseInventory(e.target);
       void makeErrorMessageUi({
         translate:

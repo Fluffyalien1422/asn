@@ -1,0 +1,56 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:block": {
+    "description": {
+      "identifier": "fluffyalien_asn:wireless_transmitter",
+      "menu_category": {
+        "category": "items"
+      },
+      "states": {
+        "fluffyalien_asn:north": [false, true],
+        "fluffyalien_asn:east": [false, true],
+        "fluffyalien_asn:south": [false, true],
+        "fluffyalien_asn:west": [false, true],
+        "fluffyalien_asn:down": [false, true]
+      }
+    },
+    "components": {
+      "minecraft:custom_components": ["fluffyalien_asn:wireless_transmitter"],
+      "tag:fluffyalien_asn:storage_network_connectable": {},
+
+      "minecraft:geometry": {
+        "identifier": "geometry.fluffyalien_asn.wireless_transmitter",
+        "bone_visibility": {
+          "north": "q.block_state('fluffyalien_asn:north')",
+          "east": "q.block_state('fluffyalien_asn:east')",
+          "south": "q.block_state('fluffyalien_asn:south')",
+          "west": "q.block_state('fluffyalien_asn:west')",
+          "down": "q.block_state('fluffyalien_asn:down')"
+        }
+      },
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "fluffyalien_asn:wireless_transmitter",
+          "render_method": "blend"
+        }
+      },
+      "minecraft:collision_box": {
+        "origin": [-4, 4, -4],
+        "size": [8, 8, 8]
+      },
+      "minecraft:selection_box": {
+        "origin": [-3, 5, -3],
+        "size": [6, 6, 6]
+      },
+      "minecraft:light_dampening": 0,
+      "minecraft:light_emission": 4,
+      "minecraft:destructible_by_explosion": false,
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 1
+      },
+      "minecraft:tick": {
+        "interval_range": [5, 5]
+      }
+    }
+  }
+}

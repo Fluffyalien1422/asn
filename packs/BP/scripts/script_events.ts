@@ -1,41 +1,43 @@
 import { getPlayerMainhandSlot } from "./utils/item";
 import { STORAGE_DATA_DYNAMIC_PROPERTY_ID } from "./storage_drive";
-import { system, Player } from "@minecraft/server";
+import { system, Player, world } from "@minecraft/server";
 import { logWarn } from "./log";
 import {
   forceLoadNetworksRule,
-  showRequestItemDialog,
+  showRequestItemDialogRule,
   useEnergyRule,
+  wirelessInterfaceRangeRule,
 } from "./addon_rules";
-import { DynamicPropertyLocked } from "./utils/dynamic_property";
+import { DynamicPropertyAccessor } from "./utils/dynamic_property";
 
 type AddonRuleCommand =
   | {
       type: "bool";
-      property: DynamicPropertyLocked<true>;
-      default: false;
+      property: DynamicPropertyAccessor<boolean, boolean>;
     }
   | {
-      type: "bool";
-      property: DynamicPropertyLocked<false>;
-      default: true;
+      type: "number";
+      int?: boolean;
+      property: DynamicPropertyAccessor<number, number>;
     };
 
 const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
   forceLoadNetworks: {
     type: "bool",
     property: forceLoadNetworksRule,
-    default: true,
   },
   showRequestItemDialog: {
     type: "bool",
-    property: showRequestItemDialog,
-    default: false,
+    property: showRequestItemDialogRule,
+  },
+  wirelessInterfaceRange: {
+    type: "number",
+    int: true,
+    property: wirelessInterfaceRangeRule,
   },
   useEnergy: {
     type: "bool",
     property: useEnergyRule,
-    default: false,
   },
 };
 
@@ -103,21 +105,22 @@ system.afterEvents.scriptEventReceive.subscribe(
 
       if (!value) {
         player.sendMessage(
-          `${rule} = ${(ruleCommand.property.get() ?? ruleCommand.default).toString()}`,
+          `${rule} = ${ruleCommand.property.get(world).toString()}`,
         );
-      } else if (value === "true") {
-        if (ruleCommand.default) {
-          ruleCommand.property.set();
-        } else {
-          ruleCommand.property.set(true);
+        return;
+      }
+
+      if (ruleCommand.type === "bool") {
+        if (value === "true") {
+          ruleCommand.property.set(world, true);
+          return;
         }
-      } else if (value === "false") {
-        if (ruleCommand.default) {
-          ruleCommand.property.set(false);
-        } else {
-          ruleCommand.property.set();
+
+        if (value === "false") {
+          ruleCommand.property.set(world, false);
+          return;
         }
-      } else {
+
         player.sendMessage({
           rawtext: [
             {
@@ -129,7 +132,45 @@ system.afterEvents.scriptEventReceive.subscribe(
             },
           ],
         });
+
+        return;
       }
+
+      const numVal = Number(value);
+
+      if (isNaN(numVal)) {
+        player.sendMessage({
+          rawtext: [
+            {
+              text: "§c",
+            },
+            {
+              translate:
+                "fluffyalien_asn.message.scriptEvent.addonRule.expectedNumber",
+            },
+          ],
+        });
+
+        return;
+      }
+
+      if (ruleCommand.int && !Number.isInteger(numVal)) {
+        player.sendMessage({
+          rawtext: [
+            {
+              text: "§c",
+            },
+            {
+              translate:
+                "fluffyalien_asn.message.scriptEvent.addonRule.expectedInt",
+            },
+          ],
+        });
+
+        return;
+      }
+
+      ruleCommand.property.set(world, numVal);
     } else {
       player.sendMessage({
         rawtext: [

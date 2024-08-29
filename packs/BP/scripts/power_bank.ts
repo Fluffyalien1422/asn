@@ -1,10 +1,10 @@
-import { BlockCustomComponent } from "@minecraft/server";
+import { BlockCustomComponent, world } from "@minecraft/server";
 import { getMachineStorage } from "bedrock-energistics-core-api";
-import { getUseEnergyRule } from "./addon_rules";
+import { useEnergyRule } from "./addon_rules";
 
 export const storagePowerBankComponent: BlockCustomComponent = {
   onTick(e) {
-    if (!getUseEnergyRule()) {
+    if (!useEnergyRule.get(world)) {
       return;
     }
 
