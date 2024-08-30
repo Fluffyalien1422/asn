@@ -40,7 +40,7 @@
       },
       "minecraft:selection_box": {
         "origin": [-3, 5, -3],
-        "size": [6, 6, 6]
+        "size": [6, 11, 6]
       },
       "minecraft:light_dampening": 0,
       "minecraft:light_emission": 4,

@@ -13,7 +13,8 @@
       "bones": [
         {
           "name": "root",
-          "pivot": [0, 0, 0]
+          "pivot": [0, 0, 0],
+          "rotation": [0, 180, 0]
         },
         {
           "name": "cable",
@@ -40,7 +41,7 @@
           ]
         },
         {
-          "name": "north",
+          "name": "south",
           "parent": "cable",
           "pivot": [0, 0, 0],
           "cubes": [
@@ -57,7 +58,7 @@
           ]
         },
         {
-          "name": "east",
+          "name": "west",
           "parent": "cable",
           "pivot": [0, 0, 0],
           "cubes": [
@@ -75,7 +76,7 @@
           ]
         },
         {
-          "name": "south",
+          "name": "north",
           "parent": "cable",
           "pivot": [0, 0, 0],
           "cubes": [
@@ -92,7 +93,7 @@
           ]
         },
         {
-          "name": "west",
+          "name": "east",
           "parent": "cable",
           "pivot": [0, 0, 0],
           "cubes": [

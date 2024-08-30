@@ -7,12 +7,11 @@ import {
   world,
 } from "@minecraft/server";
 import { StorageNetwork } from "./storage_network";
+import { STR_DIRECTIONS, StrCardinalDirection } from "./utils/direction";
 import {
-  reverseDirection,
-  STR_DIRECTIONS,
-  StrCardinalDirection,
-} from "./utils/direction";
-import { updateBlockConnectStates } from "./utils/block_connect";
+  busUpdateBlockConnectStatesTransformer,
+  updateBlockConnectStates,
+} from "./utils/block_connect";
 import { logWarn } from "./log";
 import { forceCloseInventory, refreshStorageViewer } from "./storage_ui";
 import { useEnergyRule } from "./addon_rules";
@@ -56,51 +55,7 @@ export const storageInterfaceComponent: BlockCustomComponent = {
       e.block,
       STR_DIRECTIONS,
       (other) => other.hasTag("fluffyalien_asn:storage_network_connectable"),
-      (direction) => {
-        if (direction === "up" || direction === "down") {
-          return direction;
-        }
-
-        switch (cardinalDirection) {
-          case "north":
-            switch (direction) {
-              case "south":
-                return;
-              default:
-                return direction;
-            }
-          case "east":
-            switch (direction) {
-              case "north":
-                return "west";
-              case "east":
-                return "north";
-              case "south":
-                return "east";
-              case "west":
-                return;
-            }
-            break;
-          case "south":
-            switch (direction) {
-              case "north":
-                return;
-              default:
-                return reverseDirection(direction);
-            }
-          case "west":
-            switch (direction) {
-              case "north":
-                return "east";
-              case "east":
-                return;
-              case "south":
-                return "west";
-              case "west":
-                return "north";
-            }
-        }
-      },
+      busUpdateBlockConnectStatesTransformer(cardinalDirection),
     );
   },
 };
