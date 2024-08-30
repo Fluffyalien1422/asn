@@ -29,6 +29,9 @@
     },
     "fluffyalien_asn:wireless_interface_antenna": {
       "textures": "textures/fluffyalien/asn/items/wireless_interface_antenna"
+    },
+    "fluffyalien_asn:portable_storage_network_placer": {
+      "textures": "textures/fluffyalien/asn/items/portable_storage_network_placer"
     }
   }
 }

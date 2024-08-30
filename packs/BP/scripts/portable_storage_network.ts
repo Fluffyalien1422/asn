@@ -2,6 +2,7 @@ import {
   Block,
   BlockCustomComponent,
   Entity,
+  ItemCustomComponent,
   ItemStack,
   Player,
   world,
@@ -29,7 +30,7 @@ import {
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 
-const ENERGY_CONSUMPTION = 10;
+const ENERGY_CONSUMPTION = 20;
 
 /**
  * key = entity ID
@@ -294,6 +295,20 @@ export const portableStorageNetworkComponent: BlockCustomComponent = {
   },
 };
 
+export const portableStorageNetworkPlacerComponent: ItemCustomComponent = {
+  onUseOn(e) {
+    if (useEnergyRule.get(world)) {
+      setMachineStorage(
+        e.block.above()!,
+        "energy",
+        (e.itemStack.getDynamicProperty("fluffyalien_asn:energy") as
+          | number
+          | undefined) ?? 0,
+      );
+    }
+  },
+};
+
 world.afterEvents.entityHitEntity.subscribe((e) => {
   if (
     e.hitEntity.typeId !== "fluffyalien_asn:portable_storage_network_entity" ||
@@ -307,12 +322,24 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
   if (block) {
     block.setType("air");
 
-    e.hitEntity.dimension.spawnItem(
-      new ItemStack("fluffyalien_asn:portable_storage_network"),
-      e.hitEntity.location,
+    const placerItem = new ItemStack(
+      "fluffyalien_asn:portable_storage_network_placer",
     );
 
+    if (useEnergyRule.get(world)) {
+      const energy = getMachineStorage(block, "energy");
+
+      placerItem.setDynamicProperty("fluffyalien_asn:energy", energy);
+      placerItem.setLore([`§e${energy.toString()}/6400 energy`]);
+    }
+
+    e.hitEntity.dimension.spawnItem(placerItem, e.hitEntity.location);
+
     removeMachine(block);
+  } else {
+    logWarn(
+      `expected a portable storage network block at (${e.hitEntity.location.x.toString()},${e.hitEntity.location.y.toString()},${e.hitEntity.location.z.toString()}) in ${e.hitEntity.dimension.id}`,
+    );
   }
 
   const network = PortableStorageNetwork.get(e.hitEntity.id);

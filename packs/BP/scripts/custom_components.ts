@@ -8,7 +8,10 @@ import { importBusComponent } from "./import_bus";
 import { exportBusComponent } from "./export_bus";
 import { storageRelayComponent } from "./relay";
 import { storagePowerBankComponent } from "./power_bank";
-import { portableStorageNetworkComponent } from "./portable_storage_network";
+import {
+  portableStorageNetworkComponent,
+  portableStorageNetworkPlacerComponent,
+} from "./portable_storage_network";
 import { wirelessTransmitterComponent } from "./wireless_transmitter";
 
 world.beforeEvents.worldInitialize.subscribe((e) => {
@@ -65,5 +68,10 @@ world.beforeEvents.worldInitialize.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(
     "fluffyalien_asn:wireless_transmitter",
     wirelessTransmitterComponent,
+  );
+
+  e.itemComponentRegistry.registerCustomComponent(
+    "fluffyalien_asn:portable_storage_network_placer",
+    portableStorageNetworkPlacerComponent,
   );
 });

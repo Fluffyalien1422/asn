@@ -1,0 +1,22 @@
+{
+  "format_version": "1.21.10",
+  "minecraft:item": {
+    "description": {
+      "identifier": "fluffyalien_asn:portable_storage_network_placer"
+    },
+    "components": {
+      "minecraft:max_stack_size": 1,
+      "minecraft:custom_components": [
+        "fluffyalien_asn:portable_storage_network_placer"
+      ],
+      "minecraft:block_placer": {
+        "block": "fluffyalien_asn:portable_storage_network"
+      },
+      "minecraft:icon": {
+        "textures": {
+          "default": "fluffyalien_asn:portable_storage_network_placer"
+        }
+      }
+    }
+  }
+}

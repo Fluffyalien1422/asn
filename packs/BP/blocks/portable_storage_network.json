@@ -3,9 +3,6 @@
   "minecraft:block": {
     "description": {
       "identifier": "fluffyalien_asn:portable_storage_network",
-      "menu_category": {
-        "category": "items"
-      },
       "traits": {
         "minecraft:placement_direction": {
           "enabled_states": ["minecraft:cardinal_direction"],
@@ -34,14 +31,6 @@
       "minecraft:destructible_by_mining": false
     },
     "permutations": [
-      {
-        "condition": "q.block_state('minecraft:cardinal_direction') == 'north'",
-        "components": {
-          "minecraft:transformation": {
-            "rotation": [0, 0, 0]
-          }
-        }
-      },
       {
         "condition": "q.block_state('minecraft:cardinal_direction') == 'south'",
         "components": {
