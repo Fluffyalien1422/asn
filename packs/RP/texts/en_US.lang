@@ -120,30 +120,25 @@ fluffyalien_asn.ui.tutorialBook.entry.storageCable.bullet0=Connects devices in a
 fluffyalien_asn.ui.tutorialBook.entry.storageDrive.title=Storage Drive
 fluffyalien_asn.ui.tutorialBook.entry.storageDrive.bullet0=Provides the network it's connected to with 3,000u of storage space.
 fluffyalien_asn.ui.tutorialBook.entry.storageDrive.bullet1=Drops a storage disk when destroyed that contains the items the drive had before it was broken.
-fluffyalien_asn.ui.tutorialBook.entry.storageDrive.bullet2=Any number of these devices can exist in a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.storageInterface.title=Storage Interface
 fluffyalien_asn.ui.tutorialBook.entry.storageInterface.bullet0=Allows players to add, remove, or view items in a storage network.
-fluffyalien_asn.ui.tutorialBook.entry.storageInterface.bullet1=Any number of these devices can exist in a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.importBus.title=Storage Import Bus
 fluffyalien_asn.ui.tutorialBook.entry.importBus.bullet0=Imports items from the container it's facing into the storage network it's connected to.
 fluffyalien_asn.ui.tutorialBook.entry.importBus.bullet1=Stops importing when receiving a redstone current.
-fluffyalien_asn.ui.tutorialBook.entry.importBus.bullet2=Any number of these devices can exist in a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.title=Storage Export Bus
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet0=Exports items from the storage network it's connected to into the container it's facing.
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet1=More filter options are available when exporting an item that is enchantable or breakable.
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet2=Stops exporting when receiving a redstone current.
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet3=Interact with an empty hand to configure.
-fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet4=Any number of these devices can exist in a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.title=Storage Level Emitter
 fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet0=Tests that the total amount of a filtered set of item stacks in the storage network matches a query.
 fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet1=Filter options are available when exporting an item that is enchantable or breakable.
 fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet2=Activates the repeater in front of it when the test is true.
 fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet3=Interact with an empty hand to configure.
-fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet4=Any number of these devices can exist in a network.
 
 fluffyalien_asn.ui.tutorialBook.entry.relay.title=Storage Relay
 fluffyalien_asn.ui.tutorialBook.entry.relay.bullet0=Connects storage network devices over long distances.
@@ -151,10 +146,18 @@ fluffyalien_asn.ui.tutorialBook.entry.relay.bullet1=Interact to change the relay
 fluffyalien_asn.ui.tutorialBook.entry.relay.bullet2=Connects to all other relays with the same name.
 fluffyalien_asn.ui.tutorialBook.entry.relay.bullet3=Has infinite range and works interdimensionally.
 
+fluffyalien_asn.ui.tutorialBook.entry.powerBank.title=Storage Power Bank
+fluffyalien_asn.ui.tutorialBook.entry.powerBank.bullet0=Stores energy for the network.
+fluffyalien_asn.ui.tutorialBook.entry.powerBank.bullet1=Only necessary if energy usage is enabled, see Energy (EXPERIMENTAL) for more information.
+
+fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.title=Wireless Transmitter
+fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.bullet0=Allows a wireless interface to connect to a network.
+fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.bullet1=The default range is 500 blocks, this can be changed with the `wirelessInterfaceRange` rule. See Add-On Configuration for more information.
+
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.title=Wireless Storage Interface
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet0=Allows players to add, remove, or view items in a storage network wirelessly.
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet1=Interact with a storage core while holding this item to link it to that network.
-fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet2=There must be a wireless transmitter in range (that is connected to the linked network) to use the wireless interface. The range can be changed using the 'wirelessInterfaceRange' rule, see Add-On Configuration for more information.
+fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet2=There must be a wireless transmitter connected to the linked network in range (500 blocks by default) to use the wireless interface. The range can be changed using the `wirelessInterfaceRange` rule, see Add-On Configuration for more information.
 
 fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.title=Portable Storage Network
 fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet0=An entirely self-contained storage network.
@@ -174,7 +177,7 @@ fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet1=Use the `/scriptevent f
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet2=Omit `[value]` from the command to get the current value of the rule.
 
 fluffyalien_asn.ui.tutorialBook.entry.energy.title=Energy (EXPERIMENTAL)
-fluffyalien_asn.ui.tutorialBook.entry.energy.bullet0=Energy usage can be enabled using the 'useEnergy' rule. See Add-On Configuration for more information.
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet0=Energy usage can be enabled using the `useEnergy` rule. See Add-On Configuration for more information.
 fluffyalien_asn.ui.tutorialBook.entry.energy.bullet1=Energy is stored in Storage Power Bank blocks.
 fluffyalien_asn.ui.tutorialBook.entry.energy.bullet2=Network energy consumption is scaled based on the amount of storage drives.
 fluffyalien_asn.ui.tutorialBook.entry.energy.bullet3=Uses Bedrock Energistics Core energy. Requires the Bedrock Energistics Core add-on to be in the world.

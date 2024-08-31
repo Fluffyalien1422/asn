@@ -29,32 +29,42 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
   {
     id: "storageDrive",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_drive_icon",
-    bullets: 3,
+    bullets: 2,
   },
   {
     id: "storageInterface",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_interface_icon",
-    bullets: 2,
+    bullets: 1,
   },
   {
     id: "importBus",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/import_bus_icon",
-    bullets: 3,
+    bullets: 2,
   },
   {
     id: "exportBus",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/export_bus_icon",
-    bullets: 5,
+    bullets: 4,
   },
   {
     id: "levelEmitter",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/level_emitter_icon",
-    bullets: 5,
+    bullets: 4,
   },
   {
     id: "relay",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_relay_icon",
     bullets: 4,
+  },
+  {
+    id: "powerBank",
+    icon: "textures/fluffyalien/asn/ui/tutorial_book/energy_icon",
+    bullets: 2,
+  },
+  {
+    id: "wirelessTransmitter",
+    icon: "textures/fluffyalien/asn/ui/tutorial_book/wireless_transmitter_icon",
+    bullets: 2,
   },
   {
     id: "wirelessInterface",
