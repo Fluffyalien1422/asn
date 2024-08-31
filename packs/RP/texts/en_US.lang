@@ -148,7 +148,7 @@ fluffyalien_asn.ui.tutorialBook.entry.relay.bullet3=Has infinite range and works
 
 fluffyalien_asn.ui.tutorialBook.entry.powerBank.title=Storage Power Bank
 fluffyalien_asn.ui.tutorialBook.entry.powerBank.bullet0=Stores energy for the network.
-fluffyalien_asn.ui.tutorialBook.entry.powerBank.bullet1=Only necessary if energy usage is enabled, see Energy (EXPERIMENTAL) for more information.
+fluffyalien_asn.ui.tutorialBook.entry.powerBank.bullet1=Only necessary if energy usage is enabled. See Energy (EXPERIMENTAL) for more information.
 
 fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.title=Wireless Transmitter
 fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.bullet0=Allows a wireless interface to connect to a network.
@@ -157,7 +157,7 @@ fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.bullet1=The default ra
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.title=Wireless Storage Interface
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet0=Allows players to add, remove, or view items in a storage network wirelessly.
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet1=Interact with a storage core while holding this item to link it to that network.
-fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet2=There must be a wireless transmitter connected to the linked network in range (500 blocks by default) to use the wireless interface. The range can be changed using the `wirelessInterfaceRange` rule, see Add-On Configuration for more information.
+fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet2=There must be a wireless transmitter connected to the linked network in range (500 blocks by default) to use the wireless interface. The range can be changed using the `wirelessInterfaceRange` rule. See Add-On Configuration for more information.
 
 fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.title=Portable Storage Network
 fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet0=An entirely self-contained storage network.

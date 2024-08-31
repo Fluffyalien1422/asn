@@ -4,9 +4,9 @@ const NAMESPACE = "fluffyalien_asn";
 
 const CONTENT_BEGINNING = `
 <p>
-Advanced Storage Network finally fixes your storage problem. This add-on adds
-new devices that you can use to build a storage network that can hold infinite
-items, including all modded items.
+Advanced Storage Network finally fixes your storage problem. Build a storage network
+that can hold infinite items, automate it, access it wirelessly, expand it infinitely,
+and so much more.
 </p>
 
 <p><a href="https://legacy.curseforge.com/minecraft-bedrock/addons/advanced-storage-network-2/issues">Issue Tracker</a></p>
@@ -20,6 +20,13 @@ Requires Minecraft 1.21.2x
 <h2>
 No official realms support
 </h2>
+
+<h2>Optional Dependencies</h2>
+<div class="spoiler">
+  <ul>
+    <li>Bedrock Energistics Core (<a href="https://mcpedl.com/bedrock-energistics-core/">MCPEDL</a>) (<a href="https://www.curseforge.com/minecraft-bedrock/addons/bedrock-energistics-core">CurseForge</a>) - Required for energy usage. See <strong>Energy (EXPERIMENTAL)</strong> (on this page or in the in-game tutorial book) for more information.</li>
+  </ul
+</div>
 `;
 
 const CONTENT_END =
