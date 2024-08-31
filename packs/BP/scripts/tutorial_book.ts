@@ -54,12 +54,17 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
   {
     id: "relay",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_relay_icon",
-    bullets: 3,
+    bullets: 4,
   },
   {
     id: "wirelessInterface",
     icon: "textures/fluffyalien/asn/items/wireless_interface",
-    bullets: 2,
+    bullets: 3,
+  },
+  {
+    id: "portableStorageNetwork",
+    icon: "textures/fluffyalien/asn/items/portable_storage_network_placer",
+    bullets: 5,
   },
   {
     id: "storageDisk",
@@ -73,7 +78,7 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
   },
   {
     id: "energy",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon",
+    icon: "textures/fluffyalien/asn/ui/tutorial_book/energy_icon",
     bullets: 5,
   },
 ];

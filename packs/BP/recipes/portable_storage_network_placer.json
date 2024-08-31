@@ -1,0 +1,49 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "fluffyalien_asn:portable_storage_network_placer"
+    },
+    "tags": ["crafting_table"],
+    // prettier-ignore
+    "pattern": [
+      "DAD",
+      "#EI",
+      "RSC"
+    ],
+    "key": {
+      "D": {
+        "item": "diamond"
+      },
+      "R": {
+        "item": "repeater"
+      },
+      "E": {
+        "item": "emerald"
+      },
+      "C": {
+        "item": "comparator"
+      },
+      "S": {
+        "item": "fluffyalien_asn:storage_cable"
+      },
+      "A": {
+        "item": "amethyst_shard"
+      },
+      "#": {
+        "item": "fluffyalien_asn:storage_drive"
+      },
+      "I": {
+        "item": "fluffyalien_asn:storage_interface"
+      }
+    },
+    "result": {
+      "item": "fluffyalien_asn:portable_storage_network_placer"
+    },
+    "unlock": [
+      {
+        "item": "diamond"
+      }
+    ]
+  }
+}

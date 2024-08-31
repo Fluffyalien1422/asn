@@ -149,10 +149,19 @@ fluffyalien_asn.ui.tutorialBook.entry.relay.title=Storage Relay
 fluffyalien_asn.ui.tutorialBook.entry.relay.bullet0=Connects storage network devices over long distances.
 fluffyalien_asn.ui.tutorialBook.entry.relay.bullet1=Interact to change the relay name.
 fluffyalien_asn.ui.tutorialBook.entry.relay.bullet2=Connects to all other relays with the same name.
+fluffyalien_asn.ui.tutorialBook.entry.relay.bullet3=Has infinite range and works interdimensionally.
 
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.title=Wireless Storage Interface
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet0=Allows players to add, remove, or view items in a storage network wirelessly.
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet1=Interact with a storage core while holding this item to link it to that network.
+fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet2=There must be a wireless transmitter in range (that is connected to the linked network) to use the wireless interface. The range can be changed using the 'wirelessInterfaceRange' rule, see Add-On Configuration for more information.
+
+fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.title=Portable Storage Network
+fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet0=An entirely self-contained storage network.
+fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet1=Interact to open the interface. Sneak and interact to open the storage core.
+fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet2=Sneak and interact while holding a disk with data to deposit the items into the network.
+fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet3=Has the same capacity as one storage drive.
+fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet4=If energy usage is enabled, consumes energy when adding or removing items. Stored energy is saved when destroyed.
 
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.title=Storage Disk
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet0=A crafting item.

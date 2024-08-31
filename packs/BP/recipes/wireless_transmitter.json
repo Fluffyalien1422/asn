@@ -1,0 +1,30 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "fluffyalien_asn:wireless_transmitter"
+    },
+    "tags": ["crafting_table"],
+    // prettier-ignore
+    "pattern": [
+      "A", 
+      "C"
+    ],
+    "key": {
+      "C": {
+        "item": "fluffyalien_asn:storage_cable"
+      },
+      "A": {
+        "item": "fluffyalien_asn:wireless_interface_antenna"
+      }
+    },
+    "result": {
+      "item": "fluffyalien_asn:wireless_transmitter"
+    },
+    "unlock": [
+      {
+        "item": "diamond"
+      }
+    ]
+  }
+}
