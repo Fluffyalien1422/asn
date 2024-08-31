@@ -75,7 +75,16 @@ export class StorageSystemItemStack {
       }
     }
 
-    result.setLore(this.lore as string[]);
+    try {
+      // lore may be invalid, this has caused issues before.
+
+      result.setLore(this.lore as string[]);
+    } catch (e) {
+      logWarn(
+        "a recoverable error occured while converting StorageSystemItemStack to ItemStack: can't set lore: " +
+          (e instanceof Error ? `${e.name}: ${e.message}` : "unknown error"),
+      );
+    }
 
     for (const dynamicProperty of this.dynamicProperties) {
       result.setDynamicProperty(dynamicProperty.id, dynamicProperty.value);
@@ -89,7 +98,7 @@ export class StorageSystemItemStack {
         ?.addEnchantments(this.enchantments as Enchantment[]);
     } catch (e) {
       logWarn(
-        "an error occured while attempting to add enchantments to the result ItemStack when converting StorageSystemItemStack to ItemStack: " +
+        "a recoverable error occured while converting StorageSystemItemStack to ItemStack: can't add enchantment: " +
           (e instanceof Error ? `${e.name}: ${e.message}` : "unknown error"),
       );
     }
