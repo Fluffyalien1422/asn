@@ -25,7 +25,7 @@ No official realms support
 <div class="spoiler">
   <ul>
     <li>Bedrock Energistics Core (<a href="https://mcpedl.com/bedrock-energistics-core/">MCPEDL</a>) (<a href="https://www.curseforge.com/minecraft-bedrock/addons/bedrock-energistics-core">CurseForge</a>) - Required for energy usage. See <strong>Energy (EXPERIMENTAL)</strong> (on this page or in the in-game tutorial book) for more information.</li>
-  </ul
+  </ul>
 </div>
 `;
 
