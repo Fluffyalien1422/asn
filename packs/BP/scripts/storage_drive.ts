@@ -104,8 +104,6 @@ export const storageDriveComponent: BlockCustomComponent = {
       y: e.block.y,
       z: e.block.z + 0.5,
     });
-
-    StorageNetwork.updateConnectableNetworks(e.block);
   },
   onPlayerDestroy(e) {
     const data = getStorageDriveSerializedData(e.block);
@@ -124,11 +122,6 @@ export const storageDriveComponent: BlockCustomComponent = {
     }
 
     getStorageDriveEntity(e.block)?.triggerEvent("fluffyalien_asn:despawn");
-
-    void StorageNetwork.getNetwork(
-      e.block,
-      e.destroyedBlockPermutation.type.id,
-    )?.updateConnections();
   },
   onPlayerInteract(e) {
     if (!e.player) return;

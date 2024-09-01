@@ -16,7 +16,10 @@
       }
     },
     "components": {
-      "minecraft:custom_components": ["fluffyalien_asn:storage_cable"],
+      "minecraft:custom_components": [
+        "fluffyalien_asn:network_device",
+        "fluffyalien_asn:storage_cable"
+      ],
       "tag:fluffyalien_asn:storage_network_connectable": {},
 
       "minecraft:geometry": {

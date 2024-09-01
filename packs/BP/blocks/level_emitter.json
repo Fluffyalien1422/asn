@@ -21,7 +21,10 @@
       }
     },
     "components": {
-      "minecraft:custom_components": ["fluffyalien_asn:level_emitter"],
+      "minecraft:custom_components": [
+        "fluffyalien_asn:network_device",
+        "fluffyalien_asn:level_emitter"
+      ],
       "tag:fluffyalien_asn:storage_network_connectable": {},
 
       "minecraft:geometry": {
@@ -70,14 +73,6 @@
             "*": {
               "texture": "fluffyalien_asn:level_emitter_on"
             }
-          }
-        }
-      },
-      {
-        "condition": "q.block_state('minecraft:cardinal_direction') == 'north'",
-        "components": {
-          "minecraft:transformation": {
-            "rotation": [0, 0, 0]
           }
         }
       },

@@ -13,8 +13,14 @@ import {
   portableStorageNetworkPlacerComponent,
 } from "./portable_storage_network";
 import { wirelessTransmitterComponent } from "./wireless_transmitter";
+import { networkDeviceComponent } from "./network_device_component";
 
 world.beforeEvents.worldInitialize.subscribe((e) => {
+  e.blockComponentRegistry.registerCustomComponent(
+    "fluffyalien_asn:network_device",
+    networkDeviceComponent,
+  );
+
   e.blockComponentRegistry.registerCustomComponent(
     "fluffyalien_asn:storage_interface",
     storageInterfaceComponent,

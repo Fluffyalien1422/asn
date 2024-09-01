@@ -15,7 +15,10 @@
       }
     },
     "components": {
-      "minecraft:custom_components": ["fluffyalien_asn:wireless_transmitter"],
+      "minecraft:custom_components": [
+        "fluffyalien_asn:network_device",
+        "fluffyalien_asn:wireless_transmitter"
+      ],
       "tag:fluffyalien_asn:storage_network_connectable": {},
 
       "minecraft:geometry": {

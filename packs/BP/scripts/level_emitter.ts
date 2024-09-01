@@ -76,19 +76,12 @@ export const levelEmitterComponent: BlockCustomComponent = {
       y: e.block.y,
       z: e.block.z + 0.5,
     });
-
-    StorageNetwork.updateConnectableNetworks(e.block);
   },
   onPlayerDestroy(e) {
     getEntityAtBlockLocation(
       e.block,
       "fluffyalien_asn:level_emitter_entity",
     )?.remove();
-
-    void StorageNetwork.getNetwork(
-      e.block,
-      e.destroyedBlockPermutation.type.id,
-    )?.updateConnections();
   },
   onPlayerInteract(e) {
     if (!e.player) return;

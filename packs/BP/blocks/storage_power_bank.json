@@ -19,6 +19,7 @@
     "components": {
       "minecraft:custom_components": [
         "fluffyalien_energisticscore:machine",
+        "fluffyalien_asn:network_device",
         "fluffyalien_asn:storage_power_bank"
       ],
       "tag:fluffyalien_asn:storage_network_connectable": {},

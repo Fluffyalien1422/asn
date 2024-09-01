@@ -41,17 +41,6 @@ export function updateImportBus(block: Block, network: StorageNetwork): void {
 }
 
 export const importBusComponent: BlockCustomComponent = {
-  onPlace(e) {
-    if (e.previousBlock.type.id === "fluffyalien_asn:import_bus") return;
-
-    StorageNetwork.updateConnectableNetworks(e.block);
-  },
-  onPlayerDestroy(e) {
-    void StorageNetwork.getNetwork(
-      e.block,
-      e.destroyedBlockPermutation.type.id,
-    )?.updateConnections();
-  },
   onTick(e) {
     updateBlockConnectStates(
       e.block,

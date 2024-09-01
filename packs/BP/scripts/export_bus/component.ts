@@ -5,7 +5,6 @@ import {
   setExportBusExportItemEnchantments,
   setExportBusExportItemId,
 } from ".";
-import { StorageNetwork } from "../storage_network";
 import { getPlayerMainhandSlot } from "../utils/item";
 import { showExportBusUi } from "./ui";
 import { logWarn } from "../log";
@@ -24,16 +23,9 @@ export const exportBusComponent: BlockCustomComponent = {
       y: e.block.y,
       z: e.block.z + 0.5,
     });
-
-    StorageNetwork.updateConnectableNetworks(e.block);
   },
   onPlayerDestroy(e) {
     getExportBusEntity(e.block)?.triggerEvent("fluffyalien_asn:despawn");
-
-    void StorageNetwork.getNetwork(
-      e.block,
-      e.destroyedBlockPermutation.type.id,
-    )?.updateConnections();
   },
   onPlayerInteract(e) {
     if (!e.player) return;

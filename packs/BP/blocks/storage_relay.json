@@ -8,7 +8,10 @@
       }
     },
     "components": {
-      "minecraft:custom_components": ["fluffyalien_asn:storage_relay"],
+      "minecraft:custom_components": [
+        "fluffyalien_asn:network_device",
+        "fluffyalien_asn:storage_relay"
+      ],
       "tag:fluffyalien_asn:storage_network_connectable": {},
 
       "minecraft:geometry": "minecraft:geometry.full_block",
