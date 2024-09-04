@@ -21,6 +21,35 @@ Requires Minecraft 1.21.2x
 No official realms support
 </h2>
 
+<h2>Language Support</h2>
+<div class="spoiler">
+  <h3>Official Language Support</h3>
+  <p>These languages are built into Advanced Storage Network.</p>
+  <ul>
+    <li>English (United States)</li>
+  </ul>
+
+  <h3>Unofficial Language Support</h3>
+  <p>
+    These languages must be installed separately.
+    These language packs are not official and may not be up to date.
+  </p>
+  <ul>
+    <li>
+      <strong>Português (Brasil)</strong>
+      <ul>
+        <li><a href="https://mcpedl.com/translation-advanced-storage-network">Translation Advanced Storage Network</a></li>
+      </ul>
+    </li>
+    <li>
+      <strong>Português (Portugal)</strong>
+      <ul>
+        <li><a href="https://mcpedl.com/translation-advanced-storage-network">Translation Advanced Storage Network</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
 <h2>Optional Dependencies</h2>
 <div class="spoiler">
   <ul>
