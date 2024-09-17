@@ -3,7 +3,7 @@ import { BlockCustomComponent, Entity, Player } from "@minecraft/server";
 import { getEntityAtBlockLocation } from "./utils/location";
 import { DynamicPropertyAccessor } from "./utils/dynamic_property";
 import { ModalFormData } from "@minecraft/server-ui";
-import { makeErrorMessageUi } from "./utils/ui";
+import { makeErrorMessageUi, showForm } from "./utils/ui";
 import { logWarn } from "./log";
 import { Vector3Utils } from "@minecraft/math";
 
@@ -21,14 +21,17 @@ async function showRelayUi(player: Player, relayEntity: Entity): Promise<void> {
     relayName.get(relayEntity),
   );
 
-  const response = await form.show(player);
+  const response = await showForm(form, player);
   if (!response.formValues) return;
 
   const name = response.formValues[0] as string;
   if (!name) {
-    void makeErrorMessageUi({
-      translate: "fluffyalien_asn.ui.relay.error.invalidName",
-    }).show(player);
+    void showForm(
+      makeErrorMessageUi({
+        translate: "fluffyalien_asn.ui.relay.error.invalidName",
+      }),
+      player,
+    );
     return;
   }
 

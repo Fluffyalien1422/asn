@@ -3,7 +3,7 @@ import { ModalFormData } from "@minecraft/server-ui";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { ENCHANTMENT_TRANSLATION_KEYS } from "../enchantment_translations";
 import { getEnchantmentTypeId, getItemTranslationKey } from "../utils/item";
-import { makeErrorMessageUi } from "../utils/ui";
+import { makeErrorMessageUi, showForm } from "../utils/ui";
 
 export async function showRequestItemUi(
   player: Player,
@@ -106,7 +106,7 @@ export async function showRequestItemUi(
     ).toString(),
   );
 
-  const response = await form.show(player);
+  const response = await showForm(form, player);
 
   if (!response.formValues) {
     return;
@@ -116,20 +116,26 @@ export async function showRequestItemUi(
 
   let amount = Number(textFieldValue);
   if (!amount || amount < 0 || amount > 1000) {
-    await makeErrorMessageUi({
-      translate:
-        "fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber",
-    }).show(player);
+    await showForm(
+      makeErrorMessageUi({
+        translate:
+          "fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber",
+      }),
+      player,
+    );
 
     return showRequestItemUi(player, item);
   }
   amount = Math.floor(amount);
 
   if (amount > item.amount) {
-    await makeErrorMessageUi({
-      translate:
-        "fluffyalien_asn.ui.storageInterface.requestItem.error.notEnough",
-    }).show(player);
+    await showForm(
+      makeErrorMessageUi({
+        translate:
+          "fluffyalien_asn.ui.storageInterface.requestItem.error.notEnough",
+      }),
+      player,
+    );
 
     return showRequestItemUi(player, item);
   }
@@ -153,7 +159,7 @@ export async function showSearchUi(
     "Query",
   );
 
-  const response = await form.show(player);
+  const response = await showForm(form, player);
   if (!response.formValues) {
     return;
   }

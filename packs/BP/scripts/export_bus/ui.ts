@@ -8,7 +8,7 @@ import {
   setExportBusExportItemDamageRange,
   setExportBusExportItemEnchantments,
 } from ".";
-import { makeErrorMessageUi, makeMessageUi } from "../utils/ui";
+import { makeErrorMessageUi, makeMessageUi, showForm } from "../utils/ui";
 import { getItemTranslationKey } from "../utils/item";
 
 export async function showExportBusUi(
@@ -18,10 +18,13 @@ export async function showExportBusUi(
   const exportItemId = getExportBusExportItemId(dummyEntity);
 
   if (!exportItemId) {
-    return void makeMessageUi(
-      { translate: "fluffyalien_asn.ui.exportBus.title" },
-      { translate: "fluffyalien_asn.ui.exportBus.noExportItem" },
-    ).show(player);
+    return void showForm(
+      makeMessageUi(
+        { translate: "fluffyalien_asn.ui.exportBus.title" },
+        { translate: "fluffyalien_asn.ui.exportBus.noExportItem" },
+      ),
+      player,
+    );
   }
 
   const exportItemRawMessage: RawMessage = {
@@ -51,10 +54,13 @@ export async function showExportBusUi(
     setExportBusExportItemEnchantments(dummyEntity, "ignore");
     setExportBusExportItemDamageRange(dummyEntity, { min: 0 });
 
-    return void makeMessageUi(
-      { translate: "fluffyalien_asn.ui.exportBus.title" },
-      exportItemRawMessage,
-    ).show(player);
+    return void showForm(
+      makeMessageUi(
+        { translate: "fluffyalien_asn.ui.exportBus.title" },
+        exportItemRawMessage,
+      ),
+      player,
+    );
   }
 
   const exportItemEnchantmentsStatus =
@@ -127,7 +133,7 @@ export async function showExportBusUi(
     );
   }
 
-  const response = await form.show(player);
+  const response = await showForm(form, player);
 
   if (!response.formValues) {
     return;
@@ -148,18 +154,24 @@ export async function showExportBusUi(
     ? Number(minDamageResponseRaw)
     : 0;
   if (isNaN(minDamageResponse)) {
-    return void makeErrorMessageUi({
-      translate: "fluffyalien_asn.ui.exportBus.error.invalidMinDamage",
-    }).show(player);
+    return void showForm(
+      makeErrorMessageUi({
+        translate: "fluffyalien_asn.ui.exportBus.error.invalidMinDamage",
+      }),
+      player,
+    );
   }
 
   const maxDamageResponse = maxDamageResponseRaw
     ? Number(maxDamageResponseRaw)
     : undefined;
   if (maxDamageResponse !== undefined && isNaN(maxDamageResponse)) {
-    return void makeErrorMessageUi({
-      translate: "fluffyalien_asn.ui.exportBus.error.invalidMaxDamage",
-    }).show(player);
+    return void showForm(
+      makeErrorMessageUi({
+        translate: "fluffyalien_asn.ui.exportBus.error.invalidMaxDamage",
+      }),
+      player,
+    );
   }
 
   setExportBusExportItemEnchantments(

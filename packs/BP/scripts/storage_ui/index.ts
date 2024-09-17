@@ -4,7 +4,7 @@ import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { wait } from "../utils/async";
 import { getItemTranslationKey } from "../utils/item";
 import { abbreviateNumber } from "../utils/string";
-import { makeErrorMessageUi } from "../utils/ui";
+import { makeErrorMessageUi, showForm } from "../utils/ui";
 import { showRequestItemUi, showSearchUi } from "./form";
 import {
   Entity,
@@ -182,32 +182,41 @@ function addItemToStorageOrShowError(
   void forceCloseInventory(interfaceEntity).then(() => {
     switch (res.error.type) {
       case "insufficientStorage":
-        void makeErrorMessageUi({
-          translate:
-            "fluffyalien_asn.ui.storageInterface.error.insufficientStorage",
-        }).show(data.playerInUi);
+        void showForm(
+          makeErrorMessageUi({
+            translate:
+              "fluffyalien_asn.ui.storageInterface.error.insufficientStorage",
+          }),
+          data.playerInUi,
+        );
         break;
       case "insufficientEnergy":
-        void makeErrorMessageUi({
-          translate:
-            "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
-        }).show(data.playerInUi);
+        void showForm(
+          makeErrorMessageUi({
+            translate:
+              "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
+          }),
+          data.playerInUi,
+        );
         break;
       case "bannedItem":
-        void makeErrorMessageUi({
-          translate: "fluffyalien_asn.ui.storageInterface.error.bannedItem",
-          with: {
-            rawtext: [
-              {
-                rawtext: [
-                  { text: "§l" },
-                  { translate: getItemTranslationKey(res.error.itemId) },
-                  { text: "§r" },
-                ],
-              },
-            ],
-          },
-        }).show(data.playerInUi);
+        void showForm(
+          makeErrorMessageUi({
+            translate: "fluffyalien_asn.ui.storageInterface.error.bannedItem",
+            with: {
+              rawtext: [
+                {
+                  rawtext: [
+                    { text: "§l" },
+                    { translate: getItemTranslationKey(res.error.itemId) },
+                    { text: "§r" },
+                  ],
+                },
+              ],
+            },
+          }),
+          data.playerInUi,
+        );
         break;
     }
   });

@@ -2,7 +2,7 @@ import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { logWarn } from "./log";
 import { StorageNetwork } from "./storage_network";
 import { getPlayerMainhandSlot } from "./utils/item";
-import { makeErrorMessageUi } from "./utils/ui";
+import { makeErrorMessageUi, showForm } from "./utils/ui";
 import {
   Block,
   BlockCustomComponent,
@@ -92,7 +92,7 @@ function showStorageDriveUi(
     translate: "fluffyalien_asn.ui.common.close",
   });
 
-  return form.show(player);
+  return showForm(form, player);
 }
 
 export const storageDriveComponent: BlockCustomComponent = {
@@ -132,10 +132,13 @@ export const storageDriveComponent: BlockCustomComponent = {
     if (heldItem?.typeId === "fluffyalien_asn:used_storage_disk") {
       const existingData = getStorageDriveSerializedData(e.block);
       if (existingData !== undefined) {
-        void makeErrorMessageUi({
-          translate:
-            "fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk",
-        }).show(e.player);
+        void showForm(
+          makeErrorMessageUi({
+            translate:
+              "fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk",
+          }),
+          e.player,
+        );
 
         return;
       }

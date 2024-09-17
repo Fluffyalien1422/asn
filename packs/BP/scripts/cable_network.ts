@@ -16,7 +16,7 @@ import {
 } from "./utils/tickingarea";
 import { forceLoadNetworksRule } from "./addon_rules";
 import { directionToVector3 } from "./utils/direction";
-import { makeErrorMessageUi } from "./utils/ui";
+import { makeErrorMessageUi, showForm } from "./utils/ui";
 import { getEntityAtBlockLocation } from "./utils/location";
 import { relayName } from "./relay";
 import { getEntitiesInAllDimensions } from "./utils/dimension";
@@ -249,10 +249,13 @@ export function showEstablishNetworkError(
   player: Player,
   error: DiscoverCableNetworkConnectionsError,
 ): Promise<ActionFormResponse> {
-  return makeErrorMessageUi({
-    translate:
-      error === "multipleStorageCores"
-        ? "fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores"
-        : "fluffyalien_asn.ui.cableNetwork.error.noStorageCores",
-  }).show(player);
+  return showForm(
+    makeErrorMessageUi({
+      translate:
+        error === "multipleStorageCores"
+          ? "fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores"
+          : "fluffyalien_asn.ui.cableNetwork.error.noStorageCores",
+    }),
+    player,
+  );
 }

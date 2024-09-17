@@ -20,6 +20,7 @@ import {
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { useEnergyRule } from "./addon_rules";
+import { showForm } from "./utils/ui";
 
 function showStorageCoreUi(
   player: Player,
@@ -90,7 +91,7 @@ function showStorageCoreUi(
     translate: "fluffyalien_asn.ui.common.close",
   });
 
-  return form.show(player);
+  return showForm(form, player);
 }
 
 /**

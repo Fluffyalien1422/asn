@@ -18,7 +18,7 @@ import {
 } from "./utils/direction";
 import { getEntityAtBlockLocation } from "./utils/location";
 import { getItemTranslationKey, getPlayerMainhandSlot } from "./utils/item";
-import { makeErrorMessageUi, makeMessageUi } from "./utils/ui";
+import { makeErrorMessageUi, makeMessageUi, showForm } from "./utils/ui";
 import {
   busUpdateBlockConnectStatesTransformer,
   updateBlockConnectStates,
@@ -131,10 +131,13 @@ async function showLevelEmitterUi(
   const itemId = levelEmitterItem.get(dummyEntity);
 
   if (!itemId) {
-    return void makeMessageUi(
-      { translate: "fluffyalien_asn.ui.levelEmitter.title" },
-      { translate: "fluffyalien_asn.ui.levelEmitter.noItem" },
-    ).show(player);
+    return void showForm(
+      makeMessageUi(
+        { translate: "fluffyalien_asn.ui.levelEmitter.title" },
+        { translate: "fluffyalien_asn.ui.levelEmitter.noItem" },
+      ),
+      player,
+    );
   }
 
   const form = new ModalFormData();
@@ -223,7 +226,7 @@ async function showLevelEmitterUi(
     );
   }
 
-  const response = await form.show(player);
+  const response = await showForm(form, player);
 
   if (!response.formValues) {
     return;
@@ -235,9 +238,12 @@ async function showLevelEmitterUi(
   const amount = Number(amountStr);
 
   if (isNaN(amount) || amount < 0) {
-    return void makeErrorMessageUi({
-      translate: "fluffyalien_asn.ui.levelEmitter.error.invalidAmount",
-    }).show(player);
+    return void showForm(
+      makeErrorMessageUi({
+        translate: "fluffyalien_asn.ui.levelEmitter.error.invalidAmount",
+      }),
+      player,
+    );
   }
 
   const enchantmentsDropdownResponse = enchantable
@@ -255,18 +261,24 @@ async function showLevelEmitterUi(
     ? Number(minDamageResponseRaw)
     : undefined;
   if (minDamageResponse !== undefined && isNaN(minDamageResponse)) {
-    return void makeErrorMessageUi({
-      translate: "fluffyalien_asn.ui.exportBus.error.invalidMinDamage",
-    }).show(player);
+    return void showForm(
+      makeErrorMessageUi({
+        translate: "fluffyalien_asn.ui.exportBus.error.invalidMinDamage",
+      }),
+      player,
+    );
   }
 
   const maxDamageResponse = maxDamageResponseRaw
     ? Number(maxDamageResponseRaw)
     : undefined;
   if (maxDamageResponse !== undefined && isNaN(maxDamageResponse)) {
-    return void makeErrorMessageUi({
-      translate: "fluffyalien_asn.ui.exportBus.error.invalidMaxDamage",
-    }).show(player);
+    return void showForm(
+      makeErrorMessageUi({
+        translate: "fluffyalien_asn.ui.exportBus.error.invalidMaxDamage",
+      }),
+      player,
+    );
   }
 
   levelEmitterOperator.set(dummyEntity, operator);

@@ -22,7 +22,7 @@ import {
 } from "./storage_drive";
 import { forceCloseInventory, refreshStorageViewer } from "./storage_ui";
 import { getPlayerMainhandSlot } from "./utils/item";
-import { makeErrorMessageUi, makeMessageUi } from "./utils/ui";
+import { makeErrorMessageUi, makeMessageUi, showForm } from "./utils/ui";
 import { useEnergyRule } from "./addon_rules";
 import {
   getMachineStorage,
@@ -151,10 +151,13 @@ class PortableStorageNetwork extends StorageSystem {
     if (this.consumeEnergy()) return true;
 
     void forceCloseInventory(this.entity).then(() => {
-      void makeErrorMessageUi({
-        translate:
-          "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
-      }).show(player);
+      void showForm(
+        makeErrorMessageUi({
+          translate:
+            "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
+        }),
+        player,
+      );
     });
 
     return false;
@@ -376,46 +379,52 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   if (e.player.isSneaking) {
     if (!e.itemStack) {
       void forceCloseInventory(e.target).then(() => {
-        void makeMessageUi(
-          {
-            translate: "tile.fluffyalien_asn:portable_storage_network.name",
-          },
-          {
-            rawtext: [
-              {
-                translate:
-                  "fluffyalien_asn.ui.portableStorageNetwork.body.storageUsed",
-                with: {
-                  rawtext: [
-                    {
-                      text: (
-                        network.getSerializedData()?.length ?? 0
-                      ).toString(),
-                    },
-                  ],
-                },
-              },
-              ...(useEnergyRule.get(world)
-                ? [
-                    {
-                      text: "\n\n",
-                    },
-                    {
-                      translate:
-                        "fluffyalien_asn.ui.portableStorageNetwork.body.storedEnergy",
-                      with: {
-                        rawtext: [
-                          {
-                            text: getMachineStorage(block, "energy").toString(),
-                          },
-                        ],
+        void showForm(
+          makeMessageUi(
+            {
+              translate: "tile.fluffyalien_asn:portable_storage_network.name",
+            },
+            {
+              rawtext: [
+                {
+                  translate:
+                    "fluffyalien_asn.ui.portableStorageNetwork.body.storageUsed",
+                  with: {
+                    rawtext: [
+                      {
+                        text: (
+                          network.getSerializedData()?.length ?? 0
+                        ).toString(),
                       },
-                    },
-                  ]
-                : []),
-            ],
-          },
-        ).show(e.player);
+                    ],
+                  },
+                },
+                ...(useEnergyRule.get(world)
+                  ? [
+                      {
+                        text: "\n\n",
+                      },
+                      {
+                        translate:
+                          "fluffyalien_asn.ui.portableStorageNetwork.body.storedEnergy",
+                        with: {
+                          rawtext: [
+                            {
+                              text: getMachineStorage(
+                                block,
+                                "energy",
+                              ).toString(),
+                            },
+                          ],
+                        },
+                      },
+                    ]
+                  : []),
+              ],
+            },
+          ),
+          e.player,
+        );
       });
 
       return;
