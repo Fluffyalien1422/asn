@@ -22,7 +22,6 @@ import { logWarn, makeErrorString } from "./log";
 import { updateLevelEmitter } from "./level_emitter";
 import {
   getMachineStorage,
-  MAX_MACHINE_STORAGE,
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 import { useEnergyRule } from "./addon_rules";
@@ -469,7 +468,7 @@ export class StorageNetwork extends StorageSystem {
   getMaxStoredEnergy(): number {
     this.ensureValidity();
 
-    return MAX_MACHINE_STORAGE * this.connections.powerBanks.length;
+    return 6400 * this.connections.powerBanks.length;
   }
 
   /**

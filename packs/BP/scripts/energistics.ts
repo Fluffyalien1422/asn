@@ -12,21 +12,11 @@ world.afterEvents.worldInitialize.subscribe(() => {
           energyBar: {
             type: "storageBar",
             startIndex: 0,
+            defaults: {
+              type: "energy",
+            },
           },
         },
-      },
-    },
-    handlers: {
-      updateUi() {
-        return {
-          storageBars: [
-            {
-              element: "energyBar",
-              type: "energy",
-              change: 0,
-            },
-          ],
-        };
       },
     },
   });
