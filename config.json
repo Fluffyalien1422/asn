@@ -15,7 +15,7 @@
       },
       "build_scripts": {
         "runWith": "shell",
-        "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --external:@minecraft/server --external:@minecraft/server-ui"
+        "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --log-level=warning --external:@minecraft/server --external:@minecraft/server-ui"
       },
       "minify_and_clean_scripts": {
         "runWith": "shell",
