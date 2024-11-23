@@ -338,7 +338,7 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
 
     e.hitEntity.dimension.spawnItem(placerItem, e.hitEntity.location);
 
-    removeMachine(block);
+    void removeMachine(block);
   } else {
     logWarn(
       `expected a portable storage network block at (${e.hitEntity.location.x.toString()},${e.hitEntity.location.y.toString()},${e.hitEntity.location.z.toString()}) in ${e.hitEntity.dimension.id}`,

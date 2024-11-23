@@ -7,6 +7,7 @@
     "resourcePack": "./packs/RP"
   },
   "regolith": {
+    "formatVersion": "1.2.0",
     "dataPath": "./packs/data",
     "filterDefinitions": {
       "simple_manifest": {

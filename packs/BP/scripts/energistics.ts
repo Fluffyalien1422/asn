@@ -1,7 +1,7 @@
 import { world } from "@minecraft/server";
 import * as beCore from "bedrock-energistics-core-api";
 
-beCore.init({ namespace: "fluffyalien_asn" });
+beCore.init("fluffyalien_asn");
 
 world.afterEvents.worldInitialize.subscribe(() => {
   beCore.registerMachine({
