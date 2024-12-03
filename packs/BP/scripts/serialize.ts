@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 /*
 
 serialization format info:
@@ -23,10 +24,9 @@ type_id(amount "name tag" damage "lore line 1","lore line 2" "dynamicProperty"@t
 - vectors are represent with v<x value>#<y value>#<z value> (eg. v0#0#0)
 
 - dynamic properties are also used to store some additional data
-  - these dynamic properties are fluffyalien_asn namespaced and always start with $
-  - these dynamic properties are
-    fluffyalien_asn:$potion_effect, fluffyalien_asn:$potion_liquid,
-    fluffyalien_asn:$potion_modifier
+  - these dynamic properties should start with $, see AdditionalDataProperty enum
+
+**NOTE: avoid updates to the serialization format, use additional data instead**
 
 examples:
 minecraft:dirt(1 "my dirt" 0   )
@@ -47,6 +47,25 @@ import {
 } from "./storage_system_item_stack";
 import { getEnchantmentTypeId } from "./utils/item";
 import { makeErrorString } from "./log";
+
+/**
+ * this should not be updated, it is only used to
+ * maintain backward compatibility
+ */
+enum LegacyAdditionalDataProperty {
+  PotionEffect = "fluffyalien_asn:$potion_effect",
+  PotionLiquid = "fluffyalien_asn:$potion_liquid",
+  PotionModifier = "fluffyalien_asn:$potion_modifier",
+}
+
+enum AdditionalDataProperty {
+  // all additional properties should start with $
+  // to indicate that they are an additional property,
+  // not a dynamic property
+  PotionEffect = "$0",
+  PotionLiquid = "$1",
+  PotionModifier = "$2",
+}
 
 export function deserialize(data: string): StorageSystemItemStack[] {
   const parser = new DeserializeParser(data);
@@ -99,15 +118,15 @@ export function serialize(itemStack: StorageSystemItemStack): string {
   if (itemStack.potionData) {
     dynamicProperties.push(
       {
-        id: "fluffyalien_asn:$potion_effect",
+        id: AdditionalDataProperty.PotionEffect,
         value: itemStack.potionData.effect,
       },
       {
-        id: "fluffyalien_asn:$potion_liquid",
+        id: AdditionalDataProperty.PotionLiquid,
         value: itemStack.potionData.liquid,
       },
       {
-        id: "fluffyalien_asn:$potion_modifier",
+        id: AdditionalDataProperty.PotionModifier,
         value: itemStack.potionData.modifier,
       },
     );
@@ -395,13 +414,16 @@ class DeserializeParser {
 
     for (const rawDynamicProp of dynamicPropertiesRaw) {
       switch (rawDynamicProp.id) {
-        case "fluffyalien_asn:$potion_effect":
+        case AdditionalDataProperty.PotionEffect:
+        case LegacyAdditionalDataProperty.PotionEffect:
           potionEffect = rawDynamicProp.value as string;
           break;
-        case "fluffyalien_asn:$potion_liquid":
+        case AdditionalDataProperty.PotionLiquid:
+        case LegacyAdditionalDataProperty.PotionLiquid:
           potionLiquid = rawDynamicProp.value as string;
           break;
-        case "fluffyalien_asn:$potion_modifier":
+        case AdditionalDataProperty.PotionModifier:
+        case LegacyAdditionalDataProperty.PotionModifier:
           potionModifier = rawDynamicProp.value as string;
           break;
         default:
