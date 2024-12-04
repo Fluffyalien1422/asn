@@ -1,6 +1,9 @@
 import * as fs from "fs";
+import { version as VERSION } from "@/data/simple_manifest.json";
 
 const NAMESPACE = "fluffyalien_asn";
+const TAG_BACKGROUND_COLOR_HEX = "007f46";
+const TAG_FOREGROUND_COLOR_HEX = "ffffff";
 
 const CONTENT_BEGINNING = `
 <p>
@@ -60,6 +63,23 @@ No official realms support
 
 const CONTENT_END =
   '<p><a href="https://x.com/Fluffyalien1422">Follow me on X</a></p>';
+
+function createTagSpan(text: string): string {
+  return `<span style="
+    background-color: #${TAG_BACKGROUND_COLOR_HEX};
+    color: #${TAG_FOREGROUND_COLOR_HEX};
+    padding: 2px 5px;
+    border-radius: 4px;
+  ">${text}</span>`;
+}
+
+function createCodeSpan(text: string): string {
+  return `<span style="
+    background-color: rgb(38, 38, 38);
+    padding: 2px 5px;
+    color: #999;
+  ">${text}</span>`;
+}
 
 function htmlEscape(s: string): string {
   return s
@@ -131,7 +151,13 @@ for (const line of textsLines) {
 
 fs.writeFileSync(
   "cfpost.html",
-  CONTENT_BEGINNING +
+  `<p>${createTagSpan("NOTE")}
+    The following documentation is for
+    ${createCodeSpan(`v${VERSION[0].toString()}.${VERSION[1].toString()}.x`)}.
+    It may not be updated immediately.
+    Refer to the in-game tutorial book if the following documentation is outdated.
+  </p>` +
+    CONTENT_BEGINNING +
     Object.values(entries)
       .map(
         (entry) =>
