@@ -227,8 +227,6 @@ if (config.dependencies) {
 
         content += "</ul>";
 
-        content += "<p>&nbsp;</p>";
-
         return content;
       })
       .join("");
