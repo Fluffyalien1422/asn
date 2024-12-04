@@ -13,12 +13,25 @@ interface SimpleManifest {
   minEngineVersion: [number, number, number];
 }
 
+interface Dependency {
+  name: string;
+  description?: string;
+  optional?: boolean;
+  mcpedlUrl?: string;
+  cfUrl?: string;
+}
+
 interface Config {
   namespace: string;
   /**
    * An HTML string. Used inside a `p` element.
    */
   briefDescription: string;
+  /**
+   * An array of HTML strings. Each one is used inside a `p` element.
+   */
+  notes?: string[];
+  dependencies?: Dependency[];
   issueTrackerUrl?: string;
   issueTrackerAllowsFeatureRequests?: boolean;
   requiresBetaApis?: boolean;
@@ -57,24 +70,47 @@ const contentEnd = fs.existsSync(CONTENT_END_FILE_PATH)
   ? fs.readFileSync(CONTENT_END_FILE_PATH, "utf8")
   : "";
 
-function createTagSpan(text: string): string {
+function makeTag(bgColor: string, fgColor: string, text: string): string {
   return `<span style="
-    background-color: ${config.theme.secondaryBackgroundColor};
-    color: ${config.theme.secondaryForegroundColor};
+    background-color: ${bgColor};
+    color: ${fgColor};
     padding: 2px 5px;
     border-radius: 4px;
   ">${text}</span>`;
 }
 
-function makeButton(url: string, content: string): string {
+function makeThemeTag(text: string): string {
+  return makeTag(
+    config.theme.secondaryBackgroundColor,
+    config.theme.secondaryForegroundColor,
+    text,
+  );
+}
+
+function makeButton(
+  bgColor: string,
+  fgColor: string,
+  url: string,
+  content: string,
+): string {
   return `<a href="${url}" style="
-    background-color: ${config.theme.secondaryBackgroundColor};
-    color: ${config.theme.secondaryForegroundColor};
+    background-color: ${bgColor};
+    color: ${fgColor};
     display: inline-flex;
     align-items: center;
     padding: 5px;
     border-radius: 5px;
+    margin: 5px;
   ">${content}</a>`;
+}
+
+function makeThemeButton(url: string, content: string): string {
+  return makeButton(
+    config.theme.secondaryBackgroundColor,
+    config.theme.secondaryForegroundColor,
+    url,
+    content,
+  );
 }
 
 function htmlEscape(s: string): string {
@@ -145,14 +181,14 @@ for (const line of textsLines) {
   addBulletToEntry(entryId, bulletNum, value);
 }
 
-let generatedContentStart = `<p>${createTagSpan("NOTE")}
+let generatedContentStart = `<p>${makeThemeTag("NOTE")}
     The following documentation is for
     v${simpleManifest.version[0].toString()}.${simpleManifest.version[1].toString()}.x.
     It may not be updated immediately.
     Refer to the in-game tutorial book if the following documentation is outdated.
   </p>
   <p>${config.briefDescription}</p>
-  <p>${createTagSpan("NOTE")}
+  <p>${makeThemeTag("NOTE")}
     Requires Minecraft v${simpleManifest.minEngineVersion[0].toString()}.${simpleManifest.minEngineVersion[1].toString()}.${
       config.requiresBetaApis
         ? `${simpleManifest.minEngineVersion[2].toString().slice(0, -1)}x`
@@ -160,14 +196,22 @@ let generatedContentStart = `<p>${createTagSpan("NOTE")}
     }.
   </p>`;
 
+const notes = [];
+
 if (config.requiresBetaApis) {
-  generatedContentStart += `<p>${createTagSpan("NOTE")}
-      Enable Beta APIs under Experiments in world settings.
-    </p>
-    <p>${createTagSpan("NOTE")}
-      No official realms support.
-    </p>`;
+  notes.push(
+    "Enable Beta APIs under Experiments in world settings.",
+    "No official realms support.",
+  );
 }
+
+if (config.notes) {
+  notes.push(...config.notes);
+}
+
+generatedContentStart += notes
+  .map((note) => `<p>${makeThemeTag("NOTE")} ${note}</p>`)
+  .join("");
 
 if (config.issueTrackerUrl) {
   if (config.issueTrackerAllowsFeatureRequests) {
@@ -179,10 +223,56 @@ if (config.issueTrackerUrl) {
   }
 }
 
+if (config.dependencies) {
+  generatedContentStart +=
+    "<h2>Dependencies</h2>" +
+    config.dependencies
+      .map((dependency) => {
+        let content = `<h3 style="margin-bottom:0;">${dependency.name} `;
+
+        if (dependency.optional) {
+          content += makeTag("green", "white", "OPTIONAL");
+        } else {
+          content += makeTag("red", "white", "REQUIRED");
+        }
+
+        content += "</h3>";
+
+        if (dependency.description) {
+          content += `<p style="margin-bottom:0;">${dependency.description}</p>`;
+        }
+
+        content += '<div style="font-size:13px;margin-bottom:24px;">';
+
+        if (dependency.mcpedlUrl) {
+          content += makeButton(
+            "#2d730a",
+            "white",
+            dependency.mcpedlUrl,
+            "Download on MCPEDL",
+          );
+        }
+
+        if (dependency.cfUrl) {
+          content += makeButton(
+            "#f16436",
+            "white",
+            dependency.cfUrl,
+            "Download on CurseForge",
+          );
+        }
+
+        content += "</div>";
+
+        return content;
+      })
+      .join("");
+}
+
 let generatedContentEnd = "";
 
 if (config.includeFollowX ?? true) {
-  generatedContentEnd += makeButton(
+  generatedContentEnd += makeThemeButton(
     "https://x.com/Fluffyalien1422",
     `<svg style="width:27px;height:27px;margin-right:5px;padding:2px;"><g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g></svg>
     <span>Follow on X</span>`,
