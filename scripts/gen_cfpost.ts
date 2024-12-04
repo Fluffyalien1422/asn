@@ -1,5 +1,8 @@
 import * as fs from "fs";
-import { version as VERSION } from "@/data/simple_manifest.json";
+import {
+  version as VERSION,
+  minEngineVersion as MIN_ENGINE_VERSION,
+} from "@/data/simple_manifest.json";
 
 const NAMESPACE = "fluffyalien_asn";
 const TAG_BACKGROUND_COLOR_HEX = "007f46";
@@ -18,7 +21,7 @@ and so much more.
 Enable Beta APIs under Experiments in the world settings
 </h2>
 <h2>
-Requires Minecraft 1.21.4x
+Requires Minecraft v${MIN_ENGINE_VERSION[0].toString()}.${MIN_ENGINE_VERSION[1].toString()}.${MIN_ENGINE_VERSION[2].toString().slice(0, -1)}x
 </h2>
 <h2>
 No official realms support
