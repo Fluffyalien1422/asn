@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import * as simpleManifest from "@/data/simple_manifest.json";
+import * as simpleManifest from "@/packs/data/simple_manifest.json";
 import { TMP_DIR } from "./common";
 
 const BP_HEADER_UUID = "b12feea5-4a14-473c-9995-66ae2c0f7e53";

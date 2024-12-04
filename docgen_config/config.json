@@ -1,0 +1,10 @@
+{
+  "namespace": "fluffyalien_asn",
+  "briefDescription": "Advanced Storage Network finally fixes your storage problem. Build a storage network that can hold infinite items, automate it, access it wirelessly, expand it infinitely, and so much more.",
+  "issueTrackerUrl": "https://legacy.curseforge.com/minecraft-bedrock/addons/advanced-storage-network-2/issues",
+  "requiresBetaApis": true,
+  "theme": {
+    "tagBackgroundColor": "#007f46",
+    "tagForegroundColor": "white"
+  }
+}
