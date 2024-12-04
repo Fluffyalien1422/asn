@@ -24,6 +24,7 @@ import {
   updateBlockConnectStates,
 } from "./utils/block_connect";
 import { Vector3Utils } from "@minecraft/math";
+import { BlockStateSuperset } from "@minecraft/vanilla-data";
 
 const OPERATOR_STRS = [">", "<", "==", "!="];
 // Operator enum members should match the order of OPERATOR_STRS
@@ -343,12 +344,17 @@ export function updateLevelEmitter(
     (operator === Operator.LessThan && totalMatchingAmount < amount) ||
     (operator === Operator.NotEq && totalMatchingAmount !== amount);
 
-  const litState = block.permutation.getState("fluffyalien_asn:lit") as 0 | 1;
+  const litState = block.permutation.getState(
+    "fluffyalien_asn:lit" as keyof BlockStateSuperset,
+  ) as 0 | 1;
 
   if (!shouldEmitSignal) {
     if (litState) {
       block.setPermutation(
-        block.permutation.withState("fluffyalien_asn:lit", 0),
+        block.permutation.withState(
+          "fluffyalien_asn:lit" as keyof BlockStateSuperset,
+          0,
+        ),
       );
     }
 
@@ -356,7 +362,12 @@ export function updateLevelEmitter(
   }
 
   if (!litState) {
-    block.setPermutation(block.permutation.withState("fluffyalien_asn:lit", 1));
+    block.setPermutation(
+      block.permutation.withState(
+        "fluffyalien_asn:lit" as keyof BlockStateSuperset,
+        1,
+      ),
+    );
   }
 
   const cardinalDirection = block.permutation.getState(

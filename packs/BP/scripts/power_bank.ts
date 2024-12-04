@@ -1,6 +1,7 @@
 import { BlockCustomComponent, world } from "@minecraft/server";
 import { getMachineStorage } from "bedrock-energistics-core-api";
 import { useEnergyRule } from "./addon_rules";
+import { BlockStateSuperset } from "@minecraft/vanilla-data";
 
 export const storagePowerBankComponent: BlockCustomComponent = {
   onTick(e) {
@@ -9,7 +10,7 @@ export const storagePowerBankComponent: BlockCustomComponent = {
     }
 
     const poweredState = e.block.permutation.getState(
-      "fluffyalien_asn:powered",
+      "fluffyalien_asn:powered" as keyof BlockStateSuperset,
     );
 
     const hasEnergy = !!getMachineStorage(e.block, "energy");
@@ -19,7 +20,10 @@ export const storagePowerBankComponent: BlockCustomComponent = {
     }
 
     e.block.setPermutation(
-      e.block.permutation.withState("fluffyalien_asn:powered", hasEnergy),
+      e.block.permutation.withState(
+        "fluffyalien_asn:powered" as keyof BlockStateSuperset,
+        hasEnergy,
+      ),
     );
   },
 };

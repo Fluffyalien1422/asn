@@ -5,6 +5,7 @@ import {
   getBlockInDirection,
   reverseDirection,
 } from "./direction";
+import { BlockStateSuperset } from "@minecraft/vanilla-data";
 
 /**
  * sets the connect states of a block (eg. `fluffyalien_asn:north`) to a boolean value
@@ -35,11 +36,16 @@ export function updateBlockConnectStates<TDirection extends StrDirection>(
     const stateName = `fluffyalien_asn:${transformedDirection}`;
     const newValue = condition(blockInDirection);
 
-    if (permutation.getState(stateName) === newValue) {
+    if (
+      permutation.getState(stateName as keyof BlockStateSuperset) === newValue
+    ) {
       continue;
     }
 
-    permutation = permutation.withState(stateName, newValue);
+    permutation = permutation.withState(
+      stateName as keyof BlockStateSuperset,
+      newValue,
+    );
     anyStatesChanged = true;
   }
 
