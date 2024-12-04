@@ -43,11 +43,7 @@ interface Config {
     /**
      * Any CSS color value.
      */
-    secondaryBackgroundColor: string;
-    /**
-     * Any CSS color value.
-     */
-    secondaryForegroundColor: string;
+    secondaryColor: string;
   };
 }
 
@@ -70,47 +66,20 @@ const contentEnd = fs.existsSync(CONTENT_END_FILE_PATH)
   ? fs.readFileSync(CONTENT_END_FILE_PATH, "utf8")
   : "";
 
-function makeTag(bgColor: string, fgColor: string, text: string): string {
-  return `<span style="
-    background-color: ${bgColor};
-    color: ${fgColor};
-    padding: 2px 5px;
-    border-radius: 4px;
-  ">${text}</span>`;
+function makeTag(color: string, text: string): string {
+  return `<span style="color:${color}"><strong>${text}</strong></span>`;
 }
 
 function makeThemeTag(text: string): string {
-  return makeTag(
-    config.theme.secondaryBackgroundColor,
-    config.theme.secondaryForegroundColor,
-    text,
-  );
+  return makeTag(config.theme.secondaryColor, text);
 }
 
-function makeButton(
-  bgColor: string,
-  fgColor: string,
-  url: string,
-  content: string,
-): string {
-  return `<a href="${url}" style="
-    background-color: ${bgColor};
-    color: ${fgColor};
-    display: inline-flex;
-    align-items: center;
-    padding: 5px;
-    border-radius: 5px;
-    margin: 5px;
-  ">${content}</a>`;
+function makeButton(color: string, url: string, text: string): string {
+  return `<a href="${url}" style="color:${color};"><strong>${text}</strong></a>`;
 }
 
-function makeThemeButton(url: string, content: string): string {
-  return makeButton(
-    config.theme.secondaryBackgroundColor,
-    config.theme.secondaryForegroundColor,
-    url,
-    content,
-  );
+function makeThemeButton(url: string, text: string): string {
+  return makeButton(config.theme.secondaryColor, url, text);
 }
 
 function htmlEscape(s: string): string {
@@ -228,41 +197,37 @@ if (config.dependencies) {
     "<h2>Dependencies</h2>" +
     config.dependencies
       .map((dependency) => {
-        let content = `<h3 style="margin-bottom:0;">${dependency.name} `;
+        let content = `<span><strong>${dependency.name}</strong> </span>`;
 
         if (dependency.optional) {
-          content += makeTag("green", "white", "OPTIONAL");
+          content += makeTag("green", "OPTIONAL");
         } else {
-          content += makeTag("red", "white", "REQUIRED");
+          content += makeTag("red", "REQUIRED");
         }
-
-        content += "</h3>";
 
         if (dependency.description) {
-          content += `<p style="margin-bottom:0;">${dependency.description}</p>`;
+          content += `<p>${dependency.description}</p>`;
         }
 
-        content += '<div style="font-size:13px;margin-bottom:24px;">';
+        content += "<ul>";
 
         if (dependency.mcpedlUrl) {
-          content += makeButton(
-            "#2d730a",
-            "white",
-            dependency.mcpedlUrl,
-            "Download on MCPEDL",
-          );
+          content +=
+            "<li>" +
+            makeButton("#2d730a", dependency.mcpedlUrl, "Download on MCPEDL") +
+            "</li>";
         }
 
         if (dependency.cfUrl) {
-          content += makeButton(
-            "#f16436",
-            "white",
-            dependency.cfUrl,
-            "Download on CurseForge",
-          );
+          content +=
+            "<li>" +
+            makeButton("#f16436", dependency.cfUrl, "Download on CurseForge") +
+            "</li>";
         }
 
-        content += "</div>";
+        content += "</ul>";
+
+        content += "<p>&nbsp;</p>";
 
         return content;
       })
@@ -274,8 +239,7 @@ let generatedContentEnd = "";
 if (config.includeFollowX ?? true) {
   generatedContentEnd += makeThemeButton(
     "https://x.com/Fluffyalien1422",
-    `<svg style="width:27px;height:27px;margin-right:5px;padding:2px;"><g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g></svg>
-    <span>Follow on X</span>`,
+    "Follow on X",
   );
 }
 
