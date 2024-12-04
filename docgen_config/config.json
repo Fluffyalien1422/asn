@@ -4,7 +4,7 @@
   "issueTrackerUrl": "https://legacy.curseforge.com/minecraft-bedrock/addons/advanced-storage-network-2/issues",
   "requiresBetaApis": true,
   "theme": {
-    "tagBackgroundColor": "#007f46",
-    "tagForegroundColor": "white"
+    "secondaryBackgroundColor": "#007f46",
+    "secondaryForegroundColor": "white"
   }
 }

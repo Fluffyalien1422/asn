@@ -30,11 +30,11 @@ interface Config {
     /**
      * Any CSS color value.
      */
-    tagBackgroundColor: string;
+    secondaryBackgroundColor: string;
     /**
      * Any CSS color value.
      */
-    tagForegroundColor: string;
+    secondaryForegroundColor: string;
   };
 }
 
@@ -59,30 +59,22 @@ const contentEnd = fs.existsSync(CONTENT_END_FILE_PATH)
 
 function createTagSpan(text: string): string {
   return `<span style="
-    background-color: ${config.theme.tagBackgroundColor};
-    color: ${config.theme.tagForegroundColor};
+    background-color: ${config.theme.secondaryBackgroundColor};
+    color: ${config.theme.secondaryForegroundColor};
     padding: 2px 5px;
     border-radius: 4px;
   ">${text}</span>`;
 }
 
-function createCodeSpan(text: string): string {
-  return `<span style="
-    background-color: rgb(38, 38, 38);
-    padding: 2px 5px;
-    color: #999;
-  ">${text}</span>`;
-}
-
-function makeBoxDiv(content: string): string {
-  return `<div style="
-    display: flex;
+function makeButton(url: string, content: string): string {
+  return `<a href="${url}" style="
+    background-color: ${config.theme.secondaryBackgroundColor};
+    color: ${config.theme.secondaryForegroundColor};
+    display: inline-flex;
     align-items: center;
-    background-color: rgb(38, 38, 38);
-    width: fit-content;
     padding: 5px;
     border-radius: 5px;
-  ">${content}</div>`;
+  ">${content}</a>`;
 }
 
 function htmlEscape(s: string): string {
@@ -155,7 +147,7 @@ for (const line of textsLines) {
 
 let generatedContentStart = `<p>${createTagSpan("NOTE")}
     The following documentation is for
-    ${createCodeSpan(`v${simpleManifest.version[0].toString()}.${simpleManifest.version[1].toString()}.x`)}.
+    v${simpleManifest.version[0].toString()}.${simpleManifest.version[1].toString()}.x.
     It may not be updated immediately.
     Refer to the in-game tutorial book if the following documentation is outdated.
   </p>
@@ -170,7 +162,7 @@ let generatedContentStart = `<p>${createTagSpan("NOTE")}
 
 if (config.requiresBetaApis) {
   generatedContentStart += `<p>${createTagSpan("NOTE")}
-      Enable ${createCodeSpan("Beta APIs")} under ${createCodeSpan("Experiments")} in world settings.
+      Enable Beta APIs under Experiments in world settings.
     </p>
     <p>${createTagSpan("NOTE")}
       No official realms support.
@@ -190,9 +182,11 @@ if (config.issueTrackerUrl) {
 let generatedContentEnd = "";
 
 if (config.includeFollowX ?? true) {
-  generatedContentEnd +=
-    makeBoxDiv(`<svg style="width: 27px; height: 27px; margin-right: 5px;"><use href="https://www.curseforge.com/images/sprite.svg#twitter"></use></svg>
-      <a href="https://x.com/Fluffyalien1422">Follow</a>`);
+  generatedContentEnd += makeButton(
+    "https://x.com/Fluffyalien1422",
+    `<svg style="width:27px;height:27px;margin-right:5px;padding:2px;"><g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g></svg>
+    <span>Follow on X</span>`,
+  );
 }
 
 const tutorialBookContent = Object.values(entries)
