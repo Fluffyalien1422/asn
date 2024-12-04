@@ -1,10 +1,10 @@
 {
   "version": [2, 11, 0],
-  "minEngineVersion": [1, 21, 40],
+  "minEngineVersion": [1, 21, 50],
   "scriptModules": [
     {
       "name": "@minecraft/server",
-      "version": "1.16.0-beta"
+      "version": "1.17.0-beta"
     },
     {
       "name": "@minecraft/server-ui",
