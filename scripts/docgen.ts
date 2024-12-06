@@ -67,7 +67,7 @@ const contentEnd = fs.existsSync(CONTENT_END_FILE_PATH)
   : "";
 
 function makeTag(color: string, text: string): string {
-  return `<span style="color:${color}"><strong>${text}</strong></span>`;
+  return `<strong style="color:${color}">${text}</strong>`;
 }
 
 function makeThemeTag(text: string): string {
@@ -197,7 +197,7 @@ if (config.dependencies) {
     "<h2>Dependencies</h2>" +
     config.dependencies
       .map((dependency) => {
-        let content = `<span><strong>${dependency.name}</strong> </span>`;
+        let content = `<strong>${dependency.name} </strong>`;
 
         if (dependency.optional) {
           content += makeTag("green", "OPTIONAL");
