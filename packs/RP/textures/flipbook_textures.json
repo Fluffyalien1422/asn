@@ -5,6 +5,16 @@
     "ticks_per_frame": 10
   },
   {
+    "atlas_tile": "fluffyalien_asn:storage_drive_front",
+    "flipbook_texture": "textures/fluffyalien/asn/blocks/storage_drive_front",
+    "ticks_per_frame": 10
+  },
+  {
+    "atlas_tile": "fluffyalien_asn:storage_interface",
+    "flipbook_texture": "textures/fluffyalien/asn/blocks/storage_interface",
+    "ticks_per_frame": 20
+  },
+  {
     "atlas_tile": "fluffyalien_asn:storage_relay",
     "flipbook_texture": "textures/fluffyalien/asn/blocks/storage_relay",
     "ticks_per_frame": 20

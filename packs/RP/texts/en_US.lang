@@ -42,7 +42,7 @@ fluffyalien_asn.message.scriptEvent.addonRule.expectedBoolean=Expected "true" or
 fluffyalien_asn.message.scriptEvent.addonRule.expectedNumber=Expected a number after rule ID.
 fluffyalien_asn.message.scriptEvent.addonRule.expectedInt=Expected an integer after rule ID.
 fluffyalien_asn.message.scriptEvent.addonRule.help.forceLoadNetworks=forceLoadNetworks: boolean (default: true) - When a storage network extends into unloaded chunks, force those chunks to load so the network can fully load. MAY CAUSE LAG! This will not work if all ticking area slots are used.
-fluffyalien_asn.message.scriptEvent.addonRule.help.showRequestItemDialog=showRequestItemDialog: boolean (default: false) - Show the request item dialog when taking an item out of the storage network instead of immediately removing a stack.
+fluffyalien_asn.message.scriptEvent.addonRule.help.showRequestItemDialog=showRequestItemDialog: boolean (default: false) (DEPRECATED) - Show the request item dialog when taking an item out of the storage network instead of immediately removing a stack.
 fluffyalien_asn.message.scriptEvent.addonRule.help.wirelessInterfaceRange=wirelessInterfaceRange: integer (default: 500) - The max range a wireless transmitter must be from a player for them to use a wireless interface. Set this to -1 to disable range and dimension checking.
 fluffyalien_asn.message.scriptEvent.addonRule.help.useEnergy=useEnergy: boolean (default: false) (EXPERIMENTAL) - Make storage networks require energy to operate. Requires Bedrock Energistics Core.
 

@@ -1,13 +1,13 @@
 {
   "texture_data": {
+    "fluffyalien_asn:machine_casing_side": {
+      "textures": "textures/fluffyalien/asn/blocks/machine_casing_side"
+    },
+    "fluffyalien_asn:machine_casing_top": {
+      "textures": "textures/fluffyalien/asn/blocks/machine_casing_top"
+    },
     "fluffyalien_asn:storage_drive_front": {
       "textures": "textures/fluffyalien/asn/blocks/storage_drive_front"
-    },
-    "fluffyalien_asn:storage_drive_side": {
-      "textures": "textures/fluffyalien/asn/blocks/storage_drive_side"
-    },
-    "fluffyalien_asn:storage_drive_top": {
-      "textures": "textures/fluffyalien/asn/blocks/storage_drive_top"
     },
     "fluffyalien_asn:storage_cable": {
       "textures": "textures/fluffyalien/asn/blocks/storage_cable"

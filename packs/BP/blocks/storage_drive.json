@@ -23,13 +23,13 @@
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {
         "*": {
-          "texture": "fluffyalien_asn:storage_drive_side"
+          "texture": "fluffyalien_asn:machine_casing_side"
         },
         "north": {
           "texture": "fluffyalien_asn:storage_drive_front"
         },
         "up": {
-          "texture": "fluffyalien_asn:storage_drive_top"
+          "texture": "fluffyalien_asn:machine_casing_top"
         },
         "down": "up"
       },
