@@ -32,7 +32,6 @@ const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
   showRequestItemDialog: {
     type: "bool",
     property: showRequestItemDialogRule,
-    deprecated: true,
   },
   wirelessInterfaceRange: {
     type: "int",
@@ -139,7 +138,7 @@ export function processAddonRuleCommand(player: Player, message: string): void {
     player.sendMessage({
       rawtext: [
         {
-          text: "§a-- fluffyalien_asn:addonrule help -- §r\n",
+          text: "§a-- Add-On Rules -- §r\n",
         },
         ...Object.entries(ADDON_RULE_COMMANDS).flatMap(([key, options]) => [
           {

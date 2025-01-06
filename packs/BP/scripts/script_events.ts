@@ -23,7 +23,10 @@ system.afterEvents.scriptEventReceive.subscribe(
         .getDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID)
         ?.toString();
       if (s) logWarn(`fluffyalien_asn:debug.log_disk_data result: ${s}`);
-    } else if (e.id === "fluffyalien_asn:addonrule") {
+    } else if (
+      e.id === "fluffyalien_asn:rule" ||
+      e.id === "fluffyalien_asn:addonrule"
+    ) {
       processAddonRuleCommand(player, e.message);
     } else {
       player.sendMessage({

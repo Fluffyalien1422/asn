@@ -32,7 +32,7 @@ tile.fluffyalien_asn:wireless_transmitter.name=Wireless Transmitter
 
 fluffyalien_asn.message.wirelessInterface.linked=Wireless storage interface linked.
 fluffyalien_asn.message.wirelessInterface.notLinked=This wireless storage interface is not linked to a storage network.
-fluffyalien_asn.message.wirelessInterface.forceLoadNetworksDisabled=The `forceLoadNetworks` rule must be enabled to use the wireless storage interface. Enable it with `/scriptevent fluffyalien_asn:addonrule forceLoadNetworks true`
+fluffyalien_asn.message.wirelessInterface.forceLoadNetworksDisabled=The `forceLoadNetworks` rule must be enabled to use the wireless storage interface. Enable it with `/scriptevent fluffyalien_asn:rule forceLoadNetworks true`
 fluffyalien_asn.message.wirelessInterface.linkedNetworkNotFound=The linked network could not be accessed.
 fluffyalien_asn.message.wirelessInterface.noTransmittersInRange=There are no wireless transmitters in range.
 
@@ -174,8 +174,8 @@ fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet1=Can contain data.
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet2=Interact with an empty storage drive while holding a disk with data to deposit the items inside of the disk into the drive.
 
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.title=Add-On Configuration
-fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet0=Use the `/scriptevent fluffyalien_asn:addonrule <rule> [value]` command to change a rule.
-fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet1=Use the `/scriptevent fluffyalien_asn:addonrule help` command for a list of rules.
+fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet0=Use the `/scriptevent fluffyalien_asn:rule <rule> [value]` command to change a rule.
+fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet1=Use the `/scriptevent fluffyalien_asn:rule help` command for a list of rules.
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet2=Omit `[value]` from the command to get the current value of the rule.
 
 fluffyalien_asn.ui.tutorialBook.entry.energy.title=Energy (EXPERIMENTAL)
