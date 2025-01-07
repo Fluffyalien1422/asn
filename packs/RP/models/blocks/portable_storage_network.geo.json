@@ -1,165 +1,165 @@
 {
-	"format_version": "1.12.0",
-	"minecraft:geometry": [
-		{
-			"description": {
-				"identifier": "geometry.fluffyalien_asn.portable_storage_network",
-				"texture_width": 32,
-				"texture_height": 32,
-				"visible_bounds_width": 2,
-				"visible_bounds_height": 2.5,
-				"visible_bounds_offset": [0, 0.75, 0]
-			},
-			"bones": [
-				{
-					"name": "root",
-					"pivot": [0, 0, 0]
-				},
-				{
-					"name": "core",
-					"parent": "root",
-					"pivot": [0, 0, 0],
-					"cubes": [
-						{
-							"origin": [-6, 0, -6],
-							"size": [12, 12, 12],
-							"uv": {
-								"north": {"uv": [0, 0], "uv_size": [16, 16]},
-								"east": {"uv": [0, 16], "uv_size": [16, 16]},
-								"south": {"uv": [0, 0], "uv_size": [16, 16]},
-								"west": {"uv": [0, 16], "uv_size": [16, 16]},
-								"up": {"uv": [32, 32], "uv_size": [-16, -16]},
-								"down": {"uv": [32, 32], "uv_size": [-16, -16]}
-							}
-						}
-					]
-				},
-				{
-					"name": "interface",
-					"parent": "root",
-					"pivot": [0, 3, 0],
-					"rotation": [0, 180, 0]
-				},
-				{
-					"name": "cable_root",
-					"parent": "interface",
-					"pivot": [0, 3, 0],
-					"cubes": [
-						{
-							"origin": [-3, 8, -3],
-							"size": [6, 6, 6],
-							"inflate": 0.25,
-							"uv": {
-								"north": {"uv": [16, 10], "uv_size": [6, 6]},
-								"east": {"uv": [16, 10], "uv_size": [6, 6]},
-								"south": {"uv": [16, 10], "uv_size": [6, 6]},
-								"west": {"uv": [16, 10], "uv_size": [6, 6]},
-								"up": {"uv": [22, 16], "uv_size": [-6, -6]}
-							}
-						}
-					]
-				},
-				{
-					"name": "cable",
-					"parent": "cable_root",
-					"pivot": [0, 11, 0]
-				},
-				{
-					"name": "north",
-					"parent": "cable",
-					"pivot": [0, 3, 0],
-					"rotation": [0, 180, 0],
-					"cubes": [
-						{
-							"origin": [-2.5, 8.5, -7],
-							"size": [5, 5, 4],
-							"uv": {
-								"north": {"uv": [0, 0], "uv_size": [5, 5]},
-								"east": {"uv": [16, 5], "uv_size": [4, 5]},
-								"south": {"uv": [0, 0], "uv_size": [0, 0]},
-								"west": {"uv": [17, 5], "uv_size": [4, 5]},
-								"up": {"uv": [26, 5], "uv_size": [-5, -4]},
-								"down": {"uv": [26, 4], "uv_size": [-5, -4]}
-							}
-						}
-					]
-				},
-				{
-					"name": "monitor",
-					"parent": "interface",
-					"pivot": [0, 3, 7.75]
-				},
-				{
-					"name": "border",
-					"parent": "monitor",
-					"pivot": [0, 3, 7.75],
-					"cubes": [
-						{
-							"origin": [4, 7, 6.5],
-							"size": [1, 8, 1.5],
-							"uv": {
-								"north": {"uv": [31, 7], "uv_size": [1, 8]},
-								"east": {"uv": [31, 7], "uv_size": [1, 8]},
-								"south": {"uv": [31, 7], "uv_size": [1, 8]},
-								"west": {"uv": [31, 7], "uv_size": [1, 8]}
-							}
-						},
-						{
-							"origin": [-5, 7, 6.5],
-							"size": [1, 8, 1.5],
-							"uv": {
-								"north": {"uv": [22, 7], "uv_size": [1, 8]},
-								"east": {"uv": [22, 7], "uv_size": [1, 8]},
-								"south": {"uv": [22, 7], "uv_size": [1, 8]},
-								"west": {"uv": [22, 7], "uv_size": [1, 8]}
-							}
-						},
-						{
-							"origin": [-5, 15, 6.5],
-							"size": [10, 1, 1.5],
-							"uv": {
-								"north": {"uv": [22, 6], "uv_size": [10, 1]},
-								"east": {"uv": [22, 6], "uv_size": [1, 1]},
-								"south": {"uv": [22, 6], "uv_size": [10, 1]},
-								"west": {"uv": [31, 6], "uv_size": [1, 1]},
-								"up": {"uv": [32, 7], "uv_size": [-10, -1]},
-								"down": {"uv": [16, 7], "uv_size": [-10, -1]}
-							}
-						},
-						{
-							"origin": [-5, 6, 6.5],
-							"size": [10, 1, 1.5],
-							"uv": {
-								"north": {"uv": [22, 15], "uv_size": [10, 1]},
-								"east": {"uv": [31, 15], "uv_size": [1, 1]},
-								"south": {"uv": [22, 15], "uv_size": [10, 1]},
-								"west": {"uv": [31, 15], "uv_size": [1, 1]},
-								"up": {"uv": [16, 16], "uv_size": [-10, -1]},
-								"down": {"uv": [32, 16], "uv_size": [-10, -1]}
-							}
-						}
-					]
-				},
-				{
-					"name": "screen",
-					"parent": "monitor",
-					"pivot": [0, 3, 7.75],
-					"cubes": [
-						{
-							"origin": [-4, 7, 6.5],
-							"size": [8, 8, 1.25],
-							"uv": {
-								"north": {"uv": [22, 6], "uv_size": [1, 1]},
-								"east": {"uv": [0, 0], "uv_size": [0, 0]},
-								"south": {"uv": [23, 7], "uv_size": [8, 8]},
-								"west": {"uv": [0, 0], "uv_size": [0, 0]},
-								"up": {"uv": [0, 0], "uv_size": [0, 0]},
-								"down": {"uv": [0, 0], "uv_size": [0, 0]}
-							}
-						}
-					]
-				}
-			]
-		}
-	]
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.fluffyalien_asn.portable_storage_network",
+        "texture_width": 32,
+        "texture_height": 32,
+        "visible_bounds_width": 2,
+        "visible_bounds_height": 2.5,
+        "visible_bounds_offset": [0, 0.75, 0]
+      },
+      "bones": [
+        {
+          "name": "root",
+          "pivot": [0, 0, 0]
+        },
+        {
+          "name": "core",
+          "parent": "root",
+          "pivot": [0, 0, 0],
+          "cubes": [
+            {
+              "origin": [-6, 0, -6],
+              "size": [12, 12, 12],
+              "uv": {
+                "north": { "uv": [0, 0], "uv_size": [16, 16] },
+                "east": { "uv": [0, 16], "uv_size": [16, 16] },
+                "south": { "uv": [0, 0], "uv_size": [16, 16] },
+                "west": { "uv": [0, 16], "uv_size": [16, 16] },
+                "up": { "uv": [32, 32], "uv_size": [-16, -16] },
+                "down": { "uv": [32, 32], "uv_size": [-16, -16] }
+              }
+            }
+          ]
+        },
+        {
+          "name": "interface",
+          "parent": "root",
+          "pivot": [0, 3, 0],
+          "rotation": [0, 180, 0]
+        },
+        {
+          "name": "cable_root",
+          "parent": "interface",
+          "pivot": [0, 3, 0],
+          "cubes": [
+            {
+              "origin": [-3, 8, -3],
+              "size": [6, 6, 6],
+              "inflate": 0.25,
+              "uv": {
+                "north": { "uv": [16, 10], "uv_size": [6, 6] },
+                "east": { "uv": [16, 10], "uv_size": [6, 6] },
+                "south": { "uv": [16, 10], "uv_size": [6, 6] },
+                "west": { "uv": [16, 10], "uv_size": [6, 6] },
+                "up": { "uv": [22, 16], "uv_size": [-6, -6] }
+              }
+            }
+          ]
+        },
+        {
+          "name": "cable",
+          "parent": "cable_root",
+          "pivot": [0, 11, 0]
+        },
+        {
+          "name": "north",
+          "parent": "cable",
+          "pivot": [0, 3, 0],
+          "rotation": [0, 180, 0],
+          "cubes": [
+            {
+              "origin": [-2.5, 8.5, -7],
+              "size": [5, 5, 4],
+              "uv": {
+                "north": { "uv": [0, 0], "uv_size": [5, 5] },
+                "east": { "uv": [16, 5], "uv_size": [4, 5] },
+                "south": { "uv": [0, 0], "uv_size": [0, 0] },
+                "west": { "uv": [17, 5], "uv_size": [4, 5] },
+                "up": { "uv": [26, 5], "uv_size": [-5, -4] },
+                "down": { "uv": [26, 4], "uv_size": [-5, -4] }
+              }
+            }
+          ]
+        },
+        {
+          "name": "monitor",
+          "parent": "interface",
+          "pivot": [0, 3, 7.75]
+        },
+        {
+          "name": "border",
+          "parent": "monitor",
+          "pivot": [0, 3, 7.75],
+          "cubes": [
+            {
+              "origin": [4, 7, 6.5],
+              "size": [1, 8, 1.5],
+              "uv": {
+                "north": { "uv": [31, 7], "uv_size": [1, 8] },
+                "east": { "uv": [31, 7], "uv_size": [1, 8] },
+                "south": { "uv": [31, 7], "uv_size": [1, 8] },
+                "west": { "uv": [31, 7], "uv_size": [1, 8] }
+              }
+            },
+            {
+              "origin": [-5, 7, 6.5],
+              "size": [1, 8, 1.5],
+              "uv": {
+                "north": { "uv": [22, 7], "uv_size": [1, 8] },
+                "east": { "uv": [22, 7], "uv_size": [1, 8] },
+                "south": { "uv": [22, 7], "uv_size": [1, 8] },
+                "west": { "uv": [22, 7], "uv_size": [1, 8] }
+              }
+            },
+            {
+              "origin": [-5, 15, 6.5],
+              "size": [10, 1, 1.5],
+              "uv": {
+                "north": { "uv": [22, 6], "uv_size": [10, 1] },
+                "east": { "uv": [22, 6], "uv_size": [1, 1] },
+                "south": { "uv": [22, 6], "uv_size": [10, 1] },
+                "west": { "uv": [31, 6], "uv_size": [1, 1] },
+                "up": { "uv": [32, 7], "uv_size": [-10, -1] },
+                "down": { "uv": [16, 7], "uv_size": [-10, -1] }
+              }
+            },
+            {
+              "origin": [-5, 6, 6.5],
+              "size": [10, 1, 1.5],
+              "uv": {
+                "north": { "uv": [22, 15], "uv_size": [10, 1] },
+                "east": { "uv": [31, 15], "uv_size": [1, 1] },
+                "south": { "uv": [22, 15], "uv_size": [10, 1] },
+                "west": { "uv": [31, 15], "uv_size": [1, 1] },
+                "up": { "uv": [16, 16], "uv_size": [-10, -1] },
+                "down": { "uv": [32, 16], "uv_size": [-10, -1] }
+              }
+            }
+          ]
+        },
+        {
+          "name": "screen",
+          "parent": "monitor",
+          "pivot": [0, 3, 7.75],
+          "cubes": [
+            {
+              "origin": [-4, 7, 6.5],
+              "size": [8, 8, 1.25],
+              "uv": {
+                "north": { "uv": [22, 6], "uv_size": [1, 1] },
+                "east": { "uv": [0, 0], "uv_size": [0, 0] },
+                "south": { "uv": [23, 7], "uv_size": [8, 8] },
+                "west": { "uv": [0, 0], "uv_size": [0, 0] },
+                "up": { "uv": [0, 0], "uv_size": [0, 0] },
+                "down": { "uv": [0, 0], "uv_size": [0, 0] }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
