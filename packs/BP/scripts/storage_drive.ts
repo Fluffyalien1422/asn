@@ -13,7 +13,6 @@ import {
 } from "@minecraft/server";
 
 export const MAX_STORAGE_DRIVE_DATA_LENGTH = 3_000;
-export const DRIVE_ENERGY_CONSUMPTION = 50;
 export const STORAGE_DATA_DYNAMIC_PROPERTY_ID = "fluffyalien_asn:storage_data";
 
 /**

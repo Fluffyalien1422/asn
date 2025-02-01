@@ -22,3 +22,12 @@ export const wirelessInterfaceRangeRule =
     "fluffyalien_asn:rule_wireless_interface_range",
     500,
   );
+
+export const driveEnergyConsumptionRule =
+  DynamicPropertyAccessor.withDefault<number>("driveEnergyConsumptionRule", 50);
+
+export const wirelessInterfaceEnergyConsumptionRule =
+  DynamicPropertyAccessor.withDefault<number>(
+    "wirelessInterfaceEnergyConsumptionRule",
+    10,
+  );

@@ -1,8 +1,10 @@
 import { Player, world } from "@minecraft/server";
 import {
+  driveEnergyConsumptionRule,
   forceLoadNetworksRule,
   showRequestItemDialogRule,
   useEnergyRule,
+  wirelessInterfaceEnergyConsumptionRule,
   wirelessInterfaceRangeRule,
 } from "./addon_rules";
 import { DynamicPropertyAccessor } from "./utils/dynamic_property";
@@ -40,6 +42,16 @@ const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
   useEnergy: {
     type: "bool",
     property: useEnergyRule,
+    experimental: true,
+  },
+  driveEnergyConsumption: {
+    type: "int",
+    property: driveEnergyConsumptionRule,
+    experimental: true,
+  },
+  wirelessInterfaceEnergyConsumption: {
+    type: "int",
+    property: wirelessInterfaceEnergyConsumptionRule,
     experimental: true,
   },
 };

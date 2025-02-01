@@ -6,7 +6,6 @@ import {
 } from "./cable_network";
 import { ErrorResult, Result, failure, success } from "./utils/result";
 import {
-  DRIVE_ENERGY_CONSUMPTION,
   MAX_STORAGE_DRIVE_DATA_LENGTH,
   getStorageDriveSerializedData,
   setStorageDriveSerializedData,
@@ -24,7 +23,7 @@ import {
   getMachineStorage,
   setMachineStorage,
 } from "bedrock-energistics-core-api";
-import { useEnergyRule } from "./addon_rules";
+import { driveEnergyConsumptionRule, useEnergyRule } from "./addon_rules";
 import {
   AddItemStackToStorageError,
   isBannedItem,
@@ -480,7 +479,10 @@ export class StorageNetwork extends StorageSystem {
   getEnergyConsumption(): number {
     this.ensureValidity();
 
-    return DRIVE_ENERGY_CONSUMPTION * this.connections.storageDrives.length;
+    return (
+      driveEnergyConsumptionRule.get(world) *
+      this.connections.storageDrives.length
+    );
   }
 
   /**

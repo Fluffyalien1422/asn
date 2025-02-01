@@ -3,6 +3,7 @@ import { DynamicPropertyAccessor } from "./utils/dynamic_property";
 import {
   forceLoadNetworksRule,
   useEnergyRule,
+  wirelessInterfaceEnergyConsumptionRule,
   wirelessInterfaceRangeRule,
 } from "./addon_rules";
 import { StorageNetwork } from "./storage_network";
@@ -205,12 +206,18 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
         StandardStorageType.Energy,
       );
 
-      if (storedEnergy < 10) {
+      const energyConsumption =
+        wirelessInterfaceEnergyConsumptionRule.get(world);
+
+      if (storedEnergy < energyConsumption) {
         errInsufficientEnergy();
         return;
       }
 
-      itemMachine.setStorage(StandardStorageType.Energy, storedEnergy - 10);
+      itemMachine.setStorage(
+        StandardStorageType.Energy,
+        storedEnergy - energyConsumption,
+      );
     }
 
     refreshStorageViewer(e.target, e.player, network);
