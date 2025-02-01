@@ -2,12 +2,14 @@ import { Entity, Player, Vector3, system, world } from "@minecraft/server";
 import { DynamicPropertyAccessor } from "./utils/dynamic_property";
 import {
   forceLoadNetworksRule,
+  useEnergyRule,
   wirelessInterfaceRangeRule,
 } from "./addon_rules";
 import { StorageNetwork } from "./storage_network";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
 import { refreshStorageViewer } from "./storage_ui";
+import { ItemMachine, StandardStorageType } from "bedrock-energistics-core-api";
 
 /**
  * key = player ID
@@ -67,7 +69,11 @@ system.runInterval(() => {
 world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   if (e.target.typeId !== "fluffyalien_asn:wireless_interface_entity") return;
 
-  const mainHandSlot = getPlayerMainhandSlot(e.player);
+  const playerInv = e.player.getComponent("inventory")!;
+  const playerInvContainer = playerInv.container!;
+  const playerMainHandSlotIndex = e.player.selectedSlotIndex;
+
+  const mainHandSlot = playerInvContainer.getSlot(e.player.selectedSlotIndex);
   if (!mainHandSlot.getItem()) {
     removeWirelessInterfaceEntity(e.player, e.target);
     return;
@@ -108,7 +114,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     return;
   }
 
-  function sendLinkedNetworkNotFound(): void {
+  function errLinkedNetworkNotFound(): void {
     removeWirelessInterfaceEntity(e.player, e.target);
     e.player.sendMessage({
       rawtext: [
@@ -123,7 +129,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     });
   }
 
-  function sendNoTransmittersInRange(): void {
+  function errNoTransmittersInRange(): void {
     removeWirelessInterfaceEntity(e.player, e.target);
     e.player.sendMessage({
       rawtext: [
@@ -138,18 +144,33 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     });
   }
 
+  function errInsufficientEnergy(): void {
+    removeWirelessInterfaceEntity(e.player, e.target);
+    e.player.sendMessage({
+      rawtext: [
+        {
+          text: "§c",
+        },
+        {
+          translate:
+            "fluffyalien_asn.message.wirelessInterface.insufficientEnergy",
+        },
+      ],
+    });
+  }
+
   void (async (): Promise<void> => {
     const dimension = world.getDimension(linkDimension);
 
     const block = dimension.getBlock(linkLocation);
     if (block?.typeId !== "fluffyalien_asn:storage_core") {
-      sendLinkedNetworkNotFound();
+      errLinkedNetworkNotFound();
       return;
     }
 
     const networkResult = await StorageNetwork.getOrEstablishNetwork(block);
     if (!networkResult.success) {
-      sendLinkedNetworkNotFound();
+      errLinkedNetworkNotFound();
       return;
     }
 
@@ -172,8 +193,24 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
             );
 
     if (!anyTransmittersInRange) {
-      sendNoTransmittersInRange();
+      errNoTransmittersInRange();
       return;
+    }
+
+    if (useEnergyRule.get(world)) {
+      // @ts-expect-error incompatible type
+      const itemMachine = new ItemMachine(playerInv, playerMainHandSlotIndex);
+
+      const storedEnergy = await itemMachine.getStorage(
+        StandardStorageType.Energy,
+      );
+
+      if (storedEnergy < 10) {
+        errInsufficientEnergy();
+        return;
+      }
+
+      itemMachine.setStorage(StandardStorageType.Energy, storedEnergy - 10);
     }
 
     refreshStorageViewer(e.target, e.player, network);

@@ -35,6 +35,7 @@ fluffyalien_asn.message.wirelessInterface.notLinked=This wireless storage interf
 fluffyalien_asn.message.wirelessInterface.forceLoadNetworksDisabled=The `forceLoadNetworks` rule must be enabled to use the wireless storage interface. Enable it with `/scriptevent fluffyalien_asn:rule forceLoadNetworks true`
 fluffyalien_asn.message.wirelessInterface.linkedNetworkNotFound=The linked network could not be accessed.
 fluffyalien_asn.message.wirelessInterface.noTransmittersInRange=There are no wireless transmitters in range.
+fluffyalien_asn.message.wirelessInterface.insufficientEnergy=The wireless storage interface has insufficient energy.
 
 fluffyalien_asn.message.scriptEvent.common.invalidScriptEvent=This script event does not exist.
 fluffyalien_asn.message.scriptEvent.addonRule.invalidRule=This rule does not exist.
