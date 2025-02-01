@@ -128,10 +128,12 @@ class PortableStorageNetwork extends StorageSystem {
       return true;
     }
 
+    // @ts-expect-error incompatible type
     const storedEnergy = getMachineStorage(this.block, "energy");
 
     if (storedEnergy >= ENERGY_CONSUMPTION) {
       setMachineStorage(
+        // @ts-expect-error incompatible type
         this.block,
         "energy",
         storedEnergy - ENERGY_CONSUMPTION,
@@ -302,6 +304,7 @@ export const portableStorageNetworkPlacerComponent: ItemCustomComponent = {
   onUseOn(e) {
     if (useEnergyRule.get(world)) {
       setMachineStorage(
+        // @ts-expect-error incompatible type
         e.block.above()!,
         "energy",
         (e.itemStack.getDynamicProperty("fluffyalien_asn:energy") as
@@ -330,6 +333,7 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     );
 
     if (useEnergyRule.get(world)) {
+      // @ts-expect-error incompatible type
       const energy = getMachineStorage(block, "energy");
 
       placerItem.setDynamicProperty("fluffyalien_asn:energy", energy);
@@ -337,7 +341,7 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     }
 
     e.hitEntity.dimension.spawnItem(placerItem, e.hitEntity.location);
-
+    // @ts-expect-error incompatible type
     void removeMachine(block);
   } else {
     logWarn(
@@ -411,6 +415,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
                           rawtext: [
                             {
                               text: getMachineStorage(
+                                // @ts-expect-error incompatible type
                                 block,
                                 "energy",
                               ).toString(),

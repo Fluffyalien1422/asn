@@ -186,6 +186,7 @@ export class StorageNetwork extends StorageSystem {
       if (useEnergyRule.get(world)) {
         let energyConsumptionRemaining = this.getEnergyConsumption();
         for (const block of this.connections.powerBanks) {
+          // @ts-expect-error incompatible type
           const storedEnergy = getMachineStorage(block, "energy");
 
           const consumption = Math.min(
@@ -193,7 +194,7 @@ export class StorageNetwork extends StorageSystem {
             energyConsumptionRemaining,
           );
           energyConsumptionRemaining -= consumption;
-
+          // @ts-expect-error incompatible type
           setMachineStorage(block, "energy", storedEnergy - consumption);
 
           if (energyConsumptionRemaining <= 0) {
@@ -456,6 +457,7 @@ export class StorageNetwork extends StorageSystem {
     let energy = 0;
 
     for (const powerBank of this.connections.powerBanks) {
+      // @ts-expect-error incompatible type
       energy += getMachineStorage(powerBank, "energy");
     }
 

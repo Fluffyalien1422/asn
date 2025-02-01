@@ -1,10 +1,10 @@
 import { world } from "@minecraft/server";
-import * as beCore from "bedrock-energistics-core-api";
+import * as bec from "bedrock-energistics-core-api";
 
-beCore.init("fluffyalien_asn");
+bec.init("fluffyalien_asn");
 
 world.afterEvents.worldInitialize.subscribe(() => {
-  beCore.registerMachine({
+  bec.registerMachine({
     description: {
       id: "fluffyalien_asn:storage_power_bank",
       ui: {
@@ -21,9 +21,26 @@ world.afterEvents.worldInitialize.subscribe(() => {
     },
   });
 
-  beCore.registerMachine({
+  bec.registerMachine({
     description: {
       id: "fluffyalien_asn:portable_storage_network",
+    },
+  });
+
+  bec.registerItemMachine({
+    description: {
+      id: "fluffyalien_asn:wireless_interface",
+      defaultIo: {
+        categories: ["energy"],
+      },
+    },
+    events: {
+      onStorageSet(e) {
+        if (e.type !== "energy") return;
+
+        const containerSlot = e.itemMachine.getContainerSlot();
+        containerSlot.setLore([`§e${e.value.toString()}/6400 energy`]);
+      },
     },
   });
 });
