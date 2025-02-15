@@ -29,6 +29,8 @@ tile.fluffyalien_asn:storage_relay.name=Storage Relay
 tile.fluffyalien_asn:storage_power_bank.name=Storage Power Bank
 tile.fluffyalien_asn:portable_storage_network.name=Portable Storage Network
 tile.fluffyalien_asn:wireless_transmitter.name=Wireless Transmitter
+tile.fluffyalien_asn:fluid_interface.name=Storage Fluid Interface
+tile.fluffyalien_asn:fluid_drive.name=Storage Fluid Drive
 
 fluffyalien_asn.message.wirelessInterface.linked=Wireless storage interface linked.
 fluffyalien_asn.message.wirelessInterface.notLinked=This wireless storage interface is not linked to a storage network.

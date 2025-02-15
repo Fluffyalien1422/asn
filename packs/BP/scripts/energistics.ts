@@ -43,4 +43,34 @@ world.afterEvents.worldInitialize.subscribe(() => {
       },
     },
   });
+
+  bec.registerMachine({
+    description: {
+      id: "fluffyalien_asn:fluid_interface",
+      ui: {
+        elements: {
+          bar1: {
+            type: "storageBar",
+            startIndex: 0,
+          },
+          bar2: {
+            type: "storageBar",
+            startIndex: 4,
+          },
+          bar3: {
+            type: "storageBar",
+            startIndex: 8,
+          },
+          bar4: {
+            type: "storageBar",
+            startIndex: 12,
+          },
+          bar5: {
+            type: "storageBar",
+            startIndex: 16,
+          },
+        },
+      },
+    },
+  });
 });

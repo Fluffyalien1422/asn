@@ -1,0 +1,103 @@
+{
+  "namespace": "fluffyalien_asn:fluid_interface",
+  "root": {
+    "type": "panel",
+    "controls": [
+      {
+        "container_gamepad_helpers@common.container_gamepad_helpers": {}
+      },
+      {
+        "flying_item_renderer@common.flying_item_renderer": {
+          "layer": 14
+        }
+      },
+      {
+        "selected_item_details_factory@common.selected_item_details_factory": {}
+      },
+      {
+        "item_lock_notification_factory@common.item_lock_notification_factory": {}
+      },
+      {
+        "root_panel@common.root_panel": {
+          "layer": 1,
+          "size": [180, 180],
+          "controls": [
+            {
+              "common_panel@common.common_panel": {}
+            },
+            {
+              "chest_panel": {
+                "type": "panel",
+                "layer": 5,
+                "offset": [0, -0.5],
+                "controls": [
+                  {
+                    "small_chest_panel_top_half@fluffyalien_asn:fluid_interface.top_half": {}
+                  },
+                  {
+                    "inventory_panel_bottom_half_with_label@common.inventory_panel_bottom_half_with_label": {}
+                  },
+                  {
+                    "hotbar_grid@common.hotbar_grid_template": {}
+                  },
+                  {
+                    "inventory_take_progress_icon_button@common.inventory_take_progress_icon_button": {}
+                  }
+                ]
+              }
+            },
+            {
+              "inventory_selected_icon_button@common.inventory_selected_icon_button": {}
+            },
+            {
+              "gamepad_cursor@common.gamepad_cursor_button": {}
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "top_half": {
+    "type": "panel",
+    "size": ["100%", "50% - 12px"],
+    "offset": [0, 7],
+    "anchor_to": "top_left",
+    "anchor_from": "top_left",
+    "controls": [
+      {
+        "title@fluffyalien_energisticscore:common.container_title": {
+          "text": "Fluid Interface"
+        }
+      },
+      {
+        "bar1@fluffyalien_energisticscore:common.machine_storage_bar": {
+          "offset": [8, 12]
+        }
+      },
+      {
+        "bar2@fluffyalien_energisticscore:common.machine_storage_bar": {
+          "offset": [32, 12],
+          "$start_index": 4
+        }
+      },
+      {
+        "bar3@fluffyalien_energisticscore:common.machine_storage_bar": {
+          "offset": [56, 12],
+          "$start_index": 8
+        }
+      },
+      {
+        "bar4@fluffyalien_energisticscore:common.machine_storage_bar": {
+          "offset": [80, 12],
+          "$start_index": 12
+        }
+      },
+      {
+        "bar5@fluffyalien_energisticscore:common.machine_storage_bar": {
+          "offset": [104, 12],
+          "$start_index": 16
+        }
+      }
+    ]
+  }
+}
