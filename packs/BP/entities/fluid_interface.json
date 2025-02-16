@@ -6,24 +6,8 @@
       "is_summonable": true,
       "is_spawnable": false
     },
-    "component_groups": {
-      "fluffyalien_asn:despawn": {
-        "minecraft:instant_despawn": {}
-      }
-    },
     "components": {
-      "minecraft:despawn": {
-        "despawn_from_distance": {
-          "min_distance": 10,
-          "max_distance": 20
-        }
-      },
-      "minecraft:timer": {
-        "time": 60,
-        "time_down_event": {
-          "event": "fluffyalien_asn:despawn"
-        }
-      },
+      "minecraft:persistent": {},
       "minecraft:breathable": {
         "breathes_water": true
       },
@@ -49,17 +33,10 @@
       },
       "minecraft:inventory": {
         "container_type": "container",
-        "inventory_size": 24
+        "inventory_size": 22
       },
       "minecraft:type_family": {
         "family": ["fluffyalien_energisticscore:machine_entity"]
-      }
-    },
-    "events": {
-      "fluffyalien_asn:despawn": {
-        "add": {
-          "component_groups": ["fluffyalien_asn:despawn"]
-        }
       }
     }
   }

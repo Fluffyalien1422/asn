@@ -27,10 +27,9 @@
           "texture": "fluffyalien_asn:machine_casing_side"
         }
       },
+      "minecraft:selection_box": false,
       "minecraft:destructible_by_explosion": false,
-      "minecraft:destructible_by_mining": {
-        "seconds_to_destroy": 1
-      }
+      "minecraft:destructible_by_mining": false
     },
     "permutations": [
       {

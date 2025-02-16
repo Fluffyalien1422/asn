@@ -29,8 +29,14 @@ import {
   isBannedItem,
   StorageSystem,
 } from "./storage_system";
+import { FLUID_DRIVE_MAX_CAPACITY, getFluidDriveStorage } from "./fluid_drive";
 
 export const STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL = 10;
+
+interface NetworkStoredFluids {
+  total: number;
+  types: Record<string, number>;
+}
 
 /**
  * A {@link StorageSystem} that is comprised of many devices.
@@ -350,7 +356,8 @@ export class StorageNetwork extends StorageSystem {
       case "fluffyalien_asn:storage_drive":
         return this.connections.storageDrives.some(condition);
       case "fluffyalien_asn:storage_interface":
-        return this.connections.storageInterfaces.some(condition);
+      case "fluffyalien_asn:fluid_interface":
+        return this.connections.interfaces.some(condition);
       case "fluffyalien_asn:import_bus":
       case "fluffyalien_asn:export_bus":
         return this.connections.buses.some(condition);
@@ -360,6 +367,8 @@ export class StorageNetwork extends StorageSystem {
         return this.connections.powerBanks.some(condition);
       case "fluffyalien_asn:wireless_transmitter":
         return this.connections.wirelessTransmitters.some(condition);
+      case "fluffyalien_asn:fluid_drive":
+        return this.connections.fluidDrives.some(condition);
       default:
         return false;
     }
@@ -370,10 +379,10 @@ export class StorageNetwork extends StorageSystem {
    * @see {@link StorageNetwork.destroy}, {@link StorageNetwork.isValid}
    * @throws if the storage core position is unloaded
    * @throws if this object is not valid
-   * @returns a result containing an error or null
+   * @returns a result containing an error or undefined
    */
   async updateConnections(): Promise<
-    Result<null, DiscoverCableNetworkConnectionsError>
+    ErrorResult<DiscoverCableNetworkConnectionsError>
   > {
     this.ensureValidity();
 
@@ -391,7 +400,7 @@ export class StorageNetwork extends StorageSystem {
     // the next time getStoredItemsMutable is called, storedItems will be updated
     this.storedItems = undefined;
 
-    return success(null);
+    return success();
   }
 
   /**
@@ -411,6 +420,31 @@ export class StorageNetwork extends StorageSystem {
     this.ensureValidity();
 
     return this.getStoredItemStacksMutable();
+  }
+
+  /**
+   * @throws if this object is not valid
+   */
+  async getStoredFluids(): Promise<NetworkStoredFluids> {
+    this.ensureValidity();
+
+    let total = 0;
+    const types: Record<string, number> = {};
+
+    for (const drive of this.connections.fluidDrives) {
+      const stored = await getFluidDriveStorage(drive);
+
+      total += stored.total;
+      for (const [id, amount] of stored.types) {
+        if (types[id]) {
+          types[id] += amount;
+        } else {
+          types[id] = amount;
+        }
+      }
+    }
+
+    return { total, types };
   }
 
   /**
@@ -452,6 +486,15 @@ export class StorageNetwork extends StorageSystem {
     );
   }
 
+  /**
+   * @throws if this object is not valid
+   */
+  getFluidStorageCapacity(): number {
+    this.ensureValidity();
+
+    return FLUID_DRIVE_MAX_CAPACITY * this.connections.fluidDrives.length;
+  }
+
   getStoredEnergy(): number {
     let energy = 0;
 
@@ -481,7 +524,8 @@ export class StorageNetwork extends StorageSystem {
 
     return (
       driveEnergyConsumptionRule.get(world) *
-      this.connections.storageDrives.length
+      (this.connections.storageDrives.length +
+        this.connections.fluidDrives.length)
     );
   }
 

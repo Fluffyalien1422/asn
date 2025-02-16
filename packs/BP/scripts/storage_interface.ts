@@ -1,7 +1,5 @@
 import {
-  Block,
   BlockCustomComponent,
-  Entity,
   ItemStack,
   Player,
   world,
@@ -15,24 +13,11 @@ import {
 import { logWarn } from "./log";
 import { forceCloseInventory, refreshStorageViewer } from "./storage_ui";
 import { useEnergyRule } from "./addon_rules";
-import { makeErrorMessageUi, showForm } from "./utils/ui";
-import { showEstablishNetworkError } from "./cable_network";
-
-async function getNetworkOrShowError(
-  block: Block,
-  interfaceEntity: Entity,
-  player: Player,
-): Promise<StorageNetwork | undefined> {
-  const networkResult = await StorageNetwork.getOrEstablishNetwork(block);
-  if (!networkResult.success) {
-    await forceCloseInventory(interfaceEntity);
-    void showEstablishNetworkError(player, networkResult.error);
-
-    return;
-  }
-
-  return networkResult.value;
-}
+import {
+  getNetworkOrShowError,
+  makeErrorMessageUi,
+  showForm,
+} from "./utils/ui";
 
 export const storageInterfaceComponent: BlockCustomComponent = {
   onPlace(e) {

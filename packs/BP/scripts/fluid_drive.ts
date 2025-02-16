@@ -13,14 +13,14 @@ import {
   RegisteredStorageType,
 } from "bedrock-energistics-core-api";
 
-const FLUID_DRIVE_MAX_CAPACITY = 6400;
+export const FLUID_DRIVE_MAX_CAPACITY = 6400;
 
 interface FluidDriveStorageData {
   total: number;
   types: [string, number][];
 }
 
-async function getFluidDriveStorage(
+export async function getFluidDriveStorage(
   drive: DimensionLocation,
 ): Promise<FluidDriveStorageData> {
   let total = 0;

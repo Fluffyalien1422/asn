@@ -9,7 +9,10 @@
     },
     "components": {
       "minecraft:tags": {
-        "tags": ["fluffyalien_asn:ui_item"]
+        "tags": [
+          "fluffyalien_asn:ui_item",
+          "fluffyalien_energisticscore:ui_item"
+        ]
       },
       "minecraft:icon": {
         "textures": {
