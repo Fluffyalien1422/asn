@@ -65,6 +65,9 @@ fluffyalien_asn.ui.storageDrive.title=Storage Drive
 fluffyalien_asn.ui.storageDrive.body.storageUsed=Storage Used (Drive): %s/3000 bytes
 fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk=Cannot add a disk to storage drive with items in it.
 
+fluffyalien_asn.ui.fluidDrive.body.storageUsed=Storage Used (%s) (Drive): %s mL (%s%%)
+fluffyalien_asn.ui.fluidDrive.body.storageUsedTotal=Stored Used (Total) (Drive): %s/6400 mL
+
 fluffyalien_asn.ui.storageInterface.title=Storage Interface
 fluffyalien_asn.ui.storageInterface.requestItem.itemDurability=Durability: %s/%s
 fluffyalien_asn.ui.storageInterface.requestItem.itemEnchantments=Enchantments:

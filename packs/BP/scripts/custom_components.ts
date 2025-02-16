@@ -14,6 +14,7 @@ import {
 } from "./portable_storage_network";
 import { wirelessTransmitterComponent } from "./wireless_transmitter";
 import { networkDeviceComponent } from "./network_device_component";
+import { fluidDriveComponent } from "./fluid_drive";
 
 world.beforeEvents.worldInitialize.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(
@@ -74,6 +75,11 @@ world.beforeEvents.worldInitialize.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(
     "fluffyalien_asn:wireless_transmitter",
     wirelessTransmitterComponent,
+  );
+
+  e.blockComponentRegistry.registerCustomComponent(
+    "fluffyalien_asn:fluid_drive",
+    fluidDriveComponent,
   );
 
   e.itemComponentRegistry.registerCustomComponent(

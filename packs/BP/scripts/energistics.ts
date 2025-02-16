@@ -1,5 +1,6 @@
 import { world } from "@minecraft/server";
 import * as bec from "bedrock-energistics-core-api";
+import { fluidDriveMachine } from "./fluid_drive";
 
 bec.init("fluffyalien_asn");
 
@@ -73,4 +74,6 @@ world.afterEvents.worldInitialize.subscribe(() => {
       },
     },
   });
+
+  bec.registerMachine(fluidDriveMachine);
 });

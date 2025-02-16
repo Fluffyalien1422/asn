@@ -15,10 +15,14 @@
     },
     "components": {
       "minecraft:custom_components": [
+        "fluffyalien_energisticscore:machine",
         "fluffyalien_asn:network_device",
         "fluffyalien_asn:fluid_drive"
       ],
       "tag:fluffyalien_asn:storage_network_connectable": {},
+      "tag:fluffyalien_energisticscore:machine": {},
+      "tag:fluffyalien_energisticscore:io.any": {},
+      "tag:fluffyalien_energisticscore:consumer.any": {},
 
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {
