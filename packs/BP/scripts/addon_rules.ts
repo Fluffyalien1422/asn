@@ -31,3 +31,9 @@ export const wirelessInterfaceEnergyConsumptionRule =
     "wirelessInterfaceEnergyConsumptionRule",
     10,
   );
+
+export const fluidStorageExperimentRule =
+  DynamicPropertyAccessor.withDefault<boolean>(
+    "fluidStorageExperimentRule",
+    false,
+  );

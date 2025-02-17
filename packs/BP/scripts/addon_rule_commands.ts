@@ -1,6 +1,7 @@
 import { Player, world } from "@minecraft/server";
 import {
   driveEnergyConsumptionRule,
+  fluidStorageExperimentRule,
   forceLoadNetworksRule,
   showRequestItemDialogRule,
   useEnergyRule,
@@ -52,6 +53,11 @@ const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
   wirelessInterfaceEnergyConsumption: {
     type: "int",
     property: wirelessInterfaceEnergyConsumptionRule,
+    experimental: true,
+  },
+  fluidStorageExperiment: {
+    type: "bool",
+    property: fluidStorageExperimentRule,
     experimental: true,
   },
 };

@@ -39,19 +39,23 @@ fluffyalien_asn.message.wirelessInterface.linkedNetworkNotFound=The linked netwo
 fluffyalien_asn.message.wirelessInterface.noTransmittersInRange=There are no wireless transmitters in range.
 fluffyalien_asn.message.wirelessInterface.insufficientEnergy=The wireless storage interface has insufficient energy.
 
+fluffyalien_asn.message.fluidStorage.fluidStorageExperimentDisabled=The `fluidStorageExperiment` rule must be enabled to place this block.
+fluffyalien_asn.message.fluidStorage.noBec=Bedrock Energistics Core must be activated to place this block.
+
 fluffyalien_asn.message.scriptEvent.common.invalidScriptEvent=This script event does not exist.
 fluffyalien_asn.message.scriptEvent.addonRule.invalidRule=This rule does not exist.
 fluffyalien_asn.message.scriptEvent.addonRule.expectedBoolean=Expected "true" or "false" after rule ID.
 fluffyalien_asn.message.scriptEvent.addonRule.expectedNumber=Expected a number after rule ID.
 fluffyalien_asn.message.scriptEvent.addonRule.expectedInt=Expected an integer after rule ID.
 fluffyalien_asn.message.scriptEvent.addonRule.deprecatedWarning=WARNING: This rule is deprecated and may be removed in a future version.
-fluffyalien_asn.message.scriptEvent.addonRule.experimentalWarning=WARNING: This rule is experimental and may be removed or changed in a future version.
+fluffyalien_asn.message.scriptEvent.addonRule.experimentalWarning=WARNING: This rule is experimental and may not function properly or may be changed or removed in a future version.
 fluffyalien_asn.message.scriptEvent.addonRule.help.forceLoadNetworks=When a storage network extends into unloaded chunks, force those chunks to load so the network can fully load. MAY CAUSE LAG! This will not work if all ticking area slots are used.
 fluffyalien_asn.message.scriptEvent.addonRule.help.showRequestItemDialog=Show the request item dialog when taking an item out of the storage network instead of immediately removing a stack.
 fluffyalien_asn.message.scriptEvent.addonRule.help.wirelessInterfaceRange=The max range a wireless transmitter must be from a player for them to use a wireless interface. Set this to -1 to disable range and dimension checking.
 fluffyalien_asn.message.scriptEvent.addonRule.help.useEnergy=Make storage networks require energy to operate. Requires Bedrock Energistics Core.
 fluffyalien_asn.message.scriptEvent.addonRule.help.driveEnergyConsumption=The amount of energy each storage drive consumes (every 10t). Ignored if `useEnergy` is false.
 fluffyalien_asn.message.scriptEvent.addonRule.help.wirelessInterfaceEnergyConsumption=The amount of energy a wireless interface consumes on use. Ignored if `useEnergy` is false.
+fluffyalien_asn.message.scriptEvent.addonRule.help.fluidStorageExperiment=Enable the fluid storage experimental feature. Requires Bedrock Energistics Core.
 
 fluffyalien_asn.actionbar.storageInterface.openToViewQueryResults=Open the storage interface again to view search results
 
