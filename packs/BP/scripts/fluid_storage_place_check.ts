@@ -20,7 +20,10 @@ world.beforeEvents.playerPlaceBlock.subscribe(
       return;
     }
 
-    if (!isBedrockEnergisticsCoreInWorld()) {
+    if (
+      e.permutationBeingPlaced.type.id === "fluffyalien_asn:fluid_interface" &&
+      !isBedrockEnergisticsCoreInWorld()
+    ) {
       e.cancel = true;
       e.player.sendMessage({
         rawtext: [
@@ -28,7 +31,7 @@ world.beforeEvents.playerPlaceBlock.subscribe(
             text: "§c",
           },
           {
-            translate: "fluffyalien_asn.message.fluidStorage.noBec",
+            translate: "fluffyalien_asn.message.fluidInterface.noBec",
           },
         ],
       });

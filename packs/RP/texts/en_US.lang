@@ -26,11 +26,11 @@ tile.fluffyalien_asn:import_bus.name=Storage Import Bus
 tile.fluffyalien_asn:export_bus.name=Storage Export Bus
 tile.fluffyalien_asn:level_emitter.name=Storage Level Emitter
 tile.fluffyalien_asn:storage_relay.name=Storage Relay
-tile.fluffyalien_asn:storage_power_bank.name=Storage Power Bank
+tile.fluffyalien_asn:storage_power_bank.name=Storage Power Bank (EXPERIMENTAL)
 tile.fluffyalien_asn:portable_storage_network.name=Portable Storage Network
 tile.fluffyalien_asn:wireless_transmitter.name=Wireless Transmitter
-tile.fluffyalien_asn:fluid_interface.name=Storage Fluid Interface
-tile.fluffyalien_asn:fluid_drive.name=Storage Fluid Drive
+tile.fluffyalien_asn:fluid_interface.name=Storage Fluid Interface (EXPERIMENTAL)
+tile.fluffyalien_asn:fluid_drive.name=Storage Fluid Drive (EXPERIMENTAL)
 
 fluffyalien_asn.message.wirelessInterface.linked=Wireless storage interface linked.
 fluffyalien_asn.message.wirelessInterface.notLinked=This wireless storage interface is not linked to a storage network.
@@ -40,7 +40,8 @@ fluffyalien_asn.message.wirelessInterface.noTransmittersInRange=There are no wir
 fluffyalien_asn.message.wirelessInterface.insufficientEnergy=The wireless storage interface has insufficient energy.
 
 fluffyalien_asn.message.fluidStorage.fluidStorageExperimentDisabled=The `fluidStorageExperiment` rule must be enabled to place this block.
-fluffyalien_asn.message.fluidStorage.noBec=Bedrock Energistics Core must be activated to place this block.
+
+fluffyalien_asn.message.fluidInterface.noBec=Bedrock Energistics Core must be activated to place this block.
 
 fluffyalien_asn.message.scriptEvent.common.invalidScriptEvent=This script event does not exist.
 fluffyalien_asn.message.scriptEvent.addonRule.invalidRule=This rule does not exist.
