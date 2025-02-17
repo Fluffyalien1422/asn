@@ -9,11 +9,17 @@
     "fluffyalien_asn:storage_drive_front": {
       "textures": "textures/fluffyalien/asn/blocks/storage_drive_front"
     },
+    "fluffyalien_asn:fluid_drive_front": {
+      "textures": "textures/fluffyalien/asn/blocks/fluid_drive_front"
+    },
     "fluffyalien_asn:storage_cable": {
       "textures": "textures/fluffyalien/asn/blocks/storage_cable"
     },
     "fluffyalien_asn:storage_interface": {
       "textures": "textures/fluffyalien/asn/blocks/storage_interface"
+    },
+    "fluffyalien_asn:fluid_interface": {
+      "textures": "textures/fluffyalien/asn/blocks/fluid_interface"
     },
     "fluffyalien_asn:storage_core": {
       "textures": "textures/fluffyalien/asn/blocks/storage_core"

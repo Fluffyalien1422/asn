@@ -11,25 +11,50 @@
           "enabled_states": ["minecraft:cardinal_direction"],
           "y_rotation_offset": 180
         }
+      },
+      "states": {
+        "fluffyalien_asn:east": [false, true],
+        "fluffyalien_asn:south": [false, true],
+        "fluffyalien_asn:west": [false, true],
+        "fluffyalien_asn:up": [false, true],
+        "fluffyalien_asn:down": [false, true]
       }
     },
     "components": {
       "minecraft:custom_components": [
         "fluffyalien_energisticscore:machine",
-        "fluffyalien_asn:network_device"
+        "fluffyalien_asn:fluid_interface"
       ],
       "tag:fluffyalien_asn:storage_network_connectable": {},
       "tag:fluffyalien_energisticscore:machine": {},
 
-      "minecraft:geometry": "minecraft:geometry.full_block",
-      "minecraft:material_instances": {
-        "*": {
-          "texture": "fluffyalien_asn:machine_casing_side"
+      "minecraft:geometry": {
+        "identifier": "geometry.fluffyalien_asn.storage_interface",
+        "bone_visibility": {
+          "east": "q.block_state('fluffyalien_asn:east')",
+          "south": "q.block_state('fluffyalien_asn:south')",
+          "west": "q.block_state('fluffyalien_asn:west')",
+          "up": "q.block_state('fluffyalien_asn:up')",
+          "down": "q.block_state('fluffyalien_asn:down')"
         }
       },
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "fluffyalien_asn:fluid_interface"
+        }
+      },
+      "minecraft:collision_box": {
+        "origin": [-5, 3, -3],
+        "size": [10, 10, 11]
+      },
       "minecraft:selection_box": false,
+      "minecraft:light_dampening": 0,
       "minecraft:destructible_by_explosion": false,
-      "minecraft:destructible_by_mining": false
+      "minecraft:destructible_by_mining": false,
+
+      "minecraft:tick": {
+        "interval_range": [5, 5]
+      }
     },
     "permutations": [
       {

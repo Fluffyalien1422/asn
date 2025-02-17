@@ -1,4 +1,10 @@
-import { Block, Entity, ItemStack, world } from "@minecraft/server";
+import {
+  Block,
+  BlockCustomComponent,
+  Entity,
+  ItemStack,
+  world,
+} from "@minecraft/server";
 import {
   getMachineStorage,
   MachineDefinition,
@@ -18,6 +24,11 @@ import {
   getPageNumberItemStacks,
   NEXT_BUTTON_ITEM_ID,
 } from "./storage_ui/shared";
+import { STR_DIRECTIONS, StrCardinalDirection } from "./utils/direction";
+import {
+  busUpdateBlockConnectStatesTransformer,
+  updateBlockConnectStates,
+} from "./utils/block_connect";
 
 const STORAGE_BARS_PER_PAGE = 5;
 
@@ -141,6 +152,25 @@ export const fluidInterfaceMachine: MachineDefinition = {
         },
       };
     },
+  },
+};
+
+export const fluidInterfaceComponent: BlockCustomComponent = {
+  onPlace(e) {
+    if (e.previousBlock.type.id === e.block.typeId) return;
+    StorageNetwork.updateConnectableNetworks(e.block);
+  },
+  onTick(e) {
+    const cardinalDirection = e.block.permutation.getState(
+      "minecraft:cardinal_direction",
+    ) as StrCardinalDirection;
+
+    updateBlockConnectStates(
+      e.block,
+      STR_DIRECTIONS,
+      (other) => other.hasTag("fluffyalien_asn:storage_network_connectable"),
+      busUpdateBlockConnectStatesTransformer(cardinalDirection),
+    );
   },
 };
 
