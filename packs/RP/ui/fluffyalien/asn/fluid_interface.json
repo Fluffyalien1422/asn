@@ -70,14 +70,14 @@
         }
       },
       {
-        "prev_button@fluffyalien_energisticscore:common.container_item_slot_nobg": {
+        "prev_button@fluffyalien_energisticscore:common.container_item_slot": {
           "offset": ["100%-24px", 12],
           "$index": 0
         }
       },
       {
-        "next_button@fluffyalien_energisticscore:common.container_item_slot_nobg": {
-          "offset": ["100%-24px", 36],
+        "next_button@fluffyalien_energisticscore:common.container_item_slot": {
+          "offset": ["100%-24px", 38],
           "$index": 1
         }
       },
@@ -109,6 +109,18 @@
         "bar5@fluffyalien_energisticscore:common.machine_storage_bar": {
           "offset": [104, 12],
           "$start_index": 18
+        }
+      },
+      {
+        "page_num_digit1_slot@fluffyalien_energisticscore:common.container_slot_icon": {
+          "$index": 22,
+          "offset": ["100%-10.5px", 39.5]
+        }
+      },
+      {
+        "page_num_digit2_slot@fluffyalien_energisticscore:common.container_slot_icon": {
+          "$index": 23,
+          "offset": ["100%-6.5px", 39.5]
         }
       }
     ]

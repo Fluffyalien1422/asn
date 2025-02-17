@@ -33,7 +33,7 @@
       },
       "minecraft:inventory": {
         "container_type": "container",
-        "inventory_size": 22
+        "inventory_size": 24
       },
       "minecraft:type_family": {
         "family": ["fluffyalien_energisticscore:machine_entity"]

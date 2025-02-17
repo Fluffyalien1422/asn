@@ -16,33 +16,24 @@ import {
 } from "@minecraft/server";
 import { showRequestItemDialogRule } from "../addon_rules";
 import { StorageSystem } from "../storage_system";
+import {
+  BACK_BUTTON_ITEM_ID,
+  CANCEL_SEARCH_BUTTON_ITEM_ID,
+  getPageNumberItemStacks,
+  NEXT_BUTTON_ITEM_ID,
+  SEARCH_BUTTON_ITEM_ID,
+  SORT_AMOUNT_ITEM_ID,
+  SORT_INSERTION_ITEM_ID,
+  SORT_RELEVANCY_ITEM_ID,
+} from "./shared";
 
 const ITEMS_PER_PAGE = 27;
-
 const INPUT_SLOT_INDEX = 27;
-
 const BACK_BUTTON_INDEX = 28;
-const BACK_BUTTON_ITEM_ID = "fluffyalien_asn:storage_viewer_ui_back";
-
 const NEXT_BUTTON_INDEX = 29;
-const NEXT_BUTTON_ITEM_ID = "fluffyalien_asn:storage_viewer_ui_next";
-
 const PAGE_NUM_DIGIT1_INDEX = 31;
 const PAGE_NUM_DIGIT2_INDEX = 32;
-
 const SEARCH_BUTTON_INDEX = 30;
-const SEARCH_BUTTON_ITEM_ID = "fluffyalien_asn:storage_viewer_ui_search";
-const CANCEL_SEARCH_BUTTON_ITEM_ID =
-  "fluffyalien_asn:storage_viewer_ui_cancel_search";
-
-const SORT_AMOUNT_ITEM_ID = "fluffyalien_asn:storage_viewer_ui_sort_amount";
-
-const SORT_INSERTION_ITEM_ID =
-  "fluffyalien_asn:storage_viewer_ui_sort_insertion";
-
-const SORT_RELEVANCY_ITEM_ID =
-  "fluffyalien_asn:storage_viewer_ui_sort_relevancy";
-
 const SORT_BUTTON_INDEX = 33;
 
 const DISPLAY_ITEM_LORE_STR_END = "§a§s§n§r";
@@ -137,38 +128,9 @@ function fillViewerInventory(entity: Entity, data: ViewerData): void {
     ),
   );
 
-  // page is 0-indexed
-  if (data.page < 9) {
-    inventory.setItem(
-      PAGE_NUM_DIGIT1_INDEX,
-      new ItemStack("fluffyalien_asn:ui_page_number0"),
-    );
-    inventory.setItem(
-      PAGE_NUM_DIGIT2_INDEX,
-      new ItemStack(
-        `fluffyalien_asn:ui_page_number${(data.page + 1).toString()}`,
-      ),
-    );
-  } else if (data.page >= 99) {
-    inventory.setItem(
-      PAGE_NUM_DIGIT1_INDEX,
-      new ItemStack("fluffyalien_asn:ui_page_number9"),
-    );
-    inventory.setItem(
-      PAGE_NUM_DIGIT2_INDEX,
-      new ItemStack("fluffyalien_asn:ui_page_number10"),
-    );
-  } else {
-    const pageNumStr = (data.page + 1).toString();
-    inventory.setItem(
-      PAGE_NUM_DIGIT1_INDEX,
-      new ItemStack(`fluffyalien_asn:ui_page_number${pageNumStr[0]}`),
-    );
-    inventory.setItem(
-      PAGE_NUM_DIGIT2_INDEX,
-      new ItemStack(`fluffyalien_asn:ui_page_number${pageNumStr[1]}`),
-    );
-  }
+  const pageNumItems = getPageNumberItemStacks(data.page);
+  inventory.setItem(PAGE_NUM_DIGIT1_INDEX, pageNumItems[0]);
+  inventory.setItem(PAGE_NUM_DIGIT2_INDEX, pageNumItems[1]);
 }
 
 function addItemToStorageOrShowError(

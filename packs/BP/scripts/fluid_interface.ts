@@ -1,4 +1,4 @@
-import { Block, ItemStack, world } from "@minecraft/server";
+import { Block, Entity, ItemStack, world } from "@minecraft/server";
 import {
   getMachineStorage,
   MachineDefinition,
@@ -13,6 +13,26 @@ import {
 } from "./utils/ui";
 import { useEnergyRule } from "./addon_rules";
 import { forceCloseInventory } from "./storage_ui";
+import {
+  BACK_BUTTON_ITEM_ID,
+  getPageNumberItemStacks,
+  NEXT_BUTTON_ITEM_ID,
+} from "./storage_ui/shared";
+
+const STORAGE_BARS_PER_PAGE = 5;
+
+/**
+ * key = entity ID
+ * value = page num
+ */
+const fluidInterfacePages = new Map<string, number>();
+
+function updatePageNumbers(entity: Entity, page: number): void {
+  const inv = entity.getComponent("inventory")!.container!;
+  const pageNumItems = getPageNumberItemStacks(page);
+  inv.setItem(22, pageNumItems[0]);
+  inv.setItem(23, pageNumItems[1]);
+}
 
 export const fluidInterfaceMachine: MachineDefinition = {
   description: {
@@ -24,14 +44,14 @@ export const fluidInterfaceMachine: MachineDefinition = {
           type: "button",
           index: 0,
           defaults: {
-            itemId: "fluffyalien_asn:storage_viewer_ui_back",
+            itemId: BACK_BUTTON_ITEM_ID,
           },
         },
         nextBtn: {
           type: "button",
           index: 1,
           defaults: {
-            itemId: "fluffyalien_asn:storage_viewer_ui_next",
+            itemId: NEXT_BUTTON_ITEM_ID,
           },
         },
         bar1: {
@@ -59,11 +79,17 @@ export const fluidInterfaceMachine: MachineDefinition = {
   },
   events: {
     onButtonPressed(e) {
-      console.warn(e.elementId);
+      const page = fluidInterfacePages.get(e.entityId) ?? 0;
+
+      if (e.elementId === "backBtn") {
+        fluidInterfacePages.set(e.entityId, Math.max(0, page - 1));
+      } else if (e.elementId === "nextBtn") {
+        fluidInterfacePages.set(e.entityId, page + 1);
+      }
     },
   },
   handlers: {
-    async updateUi({ blockLocation }) {
+    async updateUi({ blockLocation, entityId }) {
       const block = blockLocation.dimension.getBlock(blockLocation) as
         | Block
         | undefined;
@@ -72,13 +98,21 @@ export const fluidInterfaceMachine: MachineDefinition = {
       const network = StorageNetwork.getNetwork(block);
       if (!network) return {};
 
+      const page = fluidInterfacePages.get(entityId) ?? 0;
+      updatePageNumbers(world.getEntity(entityId)!, page);
+
       const types: string[] = [];
 
+      let count = 0;
       for (const id of await RegisteredStorageType.getAllIds()) {
         if (!getMachineStorage(blockLocation, id)) continue;
+        if (count++ < page * STORAGE_BARS_PER_PAGE) continue;
+
         types.push(id);
         if (types.length >= 5) break;
       }
+
+      if (!types.length) return {};
 
       const max = network.getFluidStorageCapacity();
 
@@ -167,6 +201,8 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
         // @ts-expect-error incompatible DimensionLocation
         setMachineStorage(block, id, amount);
       }
+
+      fluidInterfacePages.set(e.target.id, 0);
     },
   );
 });
