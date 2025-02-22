@@ -132,7 +132,7 @@ class PortableStorageNetwork extends StorageSystem {
     const storedEnergy = getMachineStorage(this.block, "energy");
 
     if (storedEnergy >= ENERGY_CONSUMPTION) {
-      setMachineStorage(
+      void setMachineStorage(
         // @ts-expect-error incompatible type
         this.block,
         "energy",
@@ -303,7 +303,7 @@ export const portableStorageNetworkComponent: BlockCustomComponent = {
 export const portableStorageNetworkPlacerComponent: ItemCustomComponent = {
   onUseOn(e) {
     if (useEnergyRule.get(world)) {
-      setMachineStorage(
+      void setMachineStorage(
         // @ts-expect-error incompatible type
         e.block.above()!,
         "energy",

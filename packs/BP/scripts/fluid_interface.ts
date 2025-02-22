@@ -229,7 +229,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
 
       for (const [id, amount] of Object.entries(fluids.types)) {
         // @ts-expect-error incompatible DimensionLocation
-        setMachineStorage(block, id, amount);
+        void setMachineStorage(block, id, amount);
       }
 
       fluidInterfacePages.set(e.target.id, 0);

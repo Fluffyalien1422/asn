@@ -200,7 +200,7 @@ export class StorageNetwork extends StorageSystem {
           );
           energyConsumptionRemaining -= consumption;
           // @ts-expect-error incompatible type
-          setMachineStorage(block, "energy", storedEnergy - consumption);
+          void setMachineStorage(block, "energy", storedEnergy - consumption);
 
           if (energyConsumptionRemaining <= 0) {
             break;
