@@ -2,7 +2,7 @@
   "format_version": "1.20.70",
   "minecraft:block": {
     "description": {
-      "identifier": "fluffyalien_asn:fluid_drive",
+      "identifier": "fluffyalien_asn:fluid_import_bus",
       "menu_category": {
         "category": "items"
       },
@@ -15,23 +15,19 @@
     },
     "components": {
       "minecraft:custom_components": [
-        "fluffyalien_asn:network_device",
-        "fluffyalien_asn:fluid_drive"
+        "fluffyalien_energisticscore:machine",
+        "fluffyalien_asn:network_device"
       ],
       "tag:fluffyalien_asn:storage_network_connectable": {},
+      "tag:fluffyalien_energisticscore:machine": {},
+      "tag:fluffyalien_energisticscore:io.any": {},
+      "tag:fluffyalien_energisticscore:consumer.any": {},
 
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {
         "*": {
-          "texture": "fluffyalien_asn:machine_casing_side"
-        },
-        "north": {
-          "texture": "fluffyalien_asn:fluid_drive_front"
-        },
-        "up": {
-          "texture": "fluffyalien_asn:machine_casing_top"
-        },
-        "down": "up"
+          "texture": "missing"
+        }
       },
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {

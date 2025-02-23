@@ -225,9 +225,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
         return;
       }
 
-      const fluids = await network.getStoredFluids();
-
-      for (const [id, amount] of Object.entries(fluids.types)) {
+      for (const [id, amount] of network.storedFluids.types) {
         // @ts-expect-error incompatible DimensionLocation
         void setMachineStorage(block, id, amount);
       }

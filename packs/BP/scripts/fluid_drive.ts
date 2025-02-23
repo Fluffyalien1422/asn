@@ -7,35 +7,29 @@ import {
 } from "@minecraft/server";
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { showForm } from "./utils/ui";
+import { RegisteredStorageType } from "bedrock-energistics-core-api";
 import {
-  getMachineStorage,
-  MachineDefinition,
-  RegisteredStorageType,
-} from "bedrock-energistics-core-api";
+  getBlockDynamicProperty,
+  removeAllDynamicPropertiesForBlock,
+} from "./utils/dynamic_property";
+import { NetworkStoredFluids } from "./storage_network";
 
-export const FLUID_DRIVE_MAX_CAPACITY = 6400;
+export const FLUID_DRIVE_CAPACITY = 6400;
 
-interface FluidDriveStorageData {
-  total: number;
-  types: [string, number][];
-}
-
-export async function getFluidDriveStorage(
+async function getFluidDriveStorage(
   drive: DimensionLocation,
-): Promise<FluidDriveStorageData> {
+): Promise<NetworkStoredFluids> {
   let total = 0;
+  const types = new Map<string, number>();
 
-  const types = (await RegisteredStorageType.getAllIds())
-    .map((id): [string, number] | undefined => {
-      // @ts-expect-error incompatible DimensionLocation
-      const amount = getMachineStorage(drive, id);
-      if (amount <= 0) return;
+  for (const id of await RegisteredStorageType.getAllIds()) {
+    const amount = (getBlockDynamicProperty(drive, `fluid${id}`) ??
+      0) as number;
+    if (amount <= 0) continue;
 
-      total += amount;
-
-      return [id, amount];
-    })
-    .filter((v) => v !== undefined);
+    total += amount;
+    types.set(id, amount);
+  }
 
   return { total, types };
 }
@@ -54,7 +48,7 @@ async function showFluidDriveUi(
 
   const storageUsedRawMessages: RawMessage[] = (
     await Promise.all(
-      storage.types.map(async ([id, amount]) => [
+      [...storage.types.entries()].map(async ([id, amount]) => [
         {
           translate: "fluffyalien_asn.ui.fluidDrive.body.storageUsed",
           with: {
@@ -105,25 +99,7 @@ export const fluidDriveComponent: BlockCustomComponent = {
 
     void showFluidDriveUi(e.player, e.block);
   },
-};
-
-export const fluidDriveMachine: MachineDefinition = {
-  description: {
-    id: "fluffyalien_asn:fluid_drive",
-  },
-  handlers: {
-    async receive(e) {
-      if (e.receiveType === "energy") return { amount: 0 };
-
-      // @ts-expect-error incompatible DimensionLocation
-      const stored = await getFluidDriveStorage(e.blockLocation);
-      const availableStorage = Math.max(
-        FLUID_DRIVE_MAX_CAPACITY - stored.total,
-        0,
-      );
-      const recievable = Math.min(availableStorage, e.receiveAmount);
-
-      return { amount: recievable };
-    },
+  onPlayerDestroy(e) {
+    removeAllDynamicPropertiesForBlock(e.block);
   },
 };

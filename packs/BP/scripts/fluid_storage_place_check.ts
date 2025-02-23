@@ -42,6 +42,7 @@ world.beforeEvents.playerPlaceBlock.subscribe(
     blockTypes: [
       "fluffyalien_asn:fluid_interface",
       "fluffyalien_asn:fluid_drive",
+      "fluffyalien_asn:fluid_import_bus",
     ],
   },
 );

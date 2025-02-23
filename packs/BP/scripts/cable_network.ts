@@ -101,91 +101,82 @@ export async function discoverCableNetworkConnections(
     visitedLocations.push(block.location);
     stack.push(block);
 
-    if (block.typeId === "fluffyalien_asn:storage_cable") {
-      cables.push(block);
+    switch (block.typeId) {
+      case "fluffyalien_asn:storage_cable":
+        cables.push(block);
+        return success();
+      case "fluffyalien_asn:storage_core":
+        if (storageCore) {
+          return failure("multipleStorageCores");
+        }
+        storageCore = block;
+        return success();
+      case "fluffyalien_asn:storage_drive":
+        storageDrives.push(block);
+        return success();
+      case "fluffyalien_asn:storage_interface":
+      case "fluffyalien_asn:fluid_interface":
+        interfaces.push(block);
+        return success();
+      case "fluffyalien_asn:level_emitter":
+        levelEmitters.push(block);
+        return success();
+      case "fluffyalien_asn:storage_power_bank":
+        powerBanks.push(block);
+        return success();
+      case "fluffyalien_asn:wireless_transmitter":
+        wirelessTransmitters.push(block);
+        return success();
+      case "fluffyalien_asn:fluid_drive":
+        fluidDrives.push(block);
+        return success();
+      case "fluffyalien_asn:import_bus":
+      case "fluffyalien_asn:export_bus":
+      case "fluffyalien_asn:fluid_import_bus":
+        buses.push(block);
+        return success();
+      case "fluffyalien_asn:storage_relay": {
+        cables.push(block);
 
-      return success();
-    }
-
-    if (block.typeId === "fluffyalien_asn:storage_core") {
-      if (storageCore) {
-        return failure("multipleStorageCores");
-      }
-
-      storageCore = block;
-      return success();
-    }
-
-    if (block.typeId === "fluffyalien_asn:storage_drive") {
-      storageDrives.push(block);
-      return success();
-    }
-
-    if (
-      block.typeId === "fluffyalien_asn:storage_interface" ||
-      block.typeId === "fluffyalien_asn:fluid_interface"
-    ) {
-      interfaces.push(block);
-      return success();
-    }
-
-    if (block.typeId === "fluffyalien_asn:level_emitter") {
-      levelEmitters.push(block);
-      return success();
-    }
-
-    if (block.typeId === "fluffyalien_asn:storage_power_bank") {
-      powerBanks.push(block);
-      return success();
-    }
-
-    if (block.typeId === "fluffyalien_asn:wireless_transmitter") {
-      wirelessTransmitters.push(block);
-      return success();
-    }
-
-    if (block.typeId === "fluffyalien_asn:fluid_drive") {
-      fluidDrives.push(block);
-      return success();
-    }
-
-    if (block.typeId === "fluffyalien_asn:storage_relay") {
-      cables.push(block);
-
-      const entity = getEntityAtBlockLocation(
-        block,
-        "fluffyalien_asn:relay_entity",
-      );
-      if (!entity) {
-        logWarn(
-          `couldn't add matching relays to discovery stack: couldn't get relay entity at ${Vector3Utils.toString(block.location)} in ${block.dimension.id}`,
+        const entity = getEntityAtBlockLocation(
+          block,
+          "fluffyalien_asn:relay_entity",
         );
+        if (!entity) {
+          logWarn(
+            `couldn't add matching relays to discovery stack: couldn't get relay entity at ${Vector3Utils.toString(block.location)} in ${block.dimension.id}`,
+          );
+          return success();
+        }
+
+        const name = relayName.get(entity);
+        if (!name) return success();
+
+        for (const otherEntity of getEntitiesInAllDimensions({
+          type: "fluffyalien_asn:relay_entity",
+          minDistance: 2,
+          location: entity.location,
+        })) {
+          const otherName = relayName.get(otherEntity);
+          if (name !== otherName) continue;
+
+          const nextBlock = otherEntity.dimension.getBlock(
+            otherEntity.location,
+          );
+
+          if (nextBlock) {
+            stack.push(nextBlock);
+          }
+        }
+
         return success();
       }
-
-      const name = relayName.get(entity);
-      if (!name) return success();
-
-      for (const otherEntity of getEntitiesInAllDimensions({
-        type: "fluffyalien_asn:relay_entity",
-        minDistance: 2,
-        location: entity.location,
-      })) {
-        const otherName = relayName.get(otherEntity);
-        if (name !== otherName) continue;
-
-        const nextBlock = otherEntity.dimension.getBlock(otherEntity.location);
-
-        if (nextBlock) {
-          stack.push(nextBlock);
-        }
-      }
-
-      return success();
+      default:
+        logWarn(
+          "unknown block type in storage network discovery: " + block.typeId,
+        );
+        return success();
     }
-
-    buses.push(block);
-    return success();
   }
 
   async function next(

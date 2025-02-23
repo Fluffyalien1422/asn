@@ -29,13 +29,17 @@ import {
   isBannedItem,
   StorageSystem,
 } from "./storage_system";
-import { FLUID_DRIVE_MAX_CAPACITY, getFluidDriveStorage } from "./fluid_drive";
+import { FLUID_DRIVE_CAPACITY } from "./fluid_drive";
+import {
+  getBlockDynamicProperty,
+  setBlockDynamicProperty,
+} from "./utils/dynamic_property";
 
 export const STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL = 10;
 
-interface NetworkStoredFluids {
+export interface NetworkStoredFluids {
   total: number;
-  types: Record<string, number>;
+  types: Map<string, number>;
 }
 
 /**
@@ -169,6 +173,11 @@ export class StorageNetwork extends StorageSystem {
   private readonly updateIntervalRunId: number;
   private readonly levelEmitterUpdateIntervalRunId: number;
 
+  readonly storedFluids: NetworkStoredFluids = {
+    total: 0,
+    types: new Map(),
+  };
+
   private constructor(private connections: CableNetworkConnections) {
     super();
 
@@ -257,10 +266,11 @@ export class StorageNetwork extends StorageSystem {
   }
 
   /**
-   * Writes in-memory data to dynamic properties on drives
+   * Writes in-memory item data to dynamic properties on drives.
+   * use saveData instead to save all data.
    * @param useRealMaxLength internal argument, do not use
    */
-  private saveData(useRealMaxLength = false): void {
+  private saveStoredItemData(useRealMaxLength = false): void {
     const storedItems = this.getStoredItemStacks();
     const maxStorageDriveDataLength = useRealMaxLength
       ? STRING_DYNAMIC_PROPERTY_MAX_LENGTH
@@ -298,15 +308,61 @@ export class StorageNetwork extends StorageSystem {
       if (useRealMaxLength) {
         // if the fallback failed as well, throw an error
         throw new Error(
-          makeErrorString("could not save data: reached max storage"),
+          makeErrorString("could not save item data: reached max storage"),
         );
       }
 
       // fall back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH if we could not save everything
       logWarn(
-        "could not save data with default max data length (MAX_STORAGE_DRIVE_DATA_LENGTH). falling back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH",
+        "could not save item data with default max data length (MAX_STORAGE_DRIVE_DATA_LENGTH). falling back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH",
       );
-      this.saveData(true);
+      this.saveStoredItemData(true);
+    }
+  }
+
+  /**
+   * Writes in-memory fluid data to dynamic properties on drives.
+   * use saveData instead to save all data.
+   */
+  private saveStoredFluidData(): void {
+    if (!this.connections.fluidDrives.length) return;
+
+    const fluidBudget = new Map(this.storedFluids.types);
+
+    for (const drive of this.connections.fluidDrives) {
+      let remainingCapacity = FLUID_DRIVE_CAPACITY;
+      for (const [type, amount] of fluidBudget) {
+        const amountToAdd = Math.min(amount, remainingCapacity);
+        remainingCapacity -= amountToAdd;
+
+        setBlockDynamicProperty(drive, `fluid${type}`, amount);
+
+        const newBudget = amount - amountToAdd;
+        if (newBudget <= 0) {
+          fluidBudget.delete(type);
+        } else {
+          fluidBudget.set(type, newBudget);
+        }
+
+        if (remainingCapacity <= 0) {
+          break;
+        }
+      }
+    }
+
+    // if we have extra, then just add it all to the first drive
+    if (!fluidBudget.size) {
+      return;
+    }
+
+    const drive = this.connections.fluidDrives[0];
+    for (const [type, amount] of fluidBudget) {
+      const dynamicPropId = `fluid${type}`;
+      setBlockDynamicProperty(
+        drive,
+        dynamicPropId,
+        (getBlockDynamicProperty(drive, dynamicPropId) as number) + amount,
+      );
     }
   }
 
@@ -360,6 +416,7 @@ export class StorageNetwork extends StorageSystem {
         return this.connections.interfaces.some(condition);
       case "fluffyalien_asn:import_bus":
       case "fluffyalien_asn:export_bus":
+      case "fluffyalien_asn:fluid_import_bus":
         return this.connections.buses.some(condition);
       case "fluffyalien_asn:level_emitter":
         return this.connections.levelEmitters.some(condition);
@@ -425,31 +482,6 @@ export class StorageNetwork extends StorageSystem {
   /**
    * @throws if this object is not valid
    */
-  async getStoredFluids(): Promise<NetworkStoredFluids> {
-    this.ensureValidity();
-
-    let total = 0;
-    const types: Record<string, number> = {};
-
-    for (const drive of this.connections.fluidDrives) {
-      const stored = await getFluidDriveStorage(drive);
-
-      total += stored.total;
-      for (const [id, amount] of stored.types) {
-        if (types[id]) {
-          types[id] += amount;
-        } else {
-          types[id] = amount;
-        }
-      }
-    }
-
-    return { total, types };
-  }
-
-  /**
-   * @throws if this object is not valid
-   */
   getUsedDataLength(): number {
     this.ensureValidity();
 
@@ -492,7 +524,7 @@ export class StorageNetwork extends StorageSystem {
   getFluidStorageCapacity(): number {
     this.ensureValidity();
 
-    return FLUID_DRIVE_MAX_CAPACITY * this.connections.fluidDrives.length;
+    return FLUID_DRIVE_CAPACITY * this.connections.fluidDrives.length;
   }
 
   getStoredEnergy(): number {
@@ -571,10 +603,32 @@ export class StorageNetwork extends StorageSystem {
       storedItems.push(itemStack);
     }
 
-    this.saveData();
+    this.saveStoredItemData();
 
     return success();
   };
+
+  /**
+   * adds a fluid to the storage network. clamps the amount from 0 to the max that can be stored
+   * @returns the amount that was added
+   * @throws throws if this object is not valid
+   */
+  addFluid(id: string, amount: number): number {
+    this.ensureValidity();
+
+    const capacity = this.getFluidStorageCapacity();
+    const remainingStorage = capacity - this.storedFluids.total;
+    const amountToAdd = Math.min(amount, remainingStorage);
+    if (amountToAdd <= 0) return 0;
+
+    const currentAmount = this.storedFluids.types.get(id) ?? 0;
+    this.storedFluids.types.set(id, currentAmount + amountToAdd);
+    this.storedFluids.total += amountToAdd;
+
+    this.saveStoredFluidData();
+
+    return amountToAdd;
+  }
 
   /**
    * Removes items from storage. Clamps the amount from 1 to the amount available in storage
@@ -610,7 +664,7 @@ export class StorageNetwork extends StorageSystem {
     }
 
     // save
-    this.saveData();
+    this.saveStoredItemData();
 
     return requestAmount;
   };
