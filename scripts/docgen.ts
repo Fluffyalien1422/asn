@@ -171,6 +171,7 @@ if (config.requiresBetaApis) {
   notes.push(
     "Enable Beta APIs under Experiments in world settings.",
     "No official realms support.",
+    "This add-on uses experimental features and should not be considered stable. It may break at any time.",
   );
 }
 
