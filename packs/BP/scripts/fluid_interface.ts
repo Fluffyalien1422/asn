@@ -9,6 +9,7 @@ import {
   getMachineStorage,
   MachineDefinition,
   RegisteredStorageType,
+  removeMachine,
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 import { StorageNetwork } from "./storage_network";
@@ -183,8 +184,12 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
   }
 
   const block = e.hitEntity.dimension.getBlock(e.hitEntity.location);
+  if (!block) {
+    return;
+  }
 
-  if (block) {
+  // @ts-expect-error incompatible Block
+  void removeMachine(block).then(() => {
     block.setType("air");
 
     e.hitEntity.dimension.spawnItem(
@@ -196,9 +201,9 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
       block,
       "fluffyalien_asn:fluid_interface",
     )?.updateConnections();
-  }
 
-  e.hitEntity.remove();
+    e.hitEntity.remove();
+  });
 });
 
 world.afterEvents.playerInteractWithEntity.subscribe((e) => {
@@ -225,7 +230,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
         return;
       }
 
-      for (const [id, amount] of network.storedFluids.types) {
+      for (const [id, amount] of (await network.getStoredFluids()).types) {
         // @ts-expect-error incompatible DimensionLocation
         void setMachineStorage(block, id, amount);
       }

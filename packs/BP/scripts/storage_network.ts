@@ -21,6 +21,7 @@ import { logWarn, makeErrorString } from "./log";
 import { updateLevelEmitter } from "./level_emitter";
 import {
   getMachineStorage,
+  RegisteredStorageType,
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 import { driveEnergyConsumptionRule, useEnergyRule } from "./addon_rules";
@@ -173,10 +174,7 @@ export class StorageNetwork extends StorageSystem {
   private readonly updateIntervalRunId: number;
   private readonly levelEmitterUpdateIntervalRunId: number;
 
-  readonly storedFluids: NetworkStoredFluids = {
-    total: 0,
-    types: new Map(),
-  };
+  private storedFluids?: NetworkStoredFluids;
 
   private constructor(private connections: CableNetworkConnections) {
     super();
@@ -324,10 +322,10 @@ export class StorageNetwork extends StorageSystem {
    * Writes in-memory fluid data to dynamic properties on drives.
    * use saveData instead to save all data.
    */
-  private saveStoredFluidData(): void {
+  private async saveStoredFluidData(): Promise<void> {
     if (!this.connections.fluidDrives.length) return;
 
-    const fluidBudget = new Map(this.storedFluids.types);
+    const fluidBudget = new Map((await this.getStoredFluids()).types);
 
     for (const drive of this.connections.fluidDrives) {
       let remainingCapacity = FLUID_DRIVE_CAPACITY;
@@ -453,9 +451,10 @@ export class StorageNetwork extends StorageSystem {
 
     this.connections = result.value;
 
-    // we need to clear stored items because a drive may have been removed
-    // the next time getStoredItemsMutable is called, storedItems will be updated
+    // we need to clear storage because a drive may have been removed
+    // these will be updated the next time their get function is called
     this.storedItems = undefined;
+    this.storedFluids = undefined;
 
     return success();
   }
@@ -477,6 +476,41 @@ export class StorageNetwork extends StorageSystem {
     this.ensureValidity();
 
     return this.getStoredItemStacksMutable();
+  }
+
+  /**
+   * @throws if this object is not valid
+   */
+  async getStoredFluids(): Promise<NetworkStoredFluids> {
+    this.ensureValidity();
+
+    if (this.storedFluids) {
+      return this.storedFluids;
+    }
+
+    const storedFluids: NetworkStoredFluids = {
+      total: 0,
+      types: new Map(),
+    };
+
+    const storageTypes = await RegisteredStorageType.getAllIds();
+
+    for (const drive of this.connections.fluidDrives) {
+      for (const type of storageTypes) {
+        const amount = (getBlockDynamicProperty(drive, `fluid${type}`) ??
+          0) as number;
+        if (amount <= 0) continue;
+
+        storedFluids.types.set(
+          type,
+          (storedFluids.types.get(type) ?? 0) + amount,
+        );
+        storedFluids.total += amount;
+      }
+    }
+
+    this.storedFluids = storedFluids;
+    return this.storedFluids;
   }
 
   /**
@@ -613,19 +647,21 @@ export class StorageNetwork extends StorageSystem {
    * @returns the amount that was added
    * @throws throws if this object is not valid
    */
-  addFluid(id: string, amount: number): number {
+  async addFluid(id: string, amount: number): Promise<number> {
     this.ensureValidity();
 
+    const storedFluids = await this.getStoredFluids();
+
     const capacity = this.getFluidStorageCapacity();
-    const remainingStorage = capacity - this.storedFluids.total;
+    const remainingStorage = capacity - storedFluids.total;
     const amountToAdd = Math.min(amount, remainingStorage);
     if (amountToAdd <= 0) return 0;
 
-    const currentAmount = this.storedFluids.types.get(id) ?? 0;
-    this.storedFluids.types.set(id, currentAmount + amountToAdd);
-    this.storedFluids.total += amountToAdd;
+    const currentAmount = storedFluids.types.get(id) ?? 0;
+    storedFluids.types.set(id, currentAmount + amountToAdd);
+    storedFluids.total += amountToAdd;
 
-    this.saveStoredFluidData();
+    void this.saveStoredFluidData();
 
     return amountToAdd;
   }

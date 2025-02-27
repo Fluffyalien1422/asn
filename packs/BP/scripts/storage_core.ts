@@ -88,6 +88,8 @@ async function showStorageCoreUi(
   }
 
   if (fluidStorageExperimentRule.get(world)) {
+    const storedFluids = await network.getStoredFluids();
+
     rawtext.push(
       {
         text: "\n\n",
@@ -97,7 +99,7 @@ async function showStorageCoreUi(
         with: {
           rawtext: [
             {
-              text: network.storedFluids.total.toString(),
+              text: storedFluids.total.toString(),
             },
             {
               text: network.getFluidStorageCapacity().toString(),
@@ -107,7 +109,7 @@ async function showStorageCoreUi(
       },
     );
 
-    for (const [fluid, amount] of network.storedFluids.types) {
+    for (const [fluid, amount] of storedFluids.types) {
       rawtext.push(
         {
           text: "\n\n",
@@ -124,7 +126,7 @@ async function showStorageCoreUi(
               },
               {
                 text: Math.floor(
-                  (amount / network.storedFluids.total) * 100,
+                  (amount / storedFluids.total) * 100,
                 ).toString(),
               },
             ],

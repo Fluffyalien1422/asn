@@ -7,7 +7,7 @@ export const fluidImportBusMachine: MachineDefinition = {
     id: "fluffyalien_asn:fluid_import_bus",
   },
   handlers: {
-    receive(e) {
+    async receive(e) {
       if (e.receiveType === "energy") {
         return { amount: 0 };
       }
@@ -20,7 +20,10 @@ export const fluidImportBusMachine: MachineDefinition = {
         return { amount: 0 };
       }
 
-      const amountAdded = network.addFluid(e.receiveType, e.receiveAmount);
+      const amountAdded = await network.addFluid(
+        e.receiveType,
+        e.receiveAmount,
+      );
 
       return {
         amount: amountAdded,
