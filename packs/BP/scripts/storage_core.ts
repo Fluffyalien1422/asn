@@ -8,6 +8,7 @@ import {
   DimensionLocation,
   Entity,
   Player,
+  RawMessage,
   system,
   world,
 } from "@minecraft/server";
@@ -19,10 +20,11 @@ import {
 } from "./wireless_interface";
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { getPlayerMainhandSlot } from "./utils/item";
-import { useEnergyRule } from "./addon_rules";
+import { fluidStorageExperimentRule, useEnergyRule } from "./addon_rules";
 import { showForm } from "./utils/ui";
+import { RegisteredStorageType } from "bedrock-energistics-core-api";
 
-function showStorageCoreUi(
+async function showStorageCoreUi(
   player: Player,
   network: StorageNetwork,
 ): Promise<ActionFormResponse> {
@@ -32,61 +34,107 @@ function showStorageCoreUi(
     translate: "fluffyalien_asn.ui.storageCore.title",
   });
 
-  form.body({
-    rawtext: [
+  const rawtext: RawMessage[] = [
+    {
+      translate: "fluffyalien_asn.ui.storageCore.body.storageUsed",
+      with: {
+        rawtext: [
+          {
+            text: network.getUsedDataLength().toString(),
+          },
+          {
+            text: network.getMaxDataLength().toString(),
+          },
+        ],
+      },
+    },
+  ];
+
+  if (useEnergyRule.get(world)) {
+    rawtext.push(
       {
-        translate: "fluffyalien_asn.ui.storageCore.body.storageUsed",
+        text: "\n\n",
+      },
+      {
+        translate: "fluffyalien_asn.ui.storageCore.body.storedEnergy",
         with: {
           rawtext: [
             {
-              text: network.getUsedDataLength().toString(),
+              text: network.getStoredEnergy().toString(),
             },
             {
-              text: network.getMaxDataLength().toString(),
+              text: network.getMaxStoredEnergy().toString(),
             },
           ],
         },
       },
-      ...(useEnergyRule.get(world)
-        ? [
+      {
+        text: "\n\n",
+      },
+      {
+        translate: "fluffyalien_asn.ui.storageCore.body.energyConsumption",
+        with: {
+          rawtext: [
             {
-              text: "\n\n",
+              text: Math.floor(
+                network.getEnergyConsumption() /
+                  STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL,
+              ).toString(),
             },
-            {
-              translate: "fluffyalien_asn.ui.storageCore.body.storedEnergy",
-              with: {
-                rawtext: [
-                  {
-                    text: network.getStoredEnergy().toString(),
-                  },
-                  {
-                    text: network.getMaxStoredEnergy().toString(),
-                  },
-                ],
-              },
-            },
-            {
-              text: "\n\n",
-            },
-            {
-              translate:
-                "fluffyalien_asn.ui.storageCore.body.energyConsumption",
-              with: {
-                rawtext: [
-                  {
-                    text: Math.floor(
-                      network.getEnergyConsumption() /
-                        STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL,
-                    ).toString(),
-                  },
-                ],
-              },
-            },
-          ]
-        : []),
-    ],
-  });
+          ],
+        },
+      },
+    );
+  }
 
+  if (fluidStorageExperimentRule.get(world)) {
+    rawtext.push(
+      {
+        text: "\n\n",
+      },
+      {
+        translate: "fluffyalien_asn.ui.storageCore.body.storageUsedFluidTotal",
+        with: {
+          rawtext: [
+            {
+              text: network.storedFluids.total.toString(),
+            },
+            {
+              text: network.getFluidStorageCapacity().toString(),
+            },
+          ],
+        },
+      },
+    );
+
+    for (const [fluid, amount] of network.storedFluids.types) {
+      rawtext.push(
+        {
+          text: "\n\n",
+        },
+        {
+          translate: "fluffyalien_asn.ui.storageCore.body.storageUsedFluid",
+          with: {
+            rawtext: [
+              {
+                text: (await RegisteredStorageType.get(fluid))!.name,
+              },
+              {
+                text: amount.toString(),
+              },
+              {
+                text: Math.floor(
+                  (amount / network.storedFluids.total) * 100,
+                ).toString(),
+              },
+            ],
+          },
+        },
+      );
+    }
+  }
+
+  form.body({ rawtext });
   form.button({
     translate: "fluffyalien_asn.ui.common.close",
   });

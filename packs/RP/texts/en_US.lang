@@ -87,9 +87,11 @@ fluffyalien_asn.ui.storageInterface.error.insufficientEnergy=The storage network
 fluffyalien_asn.ui.storageInterface.error.bannedItem=%s is a banned item.
 
 fluffyalien_asn.ui.storageCore.title=Storage Core
-fluffyalien_asn.ui.storageCore.body.storageUsed=Storage Used (Network): %s/%s bytes
+fluffyalien_asn.ui.storageCore.body.storageUsed=Storage Used (Items) (Network): %s/%s bytes
 fluffyalien_asn.ui.storageCore.body.storedEnergy=Stored Energy: %s/%s
 fluffyalien_asn.ui.storageCore.body.energyConsumption=Energy Consumption: %s/t
+fluffyalien_asn.ui.storageCore.body.storageUsedFluid=Storage Used (%s) (Network): %s mL (%s%%)
+fluffyalien_asn.ui.storageCore.body.storageUsedFluidTotal=Storage Used (Total Fluids) (Network): %s/%s mL
 
 fluffyalien_asn.ui.portableStorageNetwork.body.storageUsed=Storage Used: %s/3000 bytes
 fluffyalien_asn.ui.portableStorageNetwork.body.storedEnergy=Stored Energy: %s/6400
