@@ -16,8 +16,8 @@
         "fluffyalien_asn:portable_storage_network"
       ],
       "tag:fluffyalien_energisticscore:machine": {},
-      "tag:fluffyalien_energisticscore:io.energy": {},
-      "tag:fluffyalien_energisticscore:consumer.energy": {},
+      "tag:fluffyalien_energisticscore:io.type.energy": {},
+      "tag:fluffyalien_energisticscore:consumer.type.energy": {},
 
       "minecraft:geometry": "geometry.fluffyalien_asn.portable_storage_network",
       "minecraft:material_instances": {
