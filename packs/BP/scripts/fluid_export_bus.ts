@@ -1,0 +1,128 @@
+import { Block, BlockCustomComponent, Player } from "@minecraft/server";
+import { ModalFormData } from "@minecraft/server-ui";
+import { showForm } from "./utils/ui";
+import {
+  getBlockDynamicProperty,
+  removeAllDynamicPropertiesForBlock,
+  setBlockDynamicProperty,
+} from "./utils/dynamic_property";
+import {
+  generate,
+  getMachineStorage,
+  MachineDefinition,
+  RegisteredStorageType,
+  setMachineStorage,
+} from "bedrock-energistics-core-api";
+import { StorageNetwork } from "./storage_network";
+
+async function showFluidExportBusUi(
+  player: Player,
+  block: Block,
+): Promise<RegisteredStorageType | "none" | undefined> {
+  const form = new ModalFormData();
+
+  form.title({
+    translate: "tile.fluffyalien_asn:fluid_export_bus.name",
+  });
+
+  const storageTypeIds = await RegisteredStorageType.getAllIds();
+  const storageTypes: RegisteredStorageType[] = [];
+  for (const storageTypeId of storageTypeIds) {
+    const storageType = await RegisteredStorageType.get(storageTypeId);
+    if (storageType) storageTypes.push(storageType);
+  }
+
+  const existingStorageType = getBlockDynamicProperty(
+    block,
+    "fluidExportBusStorageType",
+  ) as string | undefined;
+
+  form.dropdown(
+    {
+      translate: "fluffyalien_asn.ui.fluidExportBus.storageType",
+    },
+    ["None", ...storageTypes.map((storageType) => storageType.name)],
+    existingStorageType
+      ? storageTypes.findIndex(
+          (storageType) => storageType.id === existingStorageType,
+        ) + 1
+      : 0,
+  );
+
+  const response = await showForm(form, player);
+  if (!response.formValues) {
+    return;
+  }
+
+  const selectedIndex = response.formValues[0] as number;
+  if (selectedIndex === 0) {
+    return "none";
+  }
+
+  return storageTypes[selectedIndex - 1];
+}
+
+export async function updateFluidExportBus(
+  block: Block,
+  network: StorageNetwork,
+): Promise<void> {
+  const storageType = getBlockDynamicProperty(
+    block,
+    "fluidExportBusStorageType",
+  ) as string | undefined;
+  if (!storageType) return;
+
+  // @ts-expect-error incompatible block
+  if (getMachineStorage(block, storageType)) {
+    return;
+  }
+
+  const storedFluids = await network.getStoredFluids();
+  const stored = storedFluids.types.get(storageType);
+  if (!stored || stored < 5) return;
+
+  void network.removeFluid(storageType, 5);
+
+  // @ts-expect-error incompatible block
+  void setMachineStorage(block, storageType, 5);
+}
+
+export const fluidExportBusMachine: MachineDefinition = {
+  description: {
+    id: "fluffyalien_asn:fluid_export_bus",
+  },
+};
+
+export const fluidExportBusComponent: BlockCustomComponent = {
+  onPlayerInteract(e) {
+    if (!e.player) return;
+    const block = e.block;
+    void showFluidExportBusUi(e.player, block).then((selectedStorageType) => {
+      if (selectedStorageType === undefined) return;
+
+      if (selectedStorageType === "none") {
+        setBlockDynamicProperty(block, "fluidExportBusStorageType");
+        return;
+      }
+
+      setBlockDynamicProperty(
+        block,
+        "fluidExportBusStorageType",
+        selectedStorageType.id,
+      );
+    });
+  },
+  onPlayerDestroy(e) {
+    removeAllDynamicPropertiesForBlock(e.block);
+  },
+  onTick(e) {
+    const storageType = getBlockDynamicProperty(
+      e.block,
+      "fluidExportBusStorageType",
+    ) as string | undefined;
+    if (!storageType) return;
+
+    // @ts-expect-error incompatible block
+    generate(e.block, storageType, 0);
+  },
+};

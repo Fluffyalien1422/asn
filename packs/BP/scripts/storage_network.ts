@@ -35,6 +35,7 @@ import {
   getBlockDynamicProperty,
   setBlockDynamicProperty,
 } from "./utils/dynamic_property";
+import { updateFluidExportBus } from "./fluid_export_bus";
 
 export const STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL = 10;
 
@@ -191,6 +192,9 @@ export class StorageNetwork extends StorageSystem {
             break;
           case "fluffyalien_asn:export_bus":
             updateExportBus(block, this);
+            break;
+          case "fluffyalien_asn:fluid_export_bus":
+            void updateFluidExportBus(block, this);
             break;
         }
       }
@@ -415,6 +419,7 @@ export class StorageNetwork extends StorageSystem {
       case "fluffyalien_asn:import_bus":
       case "fluffyalien_asn:export_bus":
       case "fluffyalien_asn:fluid_import_bus":
+      case "fluffyalien_asn:fluid_export_bus":
         return this.connections.buses.some(condition);
       case "fluffyalien_asn:level_emitter":
         return this.connections.levelEmitters.some(condition);
@@ -664,6 +669,30 @@ export class StorageNetwork extends StorageSystem {
     void this.saveStoredFluidData();
 
     return amountToAdd;
+  }
+
+  /**
+   * Removes fluids from storage. Clamps the amount from 0 to the amount available in storage
+   * @throws if this object is not valid
+   * @returns the amount that was removed
+   */
+  async removeFluid(id: string, amount: number): Promise<number> {
+    this.ensureValidity();
+
+    const storedFluids = await this.getStoredFluids();
+    const stored = storedFluids.types.get(id) ?? 0;
+    const amountToRemove = Math.min(amount, stored);
+
+    if (amountToRemove <= 0) {
+      return 0;
+    }
+
+    storedFluids.types.set(id, stored - amountToRemove);
+    storedFluids.total -= amountToRemove;
+
+    void this.saveStoredFluidData();
+
+    return amountToRemove;
   }
 
   /**

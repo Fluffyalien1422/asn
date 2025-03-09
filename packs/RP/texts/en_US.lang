@@ -32,6 +32,7 @@ tile.fluffyalien_asn:wireless_transmitter.name=Wireless Transmitter
 tile.fluffyalien_asn:fluid_interface.name=Storage Fluid Interface (EXPERIMENTAL)
 tile.fluffyalien_asn:fluid_drive.name=Storage Fluid Drive (EXPERIMENTAL)
 tile.fluffyalien_asn:fluid_import_bus.name=Storage Fluid Import Bus (EXPERIMENTAL)
+tile.fluffyalien_asn:fluid_export_bus.name=Storage Fluid Export Bus (EXPERIMENTAL)
 
 fluffyalien_asn.message.wirelessInterface.linked=Wireless storage interface linked.
 fluffyalien_asn.message.wirelessInterface.notLinked=This wireless storage interface is not linked to a storage network.
@@ -118,6 +119,8 @@ fluffyalien_asn.ui.levelEmitter.error.invalidAmount=Invalid value for amount fie
 fluffyalien_asn.ui.relay.title=Storage Relay
 fluffyalien_asn.ui.relay.name=Relay Name
 fluffyalien_asn.ui.relay.error.invalidName=Relay name must be at least one character.
+
+fluffyalien_asn.ui.fluidExportBus.storageType=Storage Type
 
 fluffyalien_asn.ui.tutorialBook.title=Tutorial Book
 

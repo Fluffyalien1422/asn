@@ -2,6 +2,7 @@ import { world } from "@minecraft/server";
 import * as bec from "bedrock-energistics-core-api";
 import { fluidInterfaceMachine } from "./fluid_interface";
 import { fluidImportBusMachine } from "./fluid_import_bus";
+import { fluidExportBusMachine } from "./fluid_export_bus";
 
 bec.init("fluffyalien_asn");
 
@@ -48,4 +49,5 @@ world.afterEvents.worldInitialize.subscribe(() => {
 
   bec.registerMachine(fluidInterfaceMachine);
   bec.registerMachine(fluidImportBusMachine);
+  bec.registerMachine(fluidExportBusMachine);
 });

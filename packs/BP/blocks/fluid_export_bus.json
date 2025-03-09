@@ -1,0 +1,36 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:block": {
+    "description": {
+      "identifier": "fluffyalien_asn:fluid_export_bus",
+      "menu_category": {
+        "category": "items"
+      }
+    },
+    "components": {
+      "minecraft:custom_components": [
+        "fluffyalien_energisticscore:machine",
+        "fluffyalien_asn:network_device",
+        "fluffyalien_asn:fluid_export_bus"
+      ],
+      "tag:fluffyalien_asn:storage_network_connectable": {},
+      "tag:fluffyalien_energisticscore:machine": {},
+      "tag:fluffyalien_energisticscore:io.any": {},
+
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "missing"
+        }
+      },
+      "minecraft:destructible_by_explosion": false,
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 1
+      },
+
+      "minecraft:tick": {
+        "interval_range": [10, 10]
+      }
+    }
+  }
+}
