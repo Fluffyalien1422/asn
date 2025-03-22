@@ -1,4 +1,11 @@
-import { Entity, Player, Vector3, system, world } from "@minecraft/server";
+import {
+  Entity,
+  ItemLockMode,
+  Player,
+  Vector3,
+  system,
+  world,
+} from "@minecraft/server";
 import { DynamicPropertyAccessor } from "./utils/dynamic_property";
 import {
   forceLoadNetworksRule,
@@ -7,7 +14,6 @@ import {
   wirelessInterfaceRangeRule,
 } from "./addon_rules";
 import { StorageNetwork } from "./storage_network";
-import { getPlayerMainhandSlot } from "./utils/item";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
 import { refreshStorageViewer } from "./storage_ui";
 import { ItemMachine, StandardStorageType } from "bedrock-energistics-core-api";
@@ -36,11 +42,31 @@ function removeWirelessInterfaceEntity(player: Player, entity: Entity): void {
 system.runInterval(() => {
   for (const player of world.getAllPlayers()) {
     let entity = wirelessInterfaceEntities.get(player.id);
+    let holdingWirelessInterface = false;
 
-    const mainhandSlot = getPlayerMainhandSlot(player);
+    // we need to unlock the slots if they player is not holding it
+    // the slot is locked when the player interacts with the entity
+    // see [#32](https://github.com/Fluffyalien1422/asn/issues/32)
+    const playerInv = player.getComponent("inventory")!.container!;
+    for (let i = 0; i < playerInv.size; i++) {
+      const slot = playerInv.getSlot(i);
+      if (
+        !slot.hasItem() ||
+        slot.typeId !== "fluffyalien_asn:wireless_interface"
+      ) {
+        continue;
+      }
+
+      if (i === player.selectedSlotIndex) {
+        holdingWirelessInterface = true;
+        continue;
+      }
+
+      slot.lockMode = ItemLockMode.none;
+    }
+
     if (
-      !mainhandSlot.hasItem() ||
-      mainhandSlot.typeId !== "fluffyalien_asn:wireless_interface" ||
+      !holdingWirelessInterface ||
       player.getBlockFromViewDirection({
         maxDistance: 7,
         includeTypes: ["fluffyalien_asn:storage_core"],
@@ -75,10 +101,17 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   const playerMainHandSlotIndex = e.player.selectedSlotIndex;
 
   const mainHandSlot = playerInvContainer.getSlot(e.player.selectedSlotIndex);
-  if (!mainHandSlot.getItem()) {
+  if (
+    !mainHandSlot.getItem() ||
+    mainHandSlot.typeId !== "fluffyalien_asn:wireless_interface"
+  ) {
     removeWirelessInterfaceEntity(e.player, e.target);
     return;
   }
+
+  // we need to lock the slot so the player can't put it inside itself and it will disappear.
+  // see [#32](https://github.com/Fluffyalien1422/asn/issues/32)
+  mainHandSlot.lockMode = ItemLockMode.slot;
 
   if (!forceLoadNetworksRule.get(world)) {
     removeWirelessInterfaceEntity(e.player, e.target);
