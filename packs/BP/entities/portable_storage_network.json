@@ -7,6 +7,9 @@
       "is_spawnable": false
     },
     "components": {
+      "minecraft:knockback_resistance": {
+        "value": 1
+      },
       "minecraft:type_family": {
         "family": ["fluffyalien_asn:storage_viewer"]
       },

@@ -12,6 +12,9 @@
       }
     },
     "components": {
+      "minecraft:knockback_resistance": {
+        "value": 1
+      },
       "minecraft:persistent": {},
       "minecraft:breathable": {
         "breathes_water": true
