@@ -188,8 +188,9 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     return;
   }
 
-  // @ts-expect-error incompatible Block
-  void removeMachine(block).then(() => {
+  void removeMachine(
+    block as import("bedrock-energistics-core-api/node_modules/@minecraft/server").Block,
+  ).then(() => {
     block.setType("air");
 
     e.hitEntity.dimension.spawnItem(

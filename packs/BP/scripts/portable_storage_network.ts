@@ -341,8 +341,9 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     }
 
     e.hitEntity.dimension.spawnItem(placerItem, e.hitEntity.location);
-    // @ts-expect-error incompatible type
-    void removeMachine(block);
+    void removeMachine(
+      block as import("bedrock-energistics-core-api/node_modules/@minecraft/server").Block,
+    );
   } else {
     logWarn(
       `expected a portable storage network block at (${e.hitEntity.location.x.toString()},${e.hitEntity.location.y.toString()},${e.hitEntity.location.z.toString()}) in ${e.hitEntity.dimension.id}`,
