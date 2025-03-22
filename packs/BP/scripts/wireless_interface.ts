@@ -232,7 +232,6 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     }
 
     if (useEnergyRule.get(world)) {
-      // @ts-expect-error incompatible type
       const itemMachine = new ItemMachine(playerInv, playerMainHandSlotIndex);
 
       const storedEnergy = await itemMachine.getStorage(
