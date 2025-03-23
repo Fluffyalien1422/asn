@@ -3,7 +3,7 @@ import { getPlayerMainhandSlot } from "./utils/item";
 import { STORAGE_DATA_DYNAMIC_PROPERTY_ID } from "./storage_drive";
 import { system, Player } from "@minecraft/server";
 import { logWarn } from "./log";
-import { processAddonRuleCommand } from "./addon_rule_commands";
+import { processAddonRuleCommand } from "./set_addon_rule";
 
 system.afterEvents.scriptEventReceive.subscribe(
   (e) => {

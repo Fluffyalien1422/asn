@@ -1,66 +1,24 @@
 import { Player, world } from "@minecraft/server";
-import {
-  driveEnergyConsumptionRule,
-  fluidStorageExperimentRule,
-  forceLoadNetworksRule,
-  showRequestItemDialogRule,
-  useEnergyRule,
-  wirelessInterfaceEnergyConsumptionRule,
-  wirelessInterfaceRangeRule,
-} from "./addon_rules";
+import { ADDON_RULE_COMMANDS } from "./addon_rules";
 import { DynamicPropertyAccessor } from "./utils/dynamic_property";
 
-interface BaseAddonRuleCommand {
+interface BaseAddonRuleCommand<T> {
   deprecated?: boolean;
   experimental?: boolean;
+  onSet?: (player: Player, value: T) => void;
 }
 
-interface BoolAddonRuleCommand extends BaseAddonRuleCommand {
+interface BoolAddonRuleCommand extends BaseAddonRuleCommand<boolean> {
   type: "bool";
   property: DynamicPropertyAccessor<boolean, boolean>;
 }
 
-interface NumberAddonRuleCommand extends BaseAddonRuleCommand {
+interface NumberAddonRuleCommand extends BaseAddonRuleCommand<number> {
   type: "float" | "int";
   property: DynamicPropertyAccessor<number, number>;
 }
 
-type AddonRuleCommand = BoolAddonRuleCommand | NumberAddonRuleCommand;
-
-const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
-  forceLoadNetworks: {
-    type: "bool",
-    property: forceLoadNetworksRule,
-  },
-  showRequestItemDialog: {
-    type: "bool",
-    property: showRequestItemDialogRule,
-  },
-  wirelessInterfaceRange: {
-    type: "int",
-    property: wirelessInterfaceRangeRule,
-  },
-  useEnergy: {
-    type: "bool",
-    property: useEnergyRule,
-    experimental: true,
-  },
-  driveEnergyConsumption: {
-    type: "int",
-    property: driveEnergyConsumptionRule,
-    experimental: true,
-  },
-  wirelessInterfaceEnergyConsumption: {
-    type: "int",
-    property: wirelessInterfaceEnergyConsumptionRule,
-    experimental: true,
-  },
-  fluidStorageExperiment: {
-    type: "bool",
-    property: fluidStorageExperimentRule,
-    experimental: true,
-  },
-};
+export type AddonRuleCommand = BoolAddonRuleCommand | NumberAddonRuleCommand;
 
 function processBoolAddonRuleCommand(
   player: Player,
@@ -69,11 +27,13 @@ function processBoolAddonRuleCommand(
 ): boolean {
   if (rawValue === "true") {
     ruleCommand.property.set(world, true);
+    ruleCommand.onSet?.(player, true);
     return true;
   }
 
   if (rawValue === "false") {
     ruleCommand.property.set(world, false);
+    ruleCommand.onSet?.(player, false);
     return true;
   }
 
@@ -132,6 +92,7 @@ function processNumberAddonRuleCommand(
   }
 
   ruleCommand.property.set(world, numVal);
+  ruleCommand.onSet?.(player, numVal);
 
   return true;
 }
