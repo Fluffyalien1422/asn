@@ -1,6 +1,6 @@
 import { Player, world } from "@minecraft/server";
 import { AddonRuleCommand } from "./set_addon_rule";
-import { DynamicPropertyAccessor } from "./utils/dynamic_property";
+import { DynamicPropertyAccessor } from "../utils/dynamic_property";
 import { isBedrockEnergisticsCoreInWorld } from "bedrock-energistics-core-api";
 
 export const forceLoadNetworksRule =
@@ -35,11 +35,10 @@ export const wirelessInterfaceEnergyConsumptionRule =
     10,
   );
 
-export const fluidStorageExperimentRule =
-  DynamicPropertyAccessor.withDefault<boolean>(
-    "fluidStorageExperimentRule",
-    false,
-  );
+export const fluidStorageRule = DynamicPropertyAccessor.withDefault<boolean>(
+  "fluidStorageRule",
+  false,
+);
 
 export const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
   forceLoadNetworks: {
@@ -58,45 +57,56 @@ export const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
     type: "bool",
     property: useEnergyRule,
     experimental: true,
-    onSet: setRequiresBecWarning,
+    beforeSet: (player, value) =>
+      requireBec(useEnergyRule.defaultValue, player, value),
   },
   driveEnergyConsumption: {
     type: "int",
     property: driveEnergyConsumptionRule,
     experimental: true,
-    onSet: setRequiresUseEnergyWarning,
+    beforeSet: (player, value) =>
+      requireUseEnergy(driveEnergyConsumptionRule.defaultValue, player, value),
   },
   wirelessInterfaceEnergyConsumption: {
     type: "int",
     property: wirelessInterfaceEnergyConsumptionRule,
     experimental: true,
-    onSet: setRequiresUseEnergyWarning,
+    beforeSet: (player, value) =>
+      requireUseEnergy(
+        wirelessInterfaceEnergyConsumptionRule.defaultValue,
+        player,
+        value,
+      ),
   },
-  fluidStorageExperiment: {
+  fluidStorage: {
     type: "bool",
-    property: fluidStorageExperimentRule,
+    property: fluidStorageRule,
     experimental: true,
-    onSet: setRequiresBecWarning,
+    beforeSet: (player, value) =>
+      requireBec(fluidStorageRule.defaultValue, player, value),
   },
 };
 
-function setRequiresBecWarning(player: Player): void {
-  if (isBedrockEnergisticsCoreInWorld()) return;
+function requireBec<T>(defaultValue: T, player: Player, value: T): T {
+  if (value === defaultValue || isBedrockEnergisticsCoreInWorld()) return value;
+
   player.sendMessage({
     rawtext: [
       {
         text: "§c",
       },
       {
-        translate:
-          "fluffyalien_asn.message.scriptEvent.addonRule.requiresBecWarning",
+        translate: "fluffyalien_asn.message.scriptEvent.addonRule.requiresBec",
       },
     ],
   });
+
+  return defaultValue;
 }
 
-function setRequiresUseEnergyWarning(player: Player): void {
-  if (useEnergyRule.get(world)) return;
+function requireUseEnergy<T>(defaultValue: T, player: Player, value: T): T {
+  if (value === defaultValue || useEnergyRule.get(world)) return value;
+
   player.sendMessage({
     rawtext: [
       {
@@ -104,7 +114,7 @@ function setRequiresUseEnergyWarning(player: Player): void {
       },
       {
         translate:
-          "fluffyalien_asn.message.scriptEvent.addonRule.requiresRuleWarning",
+          "fluffyalien_asn.message.scriptEvent.addonRule.requiresPrerequisiteRule",
         with: {
           rawtext: [
             {
@@ -121,4 +131,6 @@ function setRequiresUseEnergyWarning(player: Player): void {
       },
     ],
   });
+
+  return defaultValue;
 }

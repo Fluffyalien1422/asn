@@ -24,7 +24,10 @@ import {
   RegisteredStorageType,
   setMachineStorage,
 } from "bedrock-energistics-core-api";
-import { driveEnergyConsumptionRule, useEnergyRule } from "./addon_rules";
+import {
+  driveEnergyConsumptionRule,
+  useEnergyRule,
+} from "./addon_rules/addon_rules";
 import {
   AddItemStackToStorageError,
   isBannedItem,

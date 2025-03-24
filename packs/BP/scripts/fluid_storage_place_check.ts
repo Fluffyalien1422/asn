@@ -1,10 +1,9 @@
 import { world } from "@minecraft/server";
-import { fluidStorageExperimentRule } from "./addon_rules";
-import { isBedrockEnergisticsCoreInWorld } from "bedrock-energistics-core-api";
+import { fluidStorageRule } from "./addon_rules/addon_rules";
 
 world.beforeEvents.playerPlaceBlock.subscribe(
   (e) => {
-    if (!fluidStorageExperimentRule.get(world)) {
+    if (!fluidStorageRule.get(world)) {
       e.cancel = true;
       e.player.sendMessage({
         rawtext: [
@@ -13,25 +12,7 @@ world.beforeEvents.playerPlaceBlock.subscribe(
           },
           {
             translate:
-              "fluffyalien_asn.message.fluidStorage.fluidStorageExperimentDisabled",
-          },
-        ],
-      });
-      return;
-    }
-
-    if (
-      e.permutationBeingPlaced.type.id === "fluffyalien_asn:fluid_interface" &&
-      !isBedrockEnergisticsCoreInWorld()
-    ) {
-      e.cancel = true;
-      e.player.sendMessage({
-        rawtext: [
-          {
-            text: "§c",
-          },
-          {
-            translate: "fluffyalien_asn.message.fluidInterface.noBec",
+              "fluffyalien_asn.message.fluidStorage.fluidStorageDisabled",
           },
         ],
       });

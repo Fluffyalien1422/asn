@@ -23,7 +23,7 @@ import {
 import { forceCloseInventory, refreshStorageViewer } from "./storage_ui";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { makeErrorMessageUi, makeMessageUi, showForm } from "./utils/ui";
-import { useEnergyRule } from "./addon_rules";
+import { useEnergyRule } from "./addon_rules/addon_rules";
 import {
   getMachineStorage,
   removeMachine,

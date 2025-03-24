@@ -1,6 +1,6 @@
 import { BlockCustomComponent, world } from "@minecraft/server";
 import { getMachineStorage } from "bedrock-energistics-core-api";
-import { useEnergyRule } from "./addon_rules";
+import { useEnergyRule } from "./addon_rules/addon_rules";
 import { BlockStateSuperset } from "@minecraft/vanilla-data";
 
 export const storagePowerBankComponent: BlockCustomComponent = {

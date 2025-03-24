@@ -14,7 +14,7 @@ import {
   addAnonymousTickingArea,
   removeAnonymousTickingArea,
 } from "./utils/tickingarea";
-import { forceLoadNetworksRule } from "./addon_rules";
+import { forceLoadNetworksRule } from "./addon_rules/addon_rules";
 import { directionToVector3 } from "./utils/direction";
 import { makeErrorMessageUi, showForm } from "./utils/ui";
 import { getEntityAtBlockLocation } from "./utils/location";

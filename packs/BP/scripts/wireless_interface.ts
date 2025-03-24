@@ -12,7 +12,7 @@ import {
   useEnergyRule,
   wirelessInterfaceEnergyConsumptionRule,
   wirelessInterfaceRangeRule,
-} from "./addon_rules";
+} from "./addon_rules/addon_rules";
 import { StorageNetwork } from "./storage_network";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
 import { refreshStorageViewer } from "./storage_ui";

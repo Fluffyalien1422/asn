@@ -18,7 +18,7 @@ import {
   makeErrorMessageUi,
   showForm,
 } from "./utils/ui";
-import { useEnergyRule } from "./addon_rules";
+import { useEnergyRule } from "./addon_rules/addon_rules";
 import { forceCloseInventory } from "./storage_ui";
 import {
   BACK_BUTTON_ITEM_ID,

@@ -20,7 +20,7 @@ import {
 } from "./wireless_interface";
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { getPlayerMainhandSlot } from "./utils/item";
-import { fluidStorageExperimentRule, useEnergyRule } from "./addon_rules";
+import { fluidStorageRule, useEnergyRule } from "./addon_rules/addon_rules";
 import { showForm } from "./utils/ui";
 import { RegisteredStorageType } from "bedrock-energistics-core-api";
 
@@ -87,7 +87,7 @@ async function showStorageCoreUi(
     );
   }
 
-  if (fluidStorageExperimentRule.get(world)) {
+  if (fluidStorageRule.get(world)) {
     const storedFluids = await network.getStoredFluids();
 
     rawtext.push(

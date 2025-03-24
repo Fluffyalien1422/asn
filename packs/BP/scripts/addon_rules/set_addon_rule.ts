@@ -1,11 +1,12 @@
 import { Player, world } from "@minecraft/server";
 import { ADDON_RULE_COMMANDS } from "./addon_rules";
-import { DynamicPropertyAccessor } from "./utils/dynamic_property";
+import { DynamicPropertyAccessor } from "../utils/dynamic_property";
+import { sendCurrentRuleValueMessage } from "./addon_rules_common";
 
 interface BaseAddonRuleCommand<T> {
   deprecated?: boolean;
   experimental?: boolean;
-  onSet?: (player: Player, value: T) => void;
+  beforeSet?: (player: Player, value: T) => T | undefined;
 }
 
 interface BoolAddonRuleCommand extends BaseAddonRuleCommand<boolean> {
@@ -26,14 +27,18 @@ function processBoolAddonRuleCommand(
   ruleCommand: BoolAddonRuleCommand,
 ): boolean {
   if (rawValue === "true") {
-    ruleCommand.property.set(world, true);
-    ruleCommand.onSet?.(player, true);
+    ruleCommand.property.set(
+      world,
+      ruleCommand.beforeSet?.(player, true) ?? true,
+    );
     return true;
   }
 
   if (rawValue === "false") {
-    ruleCommand.property.set(world, false);
-    ruleCommand.onSet?.(player, false);
+    ruleCommand.property.set(
+      world,
+      ruleCommand.beforeSet?.(player, false) ?? false,
+    );
     return true;
   }
 
@@ -91,20 +96,12 @@ function processNumberAddonRuleCommand(
     return false;
   }
 
-  ruleCommand.property.set(world, numVal);
-  ruleCommand.onSet?.(player, numVal);
+  ruleCommand.property.set(
+    world,
+    ruleCommand.beforeSet?.(player, numVal) ?? numVal,
+  );
 
   return true;
-}
-
-function sendCurrentRuleValue(
-  player: Player,
-  rule: string,
-  ruleCommand: AddonRuleCommand,
-): void {
-  player.sendMessage(
-    `§s${rule}§r = §p${ruleCommand.property.get(world).toString()}`,
-  );
 }
 
 export function processAddonRuleCommand(player: Player, message: string): void {
@@ -154,7 +151,7 @@ export function processAddonRuleCommand(player: Player, message: string): void {
   const ruleCommand = ADDON_RULE_COMMANDS[rule];
 
   if (!value) {
-    sendCurrentRuleValue(player, rule, ruleCommand);
+    sendCurrentRuleValueMessage(player, rule, ruleCommand);
     return;
   }
 
@@ -174,7 +171,7 @@ export function processAddonRuleCommand(player: Player, message: string): void {
     return;
   }
 
-  sendCurrentRuleValue(player, rule, ruleCommand);
+  sendCurrentRuleValueMessage(player, rule, ruleCommand);
 
   if (ruleCommand.deprecated) {
     player.sendMessage({

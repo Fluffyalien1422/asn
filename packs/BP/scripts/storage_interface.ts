@@ -12,7 +12,7 @@ import {
 } from "./utils/block_connect";
 import { logWarn } from "./log";
 import { forceCloseInventory, refreshStorageViewer } from "./storage_ui";
-import { useEnergyRule } from "./addon_rules";
+import { useEnergyRule } from "./addon_rules/addon_rules";
 import {
   getNetworkOrShowError,
   makeErrorMessageUi,

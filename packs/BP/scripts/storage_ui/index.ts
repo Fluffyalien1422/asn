@@ -14,7 +14,7 @@ import {
   system,
   world,
 } from "@minecraft/server";
-import { showRequestItemDialogRule } from "../addon_rules";
+import { showRequestItemDialogRule } from "../addon_rules/addon_rules";
 import { StorageSystem } from "../storage_system";
 import {
   BACK_BUTTON_ITEM_ID,
