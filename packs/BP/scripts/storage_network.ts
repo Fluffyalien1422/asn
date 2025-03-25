@@ -19,11 +19,7 @@ import { Vector3Utils } from "@minecraft/math";
 import { updateExportBus } from "./export_bus";
 import { logWarn, makeErrorString } from "./log";
 import { updateLevelEmitter } from "./level_emitter";
-import {
-  getMachineStorage,
-  setMachineStorage,
-} from "bedrock-energistics-core-api";
-import { driveEnergyConsumptionRule, useEnergyRule } from "./addon_rules";
+import { driveEnergyConsumptionRule } from "./addon_rules";
 import {
   AddItemStackToStorageError,
   isBannedItem,
@@ -170,7 +166,7 @@ export class StorageNetwork extends StorageSystem {
 
     this.updateIntervalRunId = system.runInterval(() => {
       for (const block of this.connections.buses) {
-        if (!block.isValid()) continue;
+        if (!block.isValid) continue;
 
         switch (block.typeId) {
           case "fluffyalien_asn:import_bus":
@@ -181,29 +177,11 @@ export class StorageNetwork extends StorageSystem {
             break;
         }
       }
-
-      if (useEnergyRule.get(world)) {
-        let energyConsumptionRemaining = this.getEnergyConsumption();
-        for (const block of this.connections.powerBanks) {
-          const storedEnergy = getMachineStorage(block, "energy");
-
-          const consumption = Math.min(
-            storedEnergy,
-            energyConsumptionRemaining,
-          );
-          energyConsumptionRemaining -= consumption;
-          setMachineStorage(block, "energy", storedEnergy - consumption);
-
-          if (energyConsumptionRemaining <= 0) {
-            break;
-          }
-        }
-      }
     }, 10);
 
     this.levelEmitterUpdateIntervalRunId = system.runInterval(() => {
       for (const block of this.connections.levelEmitters) {
-        if (!block.isValid()) continue;
+        if (!block.isValid) continue;
 
         updateLevelEmitter(block, this);
       }
@@ -451,11 +429,11 @@ export class StorageNetwork extends StorageSystem {
   }
 
   getStoredEnergy(): number {
-    let energy = 0;
+    const energy = 0;
 
-    for (const powerBank of this.connections.powerBanks) {
-      energy += getMachineStorage(powerBank, "energy");
-    }
+    // for (const powerBank of this.connections.powerBanks) {
+    //   energy += getMachineStorage(powerBank, "energy");
+    // }
 
     return energy;
   }

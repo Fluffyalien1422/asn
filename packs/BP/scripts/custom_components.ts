@@ -1,4 +1,4 @@
-import { world } from "@minecraft/server";
+import { system } from "@minecraft/server";
 import { storageInterfaceComponent } from "./storage_interface";
 import { storageDriveComponent } from "./storage_drive";
 import { storageCoreComponent } from "./storage_core";
@@ -15,7 +15,7 @@ import {
 import { wirelessTransmitterComponent } from "./wireless_transmitter";
 import { networkDeviceComponent } from "./network_device_component";
 
-world.beforeEvents.worldInitialize.subscribe((e) => {
+system.beforeEvents.startup.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(
     "fluffyalien_asn:network_device",
     networkDeviceComponent,

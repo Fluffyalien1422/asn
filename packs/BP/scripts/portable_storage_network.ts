@@ -23,14 +23,6 @@ import {
 import { forceCloseInventory, refreshStorageViewer } from "./storage_ui";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { makeErrorMessageUi, makeMessageUi, showForm } from "./utils/ui";
-import { useEnergyRule } from "./addon_rules";
-import {
-  getMachineStorage,
-  removeMachine,
-  setMachineStorage,
-} from "bedrock-energistics-core-api";
-
-const ENERGY_CONSUMPTION = 20;
 
 /**
  * key = entity ID
@@ -124,22 +116,7 @@ class PortableStorageNetwork extends StorageSystem {
    * @returns whether energy was successfully consumed or not, returns true if use energy is disabled
    */
   consumeEnergy(): boolean {
-    if (!useEnergyRule.get(world)) {
-      return true;
-    }
-
-    const storedEnergy = getMachineStorage(this.block, "energy");
-
-    if (storedEnergy >= ENERGY_CONSUMPTION) {
-      setMachineStorage(
-        this.block,
-        "energy",
-        storedEnergy - ENERGY_CONSUMPTION,
-      );
-      return true;
-    }
-
-    return false;
+    return true;
   }
 
   /**
@@ -299,17 +276,7 @@ export const portableStorageNetworkComponent: BlockCustomComponent = {
 };
 
 export const portableStorageNetworkPlacerComponent: ItemCustomComponent = {
-  onUseOn(e) {
-    if (useEnergyRule.get(world)) {
-      setMachineStorage(
-        e.block.above()!,
-        "energy",
-        (e.itemStack.getDynamicProperty("fluffyalien_asn:energy") as
-          | number
-          | undefined) ?? 0,
-      );
-    }
-  },
+  onUseOn() {},
 };
 
 world.afterEvents.entityHitEntity.subscribe((e) => {
@@ -329,15 +296,8 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
       "fluffyalien_asn:portable_storage_network_placer",
     );
 
-    if (useEnergyRule.get(world)) {
-      const energy = getMachineStorage(block, "energy");
-
-      placerItem.setDynamicProperty("fluffyalien_asn:energy", energy);
-      placerItem.setLore([`§e${energy.toString()}/6400 energy`]);
-    }
-
     e.hitEntity.dimension.spawnItem(placerItem, e.hitEntity.location);
-    void removeMachine(block);
+    // void removeMachine(block);
   } else {
     logWarn(
       `expected a portable storage network block at (${e.hitEntity.location.x.toString()},${e.hitEntity.location.y.toString()},${e.hitEntity.location.z.toString()}) in ${e.hitEntity.dimension.id}`,
@@ -398,27 +358,6 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
                     ],
                   },
                 },
-                ...(useEnergyRule.get(world)
-                  ? [
-                      {
-                        text: "\n\n",
-                      },
-                      {
-                        translate:
-                          "fluffyalien_asn.ui.portableStorageNetwork.body.storedEnergy",
-                        with: {
-                          rawtext: [
-                            {
-                              text: getMachineStorage(
-                                block,
-                                "energy",
-                              ).toString(),
-                            },
-                          ],
-                        },
-                      },
-                    ]
-                  : []),
               ],
             },
           ),

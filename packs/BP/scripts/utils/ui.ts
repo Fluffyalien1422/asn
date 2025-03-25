@@ -42,6 +42,5 @@ export function showForm(
   form: ActionFormData | ModalFormData,
   player: Player,
 ): Promise<ActionFormResponse | ModalFormResponse> {
-  // @ts-expect-error wrong player type
   return form.show(player);
 }

@@ -100,7 +100,7 @@ function getItemsOnPage(
 }
 
 function fillViewerInventory(entity: Entity, data: ViewerData): void {
-  const inventory = entity.getComponent("inventory")!.container!;
+  const inventory = entity.getComponent("inventory")!.container;
   inventory.clearAll();
 
   const itemsOnPage = getItemsOnPage(data.items, data.page);
@@ -377,7 +377,7 @@ function clearTakenItemFromPlayer(
     return;
   }
 
-  const playerInventory = player.getComponent("inventory")!.container!;
+  const playerInventory = player.getComponent("inventory")!.container;
   for (let i = 0; i < playerInventory.size; i++) {
     const item = playerInventory.getItem(i);
 
@@ -467,7 +467,7 @@ system.runInterval(() => {
     )
       continue;
 
-    const inventory = entity.getComponent("inventory")!.container!;
+    const inventory = entity.getComponent("inventory")!.container;
 
     const inputSlotItem = inventory.getItem(INPUT_SLOT_INDEX);
     if (inputSlotItem) {

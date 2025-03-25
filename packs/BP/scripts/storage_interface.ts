@@ -14,8 +14,6 @@ import {
 } from "./utils/block_connect";
 import { logWarn } from "./log";
 import { forceCloseInventory, refreshStorageViewer } from "./storage_ui";
-import { useEnergyRule } from "./addon_rules";
-import { makeErrorMessageUi, showForm } from "./utils/ui";
 import { showEstablishNetworkError } from "./cable_network";
 
 async function getNetworkOrShowError(
@@ -101,18 +99,6 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   void (async (): Promise<void> => {
     const network = await getNetworkOrShowError(block, e.target, e.player);
     if (!network) return;
-
-    if (useEnergyRule.get(world) && network.getStoredEnergy() <= 0) {
-      await forceCloseInventory(e.target);
-      void showForm(
-        makeErrorMessageUi({
-          translate:
-            "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
-        }),
-        e.player,
-      );
-      return;
-    }
 
     refreshStorageViewer(e.target, e.player, network);
   })();

@@ -146,6 +146,13 @@ export function processAddonRuleCommand(player: Player, message: string): void {
   const rule = args[0];
   const value = args[1];
 
+  if (rule === "useEnergy") {
+    player.sendMessage(
+      "§c'useEnergy' has been temporarily disabled in ASN v2.15.x. It's value cannot be changed.",
+    );
+    return;
+  }
+
   if (rule === "help") {
     player.sendMessage({
       rawtext: [

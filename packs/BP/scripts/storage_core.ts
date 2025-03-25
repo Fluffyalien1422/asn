@@ -1,8 +1,5 @@
 import { Vector3Utils } from "@minecraft/math";
-import {
-  STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL,
-  StorageNetwork,
-} from "./storage_network";
+import { StorageNetwork } from "./storage_network";
 import {
   BlockCustomComponent,
   DimensionLocation,
@@ -19,7 +16,6 @@ import {
 } from "./wireless_interface";
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { getPlayerMainhandSlot } from "./utils/item";
-import { useEnergyRule } from "./addon_rules";
 import { showForm } from "./utils/ui";
 
 function showStorageCoreUi(
@@ -47,43 +43,6 @@ function showStorageCoreUi(
           ],
         },
       },
-      ...(useEnergyRule.get(world)
-        ? [
-            {
-              text: "\n\n",
-            },
-            {
-              translate: "fluffyalien_asn.ui.storageCore.body.storedEnergy",
-              with: {
-                rawtext: [
-                  {
-                    text: network.getStoredEnergy().toString(),
-                  },
-                  {
-                    text: network.getMaxStoredEnergy().toString(),
-                  },
-                ],
-              },
-            },
-            {
-              text: "\n\n",
-            },
-            {
-              translate:
-                "fluffyalien_asn.ui.storageCore.body.energyConsumption",
-              with: {
-                rawtext: [
-                  {
-                    text: Math.floor(
-                      network.getEnergyConsumption() /
-                        STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL,
-                    ).toString(),
-                  },
-                ],
-              },
-            },
-          ]
-        : []),
     ],
   });
 

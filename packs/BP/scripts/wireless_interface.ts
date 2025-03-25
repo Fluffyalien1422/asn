@@ -9,14 +9,11 @@ import {
 import { DynamicPropertyAccessor } from "./utils/dynamic_property";
 import {
   forceLoadNetworksRule,
-  useEnergyRule,
-  wirelessInterfaceEnergyConsumptionRule,
   wirelessInterfaceRangeRule,
 } from "./addon_rules";
 import { StorageNetwork } from "./storage_network";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
 import { refreshStorageViewer } from "./storage_ui";
-import { ItemMachine, StandardStorageType } from "bedrock-energistics-core-api";
 
 /**
  * key = player ID
@@ -47,7 +44,7 @@ system.runInterval(() => {
     // we need to unlock the slots if they player is not holding it
     // the slot is locked when the player interacts with the entity
     // see [#32](https://github.com/Fluffyalien1422/asn/issues/32)
-    const playerInv = player.getComponent("inventory")!.container!;
+    const playerInv = player.getComponent("inventory")!.container;
     for (let i = 0; i < playerInv.size; i++) {
       const slot = playerInv.getSlot(i);
       if (
@@ -97,8 +94,8 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   if (e.target.typeId !== "fluffyalien_asn:wireless_interface_entity") return;
 
   const playerInv = e.player.getComponent("inventory")!;
-  const playerInvContainer = playerInv.container!;
-  const playerMainHandSlotIndex = e.player.selectedSlotIndex;
+  const playerInvContainer = playerInv.container;
+  // const playerMainHandSlotIndex = e.player.selectedSlotIndex;
 
   const mainHandSlot = playerInvContainer.getSlot(e.player.selectedSlotIndex);
   if (
@@ -178,20 +175,20 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     });
   }
 
-  function errInsufficientEnergy(): void {
-    removeWirelessInterfaceEntity(e.player, e.target);
-    e.player.sendMessage({
-      rawtext: [
-        {
-          text: "§c",
-        },
-        {
-          translate:
-            "fluffyalien_asn.message.wirelessInterface.insufficientEnergy",
-        },
-      ],
-    });
-  }
+  // function errInsufficientEnergy(): void {
+  //   removeWirelessInterfaceEntity(e.player, e.target);
+  //   e.player.sendMessage({
+  //     rawtext: [
+  //       {
+  //         text: "§c",
+  //       },
+  //       {
+  //         translate:
+  //           "fluffyalien_asn.message.wirelessInterface.insufficientEnergy",
+  //       },
+  //     ],
+  //   });
+  // }
 
   void (async (): Promise<void> => {
     const dimension = world.getDimension(linkDimension);
@@ -229,27 +226,6 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     if (!anyTransmittersInRange) {
       errNoTransmittersInRange();
       return;
-    }
-
-    if (useEnergyRule.get(world)) {
-      const itemMachine = new ItemMachine(playerInv, playerMainHandSlotIndex);
-
-      const storedEnergy = await itemMachine.getStorage(
-        StandardStorageType.Energy,
-      );
-
-      const energyConsumption =
-        wirelessInterfaceEnergyConsumptionRule.get(world);
-
-      if (storedEnergy < energyConsumption) {
-        errInsufficientEnergy();
-        return;
-      }
-
-      itemMachine.setStorage(
-        StandardStorageType.Energy,
-        storedEnergy - energyConsumption,
-      );
     }
 
     refreshStorageViewer(e.target, e.player, network);
