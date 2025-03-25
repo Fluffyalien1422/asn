@@ -182,8 +182,4 @@ fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet1=Use the `/scriptevent f
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet2=Omit `[value]` from the command to get the current value of the rule.
 
 fluffyalien_asn.ui.tutorialBook.entry.energy.title=Energy (EXPERIMENTAL)
-fluffyalien_asn.ui.tutorialBook.entry.energy.bullet0=Energy usage can be enabled using the `useEnergy` rule. See Add-On Configuration for more information.
-fluffyalien_asn.ui.tutorialBook.entry.energy.bullet1=Energy is stored in Storage Power Bank blocks.
-fluffyalien_asn.ui.tutorialBook.entry.energy.bullet2=Network energy consumption is scaled based on the amount of storage drives.
-fluffyalien_asn.ui.tutorialBook.entry.energy.bullet3=Uses Bedrock Energistics Core energy. Requires the Bedrock Energistics Core add-on to be in the world.
-fluffyalien_asn.ui.tutorialBook.entry.energy.bullet4=This add-on does not add any power generators, you must include another Bedrock Energistics Core powered add-on to generate energy for your system.
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet0=ENERGY USAGE IS TEMPORARILY DISABLED IN v2.15.x.

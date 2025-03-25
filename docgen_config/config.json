@@ -4,7 +4,7 @@
   "dependencies": [
     {
       "name": "Bedrock Energistics Core v0.7.x",
-      "description": "Required for energy usage. See <strong>Energy (EXPERIMENTAL)</strong> (on this page or in the in-game tutorial book) for more information.",
+      "description": "<strong>NOTE: Energy usage is temporarily disabled in v2.15.x</strong>",
       "optional": true,
       "mcpedlUrl": "https://mcpedl.com/bedrock-energistics-core",
       "cfUrl": "https://www.curseforge.com/minecraft-bedrock/addons/bedrock-energistics-core"

@@ -5,10 +5,17 @@ import "./tutorial_book";
 import "./wireless_interface";
 import { useEnergyRule } from "./addon_rules";
 
+let shouldSendUseEnergyDisabledMessage = false;
+
 world.afterEvents.worldLoad.subscribe(() => {
   if (!useEnergyRule.get(world)) return;
   useEnergyRule.set(world, false);
-  world.sendMessage(
+  shouldSendUseEnergyDisabledMessage = true;
+});
+
+world.afterEvents.playerSpawn.subscribe((e) => {
+  if (!e.initialSpawn || !shouldSendUseEnergyDisabledMessage) return;
+  e.player.sendMessage(
     "§c'useEnergy' has been temporarily disabled in ASN v2.15.x. It has been set to 'false'.",
   );
 });

@@ -89,7 +89,7 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
   {
     id: "energy",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/energy_icon",
-    bullets: 5,
+    bullets: 1,
   },
 ];
 
