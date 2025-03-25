@@ -453,9 +453,9 @@ system.runInterval(() => {
   };
 
   for (const entity of [
-    ...overworld.getEntities(entityQueryOptions),
-    ...nether.getEntities(entityQueryOptions),
-    ...end.getEntities(entityQueryOptions),
+    ...overworld().getEntities(entityQueryOptions),
+    ...nether().getEntities(entityQueryOptions),
+    ...end().getEntities(entityQueryOptions),
   ]) {
     const data = viewerData.get(entity.id);
     if (
