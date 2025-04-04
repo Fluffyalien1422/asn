@@ -20,9 +20,11 @@ system.afterEvents.scriptEventReceive.subscribe(
         return;
       }
 
-      const s = item
-        .getDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID)
-        ?.toString();
+      const s = (
+        item.getDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID) as
+          | string
+          | undefined
+      )?.toString();
       if (s) logWarn(`fluffyalien_asn:debug.log_disk_data result: ${s}`);
     } else if (e.id === "fluffyalien_asn:debug.set_wireless_interface_energy") {
       const playerInv = player.getComponent("inventory")!;

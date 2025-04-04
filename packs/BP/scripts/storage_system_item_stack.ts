@@ -39,15 +39,15 @@ export class StorageSystemItemStack {
     const enchantments =
       itemStack.getComponent("enchantable")?.getEnchantments() ?? [];
 
-    const potionComponent = itemStack.getComponent("potion");
-    let potionData: StorageSystemItemStackPotionData | undefined;
-    if (potionComponent) {
-      potionData = {
-        effect: potionComponent.potionEffectType.id,
-        liquid: potionComponent.potionLiquidType.id,
-        modifier: potionComponent.potionModifierType.id,
-      };
-    }
+    // const potionComponent = itemStack.getComponent("potion");
+    // let potionData: StorageSystemItemStackPotionData | undefined;
+    // if (potionComponent) {
+    //   potionData = {
+    //     effect: potionComponent.potionEffectType.id,
+    //     liquid: potionComponent.potionLiquidType.id,
+    //     modifier: potionComponent.potionModifierType.id,
+    //   };
+    // }
 
     return new StorageSystemItemStack(
       id,
@@ -57,14 +57,14 @@ export class StorageSystemItemStack {
       lore,
       dynamicProperties,
       enchantments,
-      potionData,
+      // potionData,
     );
   }
 
   toItemStack(amount = 1): ItemStack {
-    const result = this.potionData
+    const result = /*this.potionData
       ? ItemStack.createPotion(this.potionData)
-      : new ItemStack(this.typeId, amount);
+      :*/ new ItemStack(this.typeId, amount);
 
     result.nameTag = this.nameTag;
 

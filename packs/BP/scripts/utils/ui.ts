@@ -41,11 +41,13 @@ export function showForm(
   form: ModalFormData,
   player: Player,
 ): Promise<ModalFormResponse>;
+/**
+ * @deprecated
+ */
 export function showForm(
   form: ActionFormData | ModalFormData,
   player: Player,
 ): Promise<ActionFormResponse | ModalFormResponse> {
-  // @ts-expect-error wrong player type
   return form.show(player);
 }
 
