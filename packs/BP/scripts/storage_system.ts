@@ -63,7 +63,10 @@ export abstract class StorageSystem {
 
 export function isBannedItem(itemStack: StorageSystemItemStack): boolean {
   return (
-    itemStack.typeId.startsWith("minecraft:") &&
-    itemStack.typeId.endsWith("_shulker_box")
+    itemStack.typeId === "minecraft:potion" ||
+    itemStack.typeId === "minecraft:splash_potion" ||
+    itemStack.typeId === "minecraft:lingering_potion" ||
+    (itemStack.typeId.startsWith("minecraft:") &&
+      itemStack.typeId.endsWith("_shulker_box"))
   );
 }
