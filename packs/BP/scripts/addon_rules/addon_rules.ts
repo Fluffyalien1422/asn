@@ -27,7 +27,7 @@ export const wirelessInterfaceRangeRule =
   );
 
 export const driveEnergyConsumptionRule =
-  DynamicPropertyAccessor.withDefault<number>("driveEnergyConsumptionRule", 50);
+  DynamicPropertyAccessor.withDefault<number>("driveEnergyConsumptionRule", 10);
 
 export const wirelessInterfaceEnergyConsumptionRule =
   DynamicPropertyAccessor.withDefault<number>(
