@@ -4,7 +4,7 @@ import "./script_events";
 import "./tutorial_book";
 import "./wireless_interface";
 
-//TODO: make fluid import and export buses stop working when recieving a redstone signal
+//TODO: new tutorial book entry icons
 
 //TODO: use dynamic properties instead of entities for data blocks (storage drive, buses, etc)
 // that are placed after the update. blocks that are already placed will still use the old

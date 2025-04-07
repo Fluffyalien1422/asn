@@ -3,6 +3,7 @@ import { StorageNetwork } from "./storage_network";
 import { BlockCustomComponent } from "@minecraft/server";
 import { updateBlockConnectStates } from "./utils/block_connect";
 import { STR_DIRECTIONS } from "./utils/direction";
+import { receivingRedstoneSignal } from "./utils/block";
 
 export const fluidImportBusMachine: MachineDefinition = {
   description: {
@@ -15,6 +16,10 @@ export const fluidImportBusMachine: MachineDefinition = {
       }
 
       const block = e.blockLocation.dimension.getBlock(e.blockLocation)!;
+      if (receivingRedstoneSignal(block)) {
+        return { amount: 0 };
+      }
+
       const network = StorageNetwork.getNetwork(block);
       if (!network) {
         return { amount: 0 };
