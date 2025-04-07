@@ -18,6 +18,7 @@ import { fluidDriveComponent } from "./fluid_drive";
 import { fluidInterfaceComponent } from "./fluid_interface";
 import { fluidExportBusComponent } from "./fluid_export_bus";
 import { fluidStorageBlockComponent } from "./fluid_storage_block_component";
+import { fluidImportBusComponent } from "./fluid_import_bus";
 
 world.beforeEvents.worldInitialize.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(
@@ -93,6 +94,11 @@ world.beforeEvents.worldInitialize.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(
     "fluffyalien_asn:fluid_export_bus",
     fluidExportBusComponent,
+  );
+
+  e.blockComponentRegistry.registerCustomComponent(
+    "fluffyalien_asn:fluid_import_bus",
+    fluidImportBusComponent,
   );
 
   e.blockComponentRegistry.registerCustomComponent(

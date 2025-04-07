@@ -6,5 +6,6 @@ import "./wireless_interface";
 
 //TODO: fluid import bus model
 
-// low priority breaking changes for 3.0:
-// - replace as many block entities as possible (storage drive, buses, etc) with block dynamic properties
+//TODO: use dynamic properties instead of entities for data blocks (storage drive, buses, etc)
+// that are placed after the update. blocks that are already placed will still use the old
+// method until removed and replaced.

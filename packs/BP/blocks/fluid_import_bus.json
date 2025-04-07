@@ -6,60 +6,66 @@
       "menu_category": {
         "category": "items"
       },
-      "traits": {
-        "minecraft:placement_direction": {
-          "enabled_states": ["minecraft:cardinal_direction"],
-          "y_rotation_offset": 180
-        }
+      "states": {
+        "fluffyalien_asn:north": ["none", "cable", "bus"],
+        "fluffyalien_asn:east": ["none", "cable", "bus"],
+        "fluffyalien_asn:south": ["none", "cable", "bus"],
+        "fluffyalien_asn:west": ["none", "cable", "bus"],
+        "fluffyalien_asn:up": ["none", "cable", "bus"],
+        "fluffyalien_asn:down": ["none", "cable", "bus"]
       }
     },
     "components": {
       "minecraft:custom_components": [
         "fluffyalien_energisticscore:machine",
         "fluffyalien_asn:network_device",
-        "fluffyalien_asn:fluid_storage_block"
+        "fluffyalien_asn:fluid_storage_block",
+        "fluffyalien_asn:fluid_import_bus"
       ],
       "tag:fluffyalien_asn:storage_network_connectable": {},
       "tag:fluffyalien_energisticscore:machine": {},
       "tag:fluffyalien_energisticscore:io.any": {},
       "tag:fluffyalien_energisticscore:consumer.any": {},
 
-      "minecraft:geometry": "minecraft:geometry.full_block",
-      "minecraft:material_instances": {
-        "*": {
-          "texture": "missing"
+      "minecraft:geometry": {
+        "identifier": "geometry.fluffyalien_asn.fluid_bus",
+        "bone_visibility": {
+          "north": "q.block_state('fluffyalien_asn:north') != 'none'",
+          "bus_north": "q.block_state('fluffyalien_asn:north') == 'bus'",
+          "south": "q.block_state('fluffyalien_asn:south') != 'none'",
+          "bus_south": "q.block_state('fluffyalien_asn:south') == 'bus'",
+          "east": "q.block_state('fluffyalien_asn:east') != 'none'",
+          "bus_east": "q.block_state('fluffyalien_asn:east') == 'bus'",
+          "west": "q.block_state('fluffyalien_asn:west') != 'none'",
+          "bus_west": "q.block_state('fluffyalien_asn:west') == 'bus'",
+          "up": "q.block_state('fluffyalien_asn:up') != 'none'",
+          "bus_up": "q.block_state('fluffyalien_asn:up') == 'bus'",
+          "down": "q.block_state('fluffyalien_asn:down') != 'none'",
+          "bus_down": "q.block_state('fluffyalien_asn:down') == 'bus'"
         }
       },
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "fluffyalien_asn:fluid_import_bus"
+        }
+      },
+      "minecraft:collision_box": {
+        "origin": [-4, 4, -4],
+        "size": [8, 8, 8]
+      },
+      "minecraft:selection_box": {
+        "origin": [-4, 4, -4],
+        "size": [8, 8, 8]
+      },
+      "minecraft:light_dampening": 0,
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {
         "seconds_to_destroy": 1
-      }
-    },
-    "permutations": [
-      {
-        "condition": "q.block_state('minecraft:cardinal_direction') == 'south'",
-        "components": {
-          "minecraft:transformation": {
-            "rotation": [0, 180, 0]
-          }
-        }
       },
-      {
-        "condition": "q.block_state('minecraft:cardinal_direction') == 'west'",
-        "components": {
-          "minecraft:transformation": {
-            "rotation": [0, 90, 0]
-          }
-        }
-      },
-      {
-        "condition": "q.block_state('minecraft:cardinal_direction') == 'east'",
-        "components": {
-          "minecraft:transformation": {
-            "rotation": [0, -90, 0]
-          }
-        }
+
+      "minecraft:tick": {
+        "interval_range": [5, 5]
       }
-    ]
+    }
   }
 }

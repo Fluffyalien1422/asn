@@ -14,6 +14,8 @@ import {
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 import { StorageNetwork } from "./storage_network";
+import { updateBlockConnectStates } from "./utils/block_connect";
+import { STR_DIRECTIONS } from "./utils/direction";
 
 async function showFluidExportBusUi(
   player: Player,
@@ -72,7 +74,6 @@ export async function updateFluidExportBus(
   ) as string | undefined;
   if (!storageType) return;
 
-  // @ts-expect-error incompatible block
   if (getMachineStorage(block, storageType)) {
     return;
   }
@@ -83,7 +84,6 @@ export async function updateFluidExportBus(
 
   void network.removeFluid(storageType, 5);
 
-  // @ts-expect-error incompatible block
   void setMachineStorage(block, storageType, 5);
 }
 
@@ -116,13 +116,20 @@ export const fluidExportBusComponent: BlockCustomComponent = {
     removeAllDynamicPropertiesForBlock(e.block);
   },
   onTick(e) {
+    updateBlockConnectStates(e.block, STR_DIRECTIONS, (other) =>
+      other.hasTag("fluffyalien_energisticscore:machine")
+        ? "bus"
+        : other.hasTag("fluffyalien_asn:storage_network_connectable")
+          ? "cable"
+          : "none",
+    );
+
     const storageType = getBlockDynamicProperty(
       e.block,
       "fluidExportBusStorageType",
     ) as string | undefined;
     if (!storageType) return;
 
-    // @ts-expect-error incompatible block
     generate(e.block, storageType, 0);
   },
 };

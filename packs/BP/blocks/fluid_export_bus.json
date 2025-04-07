@@ -5,6 +5,14 @@
       "identifier": "fluffyalien_asn:fluid_export_bus",
       "menu_category": {
         "category": "items"
+      },
+      "states": {
+        "fluffyalien_asn:north": ["none", "cable", "bus"],
+        "fluffyalien_asn:east": ["none", "cable", "bus"],
+        "fluffyalien_asn:south": ["none", "cable", "bus"],
+        "fluffyalien_asn:west": ["none", "cable", "bus"],
+        "fluffyalien_asn:up": ["none", "cable", "bus"],
+        "fluffyalien_asn:down": ["none", "cable", "bus"]
       }
     },
     "components": {
@@ -18,12 +26,37 @@
       "tag:fluffyalien_energisticscore:machine": {},
       "tag:fluffyalien_energisticscore:io.any": {},
 
-      "minecraft:geometry": "minecraft:geometry.full_block",
-      "minecraft:material_instances": {
-        "*": {
-          "texture": "missing"
+      "minecraft:geometry": {
+        "identifier": "geometry.fluffyalien_asn.fluid_bus",
+        "bone_visibility": {
+          "north": "q.block_state('fluffyalien_asn:north') != 'none'",
+          "bus_north": "q.block_state('fluffyalien_asn:north') == 'bus'",
+          "south": "q.block_state('fluffyalien_asn:south') != 'none'",
+          "bus_south": "q.block_state('fluffyalien_asn:south') == 'bus'",
+          "east": "q.block_state('fluffyalien_asn:east') != 'none'",
+          "bus_east": "q.block_state('fluffyalien_asn:east') == 'bus'",
+          "west": "q.block_state('fluffyalien_asn:west') != 'none'",
+          "bus_west": "q.block_state('fluffyalien_asn:west') == 'bus'",
+          "up": "q.block_state('fluffyalien_asn:up') != 'none'",
+          "bus_up": "q.block_state('fluffyalien_asn:up') == 'bus'",
+          "down": "q.block_state('fluffyalien_asn:down') != 'none'",
+          "bus_down": "q.block_state('fluffyalien_asn:down') == 'bus'"
         }
       },
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "fluffyalien_asn:fluid_export_bus"
+        }
+      },
+      "minecraft:collision_box": {
+        "origin": [-4, 4, -4],
+        "size": [8, 8, 8]
+      },
+      "minecraft:selection_box": {
+        "origin": [-4, 4, -4],
+        "size": [8, 8, 8]
+      },
+      "minecraft:light_dampening": 0,
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {
         "seconds_to_destroy": 1

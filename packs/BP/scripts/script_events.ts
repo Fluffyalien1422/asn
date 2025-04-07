@@ -48,7 +48,6 @@ system.afterEvents.scriptEventReceive.subscribe(
         return;
       }
 
-      // @ts-expect-error incompatible type
       const itemMachine = new bec.ItemMachine(playerInv, mainHandSlotIndex);
 
       itemMachine.setStorage("energy", num);

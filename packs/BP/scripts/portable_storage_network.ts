@@ -128,12 +128,10 @@ class PortableStorageNetwork extends StorageSystem {
       return true;
     }
 
-    // @ts-expect-error incompatible type
     const storedEnergy = getMachineStorage(this.block, "energy");
 
     if (storedEnergy >= ENERGY_CONSUMPTION) {
       void setMachineStorage(
-        // @ts-expect-error incompatible type
         this.block,
         "energy",
         storedEnergy - ENERGY_CONSUMPTION,
@@ -304,7 +302,6 @@ export const portableStorageNetworkPlacerComponent: ItemCustomComponent = {
   onUseOn(e) {
     if (useEnergyRule.get(world)) {
       void setMachineStorage(
-        // @ts-expect-error incompatible type
         e.block.above()!,
         "energy",
         (e.itemStack.getDynamicProperty("fluffyalien_asn:energy") as
@@ -333,7 +330,6 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     );
 
     if (useEnergyRule.get(world)) {
-      // @ts-expect-error incompatible type
       const energy = getMachineStorage(block, "energy");
 
       placerItem.setDynamicProperty("fluffyalien_asn:energy", energy);
@@ -341,9 +337,7 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     }
 
     e.hitEntity.dimension.spawnItem(placerItem, e.hitEntity.location);
-    void removeMachine(
-      block as import("bedrock-energistics-core-api/node_modules/@minecraft/server").Block,
-    );
+    void removeMachine(block);
   } else {
     logWarn(
       `expected a portable storage network block at (${e.hitEntity.location.x.toString()},${e.hitEntity.location.y.toString()},${e.hitEntity.location.z.toString()}) in ${e.hitEntity.dimension.id}`,
@@ -416,7 +410,6 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
                           rawtext: [
                             {
                               text: getMachineStorage(
-                                // @ts-expect-error incompatible type
                                 block,
                                 "energy",
                               ).toString(),

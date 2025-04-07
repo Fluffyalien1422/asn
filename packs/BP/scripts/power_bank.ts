@@ -12,7 +12,6 @@ export const storagePowerBankComponent: BlockCustomComponent = {
     const poweredState = e.block.permutation.getState(
       "fluffyalien_asn:powered" as keyof BlockStateSuperset,
     );
-    // @ts-expect-error incompatible type
     const hasEnergy = !!getMachineStorage(e.block, "energy");
 
     if (poweredState === hasEnergy) {

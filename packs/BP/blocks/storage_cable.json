@@ -43,8 +43,8 @@
         "size": [8, 8, 8]
       },
       "minecraft:selection_box": {
-        "origin": [-3, 5, -3],
-        "size": [6, 6, 6]
+        "origin": [-4, 4, -4],
+        "size": [8, 8, 8]
       },
       "minecraft:light_dampening": 0,
       "minecraft:destructible_by_explosion": false,

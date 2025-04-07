@@ -205,7 +205,6 @@ export class StorageNetwork extends StorageSystem {
       if (useEnergyRule.get(world)) {
         let energyConsumptionRemaining = this.getEnergyConsumption();
         for (const block of this.connections.powerBanks) {
-          // @ts-expect-error incompatible type
           const storedEnergy = getMachineStorage(block, "energy");
 
           const consumption = Math.min(
@@ -213,7 +212,6 @@ export class StorageNetwork extends StorageSystem {
             energyConsumptionRemaining,
           );
           energyConsumptionRemaining -= consumption;
-          // @ts-expect-error incompatible type
           void setMachineStorage(block, "energy", storedEnergy - consumption);
 
           if (energyConsumptionRemaining <= 0) {
@@ -337,12 +335,12 @@ export class StorageNetwork extends StorageSystem {
     for (const drive of this.connections.fluidDrives) {
       let remainingCapacity = FLUID_DRIVE_CAPACITY;
       for (const [type, amount] of fluidBudget) {
-        const amountToAdd = Math.min(amount, remainingCapacity);
-        remainingCapacity -= amountToAdd;
+        const amountToSave = Math.min(amount, remainingCapacity);
+        remainingCapacity -= amountToSave;
 
-        setBlockDynamicProperty(drive, `fluid${type}`, amount);
+        setBlockDynamicProperty(drive, `fluid${type}`, amountToSave);
 
-        const newBudget = amount - amountToAdd;
+        const newBudget = amount - amountToSave;
         if (newBudget <= 0) {
           fluidBudget.delete(type);
         } else {
@@ -573,7 +571,6 @@ export class StorageNetwork extends StorageSystem {
     let energy = 0;
 
     for (const powerBank of this.connections.powerBanks) {
-      // @ts-expect-error incompatible type
       energy += getMachineStorage(powerBank, "energy");
     }
 

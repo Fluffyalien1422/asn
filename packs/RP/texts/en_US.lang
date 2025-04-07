@@ -26,13 +26,13 @@ tile.fluffyalien_asn:import_bus.name=Storage Import Bus
 tile.fluffyalien_asn:export_bus.name=Storage Export Bus
 tile.fluffyalien_asn:level_emitter.name=Storage Level Emitter
 tile.fluffyalien_asn:storage_relay.name=Storage Relay
-tile.fluffyalien_asn:storage_power_bank.name=Storage Power Bank (EXPERIMENTAL)
+tile.fluffyalien_asn:storage_power_bank.name=Storage Power Bank §c(Experimental)
 tile.fluffyalien_asn:portable_storage_network.name=Portable Storage Network
 tile.fluffyalien_asn:wireless_transmitter.name=Wireless Transmitter
-tile.fluffyalien_asn:fluid_interface.name=Storage Fluid Interface (EXPERIMENTAL)
-tile.fluffyalien_asn:fluid_drive.name=Storage Fluid Drive (EXPERIMENTAL)
-tile.fluffyalien_asn:fluid_import_bus.name=Storage Fluid Import Bus (EXPERIMENTAL)
-tile.fluffyalien_asn:fluid_export_bus.name=Storage Fluid Export Bus (EXPERIMENTAL)
+tile.fluffyalien_asn:fluid_interface.name=Storage Fluid Interface §c(Experimental)
+tile.fluffyalien_asn:fluid_drive.name=Storage Fluid Drive §c(Experimental)
+tile.fluffyalien_asn:fluid_import_bus.name=Storage Fluid Import Bus §c(Experimental)
+tile.fluffyalien_asn:fluid_export_bus.name=Storage Fluid Export Bus §c(Experimental)
 
 fluffyalien_asn.message.wirelessInterface.linked=Wireless storage interface linked.
 fluffyalien_asn.message.wirelessInterface.notLinked=This wireless storage interface is not linked to a storage network.
@@ -171,7 +171,7 @@ fluffyalien_asn.ui.tutorialBook.entry.relay.bullet3=Has infinite range and works
 
 fluffyalien_asn.ui.tutorialBook.entry.powerBank.title=Storage Power Bank
 fluffyalien_asn.ui.tutorialBook.entry.powerBank.bullet0=Stores energy for the network.
-fluffyalien_asn.ui.tutorialBook.entry.powerBank.bullet1=Only necessary if energy usage is enabled. See Energy (EXPERIMENTAL) for more information.
+fluffyalien_asn.ui.tutorialBook.entry.powerBank.bullet1=Only necessary if energy usage is enabled. See Energy (Experimental) for more information.
 
 fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.title=Wireless Transmitter
 fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.bullet0=Allows a wireless interface to connect to a network.
@@ -199,7 +199,7 @@ fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet0=Use the `/scriptevent f
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet1=Use the `/scriptevent fluffyalien_asn:rule help` command for a list of rules.
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet2=Omit `[value]` from the command to get the current value of the rule.
 
-fluffyalien_asn.ui.tutorialBook.entry.energy.title=Energy (EXPERIMENTAL)
+fluffyalien_asn.ui.tutorialBook.entry.energy.title=Energy (Experimental)
 fluffyalien_asn.ui.tutorialBook.entry.energy.bullet0=Energy usage can be enabled using the `useEnergy` rule. See Add-On Configuration for more information.
 fluffyalien_asn.ui.tutorialBook.entry.energy.bullet1=Energy is stored in Storage Power Bank blocks.
 fluffyalien_asn.ui.tutorialBook.entry.energy.bullet2=Network energy consumption is scaled based on the amount of storage drives.

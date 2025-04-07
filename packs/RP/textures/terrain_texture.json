@@ -50,6 +50,12 @@
     },
     "fluffyalien_asn:wireless_transmitter": {
       "textures": "textures/fluffyalien/asn/blocks/wireless_transmitter"
+    },
+    "fluffyalien_asn:fluid_export_bus": {
+      "textures": "textures/fluffyalien/asn/blocks/fluid_export_bus"
+    },
+    "fluffyalien_asn:fluid_import_bus": {
+      "textures": "textures/fluffyalien/asn/blocks/fluid_import_bus"
     }
   }
 }

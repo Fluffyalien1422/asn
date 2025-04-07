@@ -1,5 +1,4 @@
 import {
-  Block,
   BlockCustomComponent,
   Entity,
   ItemStack,
@@ -102,9 +101,7 @@ export const fluidInterfaceMachine: MachineDefinition = {
   },
   handlers: {
     async updateUi({ blockLocation, entityId }) {
-      const block = blockLocation.dimension.getBlock(blockLocation) as
-        | Block
-        | undefined;
+      const block = blockLocation.dimension.getBlock(blockLocation);
       if (!block) return {};
 
       const network = StorageNetwork.getNetwork(block);
@@ -188,9 +185,7 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     return;
   }
 
-  void removeMachine(
-    block as import("bedrock-energistics-core-api/node_modules/@minecraft/server").Block,
-  ).then(() => {
+  void removeMachine(block).then(() => {
     block.setType("air");
 
     e.hitEntity.dimension.spawnItem(
@@ -232,7 +227,6 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
       }
 
       for (const [id, amount] of (await network.getStoredFluids()).types) {
-        // @ts-expect-error incompatible DimensionLocation
         void setMachineStorage(block, id, amount);
       }
 
