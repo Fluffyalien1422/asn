@@ -476,6 +476,15 @@ export class StorageNetwork extends StorageSystem {
   }
 
   /**
+   * Clear the stored fluids cache. The cache will be created again when {@link StorageNetwork.getStoredFluids} is called.
+   * @throws if this object is invalid
+   */
+  clearStoredFluidsCache(): void {
+    this.ensureValidity();
+    this.storedFluids = undefined;
+  }
+
+  /**
    * @throws if this object is not valid
    */
   getStoredItemStacks(): readonly StorageSystemItemStack[] {

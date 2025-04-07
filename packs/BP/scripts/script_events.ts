@@ -13,19 +13,26 @@ system.afterEvents.scriptEventReceive.subscribe(
     if (e.id === "fluffyalien_asn:debug.log_disk_data") {
       const item = getPlayerMainhandSlot(player).getItem();
 
-      if (item?.typeId !== "fluffyalien_asn:used_storage_disk") {
+      if (item?.typeId === "fluffyalien_asn:used_storage_disk") {
+        const s = (
+          item.getDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID) as
+            | string
+            | undefined
+        )?.toString();
+        if (s) logWarn(`fluffyalien_asn:debug.log_disk_data result: ${s}`);
+      } else if (item?.typeId === "fluffyalien_asn:used_fluid_storage_disk") {
+        const s = item
+          .getDynamicPropertyIds()
+          // eslint-disable-next-line @typescript-eslint/no-base-to-string
+          .map((id) => `${id}=${item.getDynamicProperty(id)!.toString()}`)
+          .join(" ");
+        if (s) logWarn(`fluffyalien_asn:debug.log_disk_data result: ${s}`);
+      } else {
         logWarn(
-          "could not run script event fluffyalien_asn:debug.log_disk_data: not holding fluffyalien_asn:used_storage_disk",
+          "could not run script event fluffyalien_asn:debug.log_disk_data: not holding a supported item",
         );
         return;
       }
-
-      const s = (
-        item.getDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID) as
-          | string
-          | undefined
-      )?.toString();
-      if (s) logWarn(`fluffyalien_asn:debug.log_disk_data result: ${s}`);
     } else if (e.id === "fluffyalien_asn:debug.set_wireless_interface_energy") {
       const playerInv = player.getComponent("inventory")!;
       const mainHandSlotIndex = player.selectedSlotIndex;

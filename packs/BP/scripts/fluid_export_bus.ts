@@ -17,6 +17,8 @@ import { StorageNetwork } from "./storage_network";
 import { updateBlockConnectStates } from "./utils/block_connect";
 import { STR_DIRECTIONS } from "./utils/direction";
 
+const MAX_EXTRACTION_AMOUNT = 10; // Max amount to extract per storage network update
+
 async function showFluidExportBusUi(
   player: Player,
   block: Block,
@@ -27,9 +29,9 @@ async function showFluidExportBusUi(
     translate: "tile.fluffyalien_asn:fluid_export_bus.name",
   });
 
-  const storageTypeIds = await RegisteredStorageType.getAllIds();
   const storageTypes: RegisteredStorageType[] = [];
-  for (const storageTypeId of storageTypeIds) {
+  for (const storageTypeId of await RegisteredStorageType.getAllIds()) {
+    if (storageTypeId === "energy") continue; // Energy is not a fluid
     const storageType = await RegisteredStorageType.get(storageTypeId);
     if (storageType) storageTypes.push(storageType);
   }
@@ -73,18 +75,17 @@ export async function updateFluidExportBus(
     "fluidExportBusStorageType",
   ) as string | undefined;
   if (!storageType) return;
-
   if (getMachineStorage(block, storageType)) {
     return;
   }
 
   const storedFluids = await network.getStoredFluids();
   const stored = storedFluids.types.get(storageType);
-  if (!stored || stored < 5) return;
+  if (!stored) return;
+  const amountToExtract = Math.min(stored, MAX_EXTRACTION_AMOUNT);
 
-  void network.removeFluid(storageType, 5);
-
-  void setMachineStorage(block, storageType, 5);
+  void network.removeFluid(storageType, amountToExtract);
+  void setMachineStorage(block, storageType, amountToExtract);
 }
 
 export const fluidExportBusMachine: MachineDefinition = {

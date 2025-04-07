@@ -2,17 +2,21 @@ import {
   Block,
   BlockCustomComponent,
   DimensionLocation,
+  ItemStack,
   Player,
   RawMessage,
 } from "@minecraft/server";
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
-import { showForm } from "./utils/ui";
+import { makeErrorMessageUi, showForm } from "./utils/ui";
 import { RegisteredStorageType } from "bedrock-energistics-core-api";
 import {
+  getBlockDynamicProperties,
   getBlockDynamicProperty,
   removeAllDynamicPropertiesForBlock,
+  setBlockDynamicProperty,
 } from "./utils/dynamic_property";
-import { NetworkStoredFluids } from "./storage_network";
+import { NetworkStoredFluids, StorageNetwork } from "./storage_network";
+import { getPlayerMainhandSlot } from "./utils/item";
 
 export const FLUID_DRIVE_CAPACITY = 6400;
 
@@ -97,9 +101,54 @@ export const fluidDriveComponent: BlockCustomComponent = {
   onPlayerInteract(e) {
     if (!e.player) return;
 
+    const mainHandSlot = getPlayerMainhandSlot(e.player);
+    const heldItem = mainHandSlot.getItem();
+
+    if (heldItem?.typeId === "fluffyalien_asn:used_fluid_storage_disk") {
+      const existingData = getBlockDynamicProperties(e.block);
+      if (existingData.length) {
+        void showForm(
+          makeErrorMessageUi({
+            translate:
+              "fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk",
+          }),
+          e.player,
+        );
+
+        return;
+      }
+
+      const data = heldItem.getDynamicPropertyIds();
+
+      if (data.length) {
+        for (const id of data) {
+          const value = heldItem.getDynamicProperty(id);
+          setBlockDynamicProperty(e.block, id, value);
+        }
+        // clear the cache so it will be forced to update
+        StorageNetwork.getNetwork(e.block)?.clearStoredFluidsCache();
+      }
+
+      mainHandSlot.setItem();
+      return;
+    }
+
     void showFluidDriveUi(e.player, e.block);
   },
   onPlayerDestroy(e) {
+    const data = getBlockDynamicProperties(e.block);
+
+    if (data.length) {
+      const itemStack = new ItemStack(
+        "fluffyalien_asn:used_fluid_storage_disk",
+      );
+      for (const id of data) {
+        const value = getBlockDynamicProperty(e.block, id);
+        itemStack.setDynamicProperty(id, value);
+      }
+      e.block.dimension.spawnItem(itemStack, e.block.location);
+    }
+
     removeAllDynamicPropertiesForBlock(e.block);
   },
 };

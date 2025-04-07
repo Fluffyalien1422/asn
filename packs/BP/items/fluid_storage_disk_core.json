@@ -1,0 +1,15 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:item": {
+    "description": {
+      "identifier": "fluffyalien_asn:fluid_storage_disk_core"
+    },
+    "components": {
+      "minecraft:icon": {
+        "textures": {
+          "default": "fluffyalien_asn:fluid_storage_disk_core"
+        }
+      }
+    }
+  }
+}

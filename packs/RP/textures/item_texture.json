@@ -32,6 +32,12 @@
     },
     "fluffyalien_asn:portable_storage_network_placer": {
       "textures": "textures/fluffyalien/asn/items/portable_storage_network_placer"
+    },
+    "fluffyalien_asn:fluid_storage_disk": {
+      "textures": "textures/fluffyalien/asn/items/fluid_storage_disk"
+    },
+    "fluffyalien_asn:fluid_storage_disk_core": {
+      "textures": "textures/fluffyalien/asn/items/fluid_storage_disk_core"
     }
   }
 }
