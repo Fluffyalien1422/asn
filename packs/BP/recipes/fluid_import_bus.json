@@ -1,0 +1,35 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "fluffyalien_asn:fluid_import_bus"
+    },
+    "tags": ["crafting_table"],
+    "pattern": ["D#R", "#H#", "C#D"],
+    "key": {
+      "R": {
+        "item": "repeater"
+      },
+      "C": {
+        "item": "comparator"
+      },
+      "D": {
+        "item": "lapis_lazuli"
+      },
+      "#": {
+        "item": "fluffyalien_asn:storage_cable"
+      },
+      "H": {
+        "item": "hopper"
+      }
+    },
+    "result": {
+      "item": "fluffyalien_asn:fluid_import_bus"
+    },
+    "unlock": [
+      {
+        "item": "diamond"
+      }
+    ]
+  }
+}

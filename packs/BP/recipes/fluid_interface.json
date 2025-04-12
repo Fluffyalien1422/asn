@@ -1,0 +1,40 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "fluffyalien_asn:fluid_interface"
+    },
+    "tags": ["crafting_table"],
+    // prettier-ignore
+    "pattern": [
+      "E#D", 
+      "CLC",
+      "D#E"
+    ],
+    "key": {
+      "D": {
+        "item": "diamond"
+      },
+      "E": {
+        "item": "emerald"
+      },
+      "L": {
+        "item": "redstone_lamp"
+      },
+      "C": {
+        "item": "fluffyalien_asn:storage_cable"
+      },
+      "#": {
+        "item": "lapis_lazuli"
+      }
+    },
+    "result": {
+      "item": "fluffyalien_asn:fluid_interface"
+    },
+    "unlock": [
+      {
+        "item": "diamond"
+      }
+    ]
+  }
+}

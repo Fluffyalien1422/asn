@@ -1,0 +1,29 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "fluffyalien_asn:fluid_drive"
+    },
+    "tags": ["crafting_table"],
+    "pattern": ["INI", "SSS", "INI"],
+    "key": {
+      "I": {
+        "item": "iron_block"
+      },
+      "S": {
+        "item": "fluffyalien_asn:fluid_storage_disk"
+      },
+      "N": {
+        "item": "smooth_stone"
+      }
+    },
+    "result": {
+      "item": "fluffyalien_asn:fluid_drive"
+    },
+    "unlock": [
+      {
+        "item": "diamond"
+      }
+    ]
+  }
+}

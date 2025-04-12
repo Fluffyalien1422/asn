@@ -1,0 +1,40 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "fluffyalien_asn:fluid_storage_disk_core"
+    },
+    "tags": ["crafting_table"],
+    // prettier-ignore
+    "pattern": [
+      "EAE", 
+      "CRC",
+      "EGE"
+    ],
+    "key": {
+      "A": {
+        "item": "lapis_lazuli"
+      },
+      "R": {
+        "item": "redstone"
+      },
+      "E": {
+        "item": "emerald"
+      },
+      "C": {
+        "item": "iron_ingot"
+      },
+      "G": {
+        "item": "gold_ingot"
+      }
+    },
+    "result": {
+      "item": "fluffyalien_asn:fluid_storage_disk_core"
+    },
+    "unlock": [
+      {
+        "item": "diamond"
+      }
+    ]
+  }
+}

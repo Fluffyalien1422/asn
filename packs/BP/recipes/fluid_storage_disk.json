@@ -1,0 +1,25 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:recipe_shapeless": {
+    "description": {
+      "identifier": "fluffyalien_asn:fluid_storage_disk"
+    },
+    "tags": ["crafting_table"],
+    "ingredients": [
+      {
+        "item": "fluffyalien_asn:storage_disk_casing"
+      },
+      {
+        "item": "fluffyalien_asn:fluid_storage_disk_core"
+      }
+    ],
+    "result": {
+      "item": "fluffyalien_asn:fluid_storage_disk"
+    },
+    "unlock": [
+      {
+        "item": "diamond"
+      }
+    ]
+  }
+}
