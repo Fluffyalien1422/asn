@@ -91,6 +91,36 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
     icon: "textures/fluffyalien/asn/ui/tutorial_book/energy_icon",
     bullets: 5,
   },
+  {
+    id: "fluidStorage",
+    icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_drive_icon",
+    bullets: 4,
+  },
+  {
+    id: "fluidDrive",
+    icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_drive_icon",
+    bullets: 2,
+  },
+  {
+    id: "fluidInterface",
+    icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_interface_icon",
+    bullets: 1,
+  },
+  {
+    id: "fluidImportBus",
+    icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_import_bus_icon",
+    bullets: 2,
+  },
+  {
+    id: "fluidExportBus",
+    icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_export_bus_icon",
+    bullets: 4,
+  },
+  {
+    id: "fluidStorageDisk",
+    icon: "textures/fluffyalien/asn/items/fluid_storage_disk",
+    bullets: 3,
+  },
 ];
 
 export async function showTutorialBookUi(player: Player): Promise<void> {

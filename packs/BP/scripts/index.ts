@@ -4,8 +4,6 @@ import "./script_events";
 import "./tutorial_book";
 import "./wireless_interface";
 
-//TODO: new tutorial book entry icons
-
 //TODO: use dynamic properties instead of entities for data blocks (storage drive, buses, etc)
 // that are placed after the update. blocks that are already placed will still use the old
 // method until removed and replaced.
