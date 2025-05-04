@@ -1,0 +1,21 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:item": {
+    "description": {
+      "identifier": "fluffyalien_asn:storage_viewer_ui_stack_size_64",
+      "menu_category": {
+        "category": "none"
+      }
+    },
+    "components": {
+      "minecraft:tags": {
+        "tags": ["fluffyalien_asn:ui_item"]
+      },
+      "minecraft:icon": {
+        "textures": {
+          "default": "fluffyalien_asn:storage_viewer_ui_stack_size_64"
+        }
+      }
+    }
+  }
+}

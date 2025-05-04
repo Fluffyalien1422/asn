@@ -15,6 +15,27 @@
     "fluffyalien_asn:storage_viewer_ui_sort": {
       "textures": "textures/fluffyalien/asn/ui/storage_viewer/sort"
     },
+    "fluffyalien_asn:storage_viewer_ui_stack_size_1": {
+      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_1"
+    },
+    "fluffyalien_asn:storage_viewer_ui_stack_size_2": {
+      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_2"
+    },
+    "fluffyalien_asn:storage_viewer_ui_stack_size_4": {
+      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_4"
+    },
+    "fluffyalien_asn:storage_viewer_ui_stack_size_8": {
+      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_8"
+    },
+    "fluffyalien_asn:storage_viewer_ui_stack_size_16": {
+      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_16"
+    },
+    "fluffyalien_asn:storage_viewer_ui_stack_size_32": {
+      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_32"
+    },
+    "fluffyalien_asn:storage_viewer_ui_stack_size_64": {
+      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_64"
+    },
     "fluffyalien_asn:storage_disk": {
       "textures": "textures/fluffyalien/asn/items/storage_disk"
     },

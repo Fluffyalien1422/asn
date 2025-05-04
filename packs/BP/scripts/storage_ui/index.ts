@@ -35,10 +35,12 @@ const PAGE_NUM_DIGIT1_INDEX = 31;
 const PAGE_NUM_DIGIT2_INDEX = 32;
 const SEARCH_BUTTON_INDEX = 30;
 const SORT_BUTTON_INDEX = 33;
+const STACK_SIZE_BUTTON_INDEX = 34;
 
 const DISPLAY_ITEM_LORE_STR_END = "§a§s§n§r";
 
 type StorageViewerSortOrder = "insertion" | "amount";
+type StorageViewerStackSize = 1 | 2 | 4 | 8 | 16 | 32 | 64;
 
 interface ViewerData {
   enabled: boolean;
@@ -51,6 +53,7 @@ interface ViewerData {
    * this value should be ignored if `hasQuery` is true, sorting should be relevancy
    */
   sortOrder: StorageViewerSortOrder;
+  stackSize: StorageViewerStackSize;
 }
 
 /**
@@ -125,6 +128,13 @@ function fillViewerInventory(entity: Entity, data: ViewerData): void {
         : data.sortOrder === "insertion"
           ? SORT_INSERTION_ITEM_ID
           : SORT_AMOUNT_ITEM_ID,
+    ),
+  );
+
+  inventory.setItem(
+    STACK_SIZE_BUTTON_INDEX,
+    new ItemStack(
+      `fluffyalien_asn:storage_viewer_ui_stack_size_${data.stackSize.toString()}`,
     ),
   );
 
@@ -231,6 +241,7 @@ export function refreshStorageViewer(
     page: preservePage ? (oldData?.page ?? 0) : 0,
     playerInUi: player,
     sortOrder,
+    stackSize: oldData?.stackSize ?? 64,
   };
 
   viewerData.set(interfaceEntity.id, data);
@@ -465,6 +476,23 @@ system.runInterval(() => {
       continue;
     }
 
+    const expectedStackSizeBtnItemId = `fluffyalien_asn:storage_viewer_ui_stack_size_${data.stackSize.toString()}`;
+    const stackSizeBtnSlotItem = inventory.getItem(STACK_SIZE_BUTTON_INDEX);
+    if (stackSizeBtnSlotItem?.typeId !== expectedStackSizeBtnItemId) {
+      handleTakenItem(
+        data.playerInUi,
+        expectedStackSizeBtnItemId,
+        stackSizeBtnSlotItem,
+      );
+
+      data.stackSize = (
+        data.stackSize >= 64 ? 1 : data.stackSize * 2
+      ) as StorageViewerStackSize;
+      fillViewerInventory(entity, data);
+
+      continue;
+    }
+
     const searchButtonSlotItem = inventory.getItem(SEARCH_BUTTON_INDEX);
     const sortButtonSlotItem = inventory.getItem(SORT_BUTTON_INDEX);
 
@@ -595,8 +623,10 @@ system.runInterval(() => {
 
       data.storageSystem.takeOutItemStack(
         data.playerInUi,
-        // takeOutItemStack will clamp this value
-        storageItem.withAmount(new ItemStack(storageItem.typeId).maxAmount),
+        // takeOutItemStack will clamp this value if it is greater than the amount available in storage
+        storageItem.withAmount(
+          Math.min(data.stackSize, new ItemStack(storageItem.typeId).maxAmount),
+        ),
       );
 
       refreshStorageViewer(entity, data.playerInUi, data.storageSystem, true);

@@ -8,6 +8,13 @@ item.fluffyalien_asn:storage_viewer_ui_cancel_search=Cancel Search
 item.fluffyalien_asn:storage_viewer_ui_sort_insertion=Sorting By: Insertion
 item.fluffyalien_asn:storage_viewer_ui_sort_amount=Sorting By: Amount
 item.fluffyalien_asn:storage_viewer_ui_sort_relevancy=Sorting By: Relevancy
+item.fluffyalien_asn:storage_viewer_ui_stack_size_1=Stack Size: 1
+item.fluffyalien_asn:storage_viewer_ui_stack_size_2=Stack Size: 2
+item.fluffyalien_asn:storage_viewer_ui_stack_size_4=Stack Size: 4
+item.fluffyalien_asn:storage_viewer_ui_stack_size_8=Stack Size: 8
+item.fluffyalien_asn:storage_viewer_ui_stack_size_16=Stack Size: 16
+item.fluffyalien_asn:storage_viewer_ui_stack_size_32=Stack Size: 32
+item.fluffyalien_asn:storage_viewer_ui_stack_size_64=Stack Size: 64
 
 item.fluffyalien_asn:storage_disk=Storage Disk
 item.fluffyalien_asn:fluid_storage_disk=Fluid Storage Disk §c(Experimental)

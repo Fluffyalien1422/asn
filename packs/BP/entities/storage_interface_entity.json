@@ -36,7 +36,7 @@
       },
       "minecraft:inventory": {
         "container_type": "container",
-        "inventory_size": 34
+        "inventory_size": 35
       }
     }
   }
