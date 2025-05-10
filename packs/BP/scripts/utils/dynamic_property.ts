@@ -1,4 +1,4 @@
-import { DimensionLocation, Vector3, world } from "@minecraft/server";
+import { Block, DimensionLocation, Vector3, world } from "@minecraft/server";
 
 type DynamicPropertyValue = boolean | number | string | Vector3;
 
@@ -29,14 +29,26 @@ export class DynamicPropertyAccessor<
     return new DynamicPropertyAccessor(id, undefined);
   }
 
-  get(target: HasDynamicProperties): TValue | TDefault {
+  get(target: HasDynamicProperties | Block): TValue | TDefault {
+    if (target instanceof Block) {
+      return (
+        (getBlockDynamicProperty(target, this.id) as TValue | undefined) ??
+        this.defaultValue
+      );
+    }
+
     return (
       (target.getDynamicProperty(this.id) as TValue | undefined) ??
       this.defaultValue
     );
   }
 
-  set(target: HasDynamicProperties, value?: TValue): void {
+  set(target: HasDynamicProperties | Block, value?: TValue): void {
+    if (target instanceof Block) {
+      setBlockDynamicProperty(target, this.id, value);
+      return;
+    }
+
     target.setDynamicProperty(this.id, value);
   }
 }

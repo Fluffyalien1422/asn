@@ -1,8 +1,11 @@
 import { Block, DimensionLocation, Entity } from "@minecraft/server";
 import { StorageNetwork } from "../storage_network";
-import { logWarn } from "../log";
 import { receivingRedstoneSignal } from "../utils/block";
 import { StrCardinalDirection, getBlockInDirection } from "../utils/direction";
+import {
+  getBlockDynamicProperty,
+  setBlockDynamicProperty,
+} from "../utils/dynamic_property";
 
 export type ExportBusExportItemEnchantments = "with" | "without" | "ignore";
 
@@ -23,25 +26,20 @@ export function updateExportBus(block: Block, network: StorageNetwork): void {
   const container = target?.getComponent("inventory")?.container;
   if (!container) return;
 
-  const dummyEntity = getExportBusEntity(block);
-  if (!dummyEntity) {
-    logWarn(
-      `could not update export bus at (${block.x.toString()}, ${block.y.toString()}, ${block.z.toString()}) in ${
-        block.dimension.id
-      }: could not get dummy entity`,
-    );
-    return;
-  }
+  const dynamicPropertyTarget = getExportBusEntity(block) ?? block;
 
-  const exportItemId = getExportBusExportItemId(dummyEntity);
+  const exportItemId = getExportBusExportItemId(dynamicPropertyTarget);
   if (!exportItemId) {
     return;
   }
 
-  const exportItemEnchantmentsStatus =
-    getExportBusExportItemEnchantments(dummyEntity);
+  const exportItemEnchantmentsStatus = getExportBusExportItemEnchantments(
+    dynamicPropertyTarget,
+  );
 
-  const exportItemDamageRange = getExportBusExportItemDamageRange(dummyEntity);
+  const exportItemDamageRange = getExportBusExportItemDamageRange(
+    dynamicPropertyTarget,
+  );
 
   const itemStack = network
     .getStoredItemStacks()
@@ -74,6 +72,9 @@ export function updateExportBus(block: Block, network: StorageNetwork): void {
  * Gets the export bus dummy entity at a {@link DimensionLocation}
  * @param location the block location of the export bus
  * @returns the {@link Entity} or undefined if it could not be found
+ * @deprecated
+ * Data is now stored on the block itself, this function is only
+ * used for backwards compatibility.
  */
 export function getExportBusEntity(
   location: DimensionLocation,
@@ -83,59 +84,109 @@ export function getExportBusEntity(
     .find((v) => v.typeId === "fluffyalien_asn:export_bus_entity");
 }
 
-export function getExportBusExportItemId(entity: Entity): string | undefined {
-  return entity.getDynamicProperty("fluffyalien_asn:export_item") as
+export function getExportBusExportItemId(
+  target: Block | Entity,
+): string | undefined {
+  if (target instanceof Block) {
+    return getBlockDynamicProperty(target, "exportItem") as string | undefined;
+  }
+  // legacy support
+  return target.getDynamicProperty("fluffyalien_asn:export_item") as
     | string
     | undefined;
 }
 
-export function setExportBusExportItemId(entity: Entity, value: string): void {
-  entity.setDynamicProperty("fluffyalien_asn:export_item", value);
+export function setExportBusExportItemId(
+  target: Block | Entity,
+  value: string,
+): void {
+  if (target instanceof Block) {
+    setBlockDynamicProperty(target, "exportItem", value);
+  } else {
+    // legacy support
+    target.setDynamicProperty("fluffyalien_asn:export_item", value);
+  }
 }
 
 export function getExportBusExportItemEnchantments(
-  entity: Entity,
+  target: Block | Entity,
 ): ExportBusExportItemEnchantments {
+  if (target instanceof Block) {
+    return (
+      (getBlockDynamicProperty(target, "exportItemEnchantments") as
+        | ExportBusExportItemEnchantments
+        | undefined) ?? "ignore"
+    );
+  }
+  // legacy support
   return (
-    (entity.getDynamicProperty("fluffyalien_asn:export_item_enchantments") as
+    (target.getDynamicProperty("fluffyalien_asn:export_item_enchantments") as
       | ExportBusExportItemEnchantments
       | undefined) ?? "ignore"
   );
 }
 
 export function setExportBusExportItemEnchantments(
-  entity: Entity,
+  target: Block | Entity,
   value: ExportBusExportItemEnchantments,
 ): void {
-  entity.setDynamicProperty("fluffyalien_asn:export_item_enchantments", value);
+  if (target instanceof Block) {
+    setBlockDynamicProperty(target, "exportItemEnchantments", value);
+  } else {
+    // legacy support
+    target.setDynamicProperty(
+      "fluffyalien_asn:export_item_enchantments",
+      value,
+    );
+  }
 }
 
 export function getExportBusExportItemDamageRange(
-  entity: Entity,
+  target: Block | Entity,
 ): ExportBusExportItemDamageRange {
-  const min =
-    (entity.getDynamicProperty("fluffyalien_asn:export_item_damage_min") as
+  if (target instanceof Block) {
+    return {
+      min:
+        (getBlockDynamicProperty(target, "exportItemDamageMin") as
+          | number
+          | undefined) ?? 0,
+      max:
+        (getBlockDynamicProperty(target, "exportItemDamageMax") as
+          | number
+          | undefined) ?? undefined,
+    };
+  }
+
+  // legacy support
+  return {
+    min:
+      (target.getDynamicProperty("fluffyalien_asn:export_item_damage_min") as
+        | number
+        | undefined) ?? 0,
+    max: target.getDynamicProperty("fluffyalien_asn:export_item_damage_max") as
       | number
-      | undefined) ?? 0;
-
-  const max = entity.getDynamicProperty(
-    "fluffyalien_asn:export_item_damage_max",
-  ) as number | undefined;
-
-  return { min, max };
+      | undefined,
+  };
 }
 
 export function setExportBusExportItemDamageRange(
-  entity: Entity,
+  target: Block | Entity,
   value: ExportBusExportItemDamageRange,
 ): void {
-  entity.setDynamicProperty(
-    "fluffyalien_asn:export_item_damage_min",
-    value.min,
-  );
+  if (target instanceof Block) {
+    setBlockDynamicProperty(target, "exportItemDamageMin", value.min);
+    setBlockDynamicProperty(target, "exportItemDamageMax", value.max);
+  } else {
+    // legacy support
 
-  entity.setDynamicProperty(
-    "fluffyalien_asn:export_item_damage_max",
-    value.max,
-  );
+    target.setDynamicProperty(
+      "fluffyalien_asn:export_item_damage_min",
+      value.min,
+    );
+
+    target.setDynamicProperty(
+      "fluffyalien_asn:export_item_damage_max",
+      value.max,
+    );
+  }
 }

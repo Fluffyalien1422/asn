@@ -7,46 +7,36 @@ import {
 } from ".";
 import { getPlayerMainhandSlot } from "../utils/item";
 import { showExportBusUi } from "./ui";
-import { logWarn } from "../log";
 import {
   busUpdateBlockConnectStatesTransformer,
   updateBlockConnectStates,
 } from "../utils/block_connect";
 import { STR_DIRECTIONS, StrCardinalDirection } from "../utils/direction";
+import { removeAllDynamicPropertiesForBlock } from "../utils/dynamic_property";
 
 export const exportBusComponent: BlockCustomComponent = {
-  onPlace(e) {
-    if (e.previousBlock.type.id === "fluffyalien_asn:export_bus") return;
-
-    e.block.dimension.spawnEntity("fluffyalien_asn:export_bus_entity", {
-      x: e.block.x + 0.5,
-      y: e.block.y,
-      z: e.block.z + 0.5,
-    });
-  },
   onPlayerDestroy(e) {
+    removeAllDynamicPropertiesForBlock(e.block);
+
+    // legacy support - remove the entity if it exists
     getExportBusEntity(e.block)?.triggerEvent("fluffyalien_asn:despawn");
   },
   onPlayerInteract(e) {
     if (!e.player) return;
 
-    const entity = getExportBusEntity(e.block);
-    if (!entity) {
-      logWarn("cannot get export bus dummy entity");
-      return;
-    }
+    const dynamicPropertyTarget = getExportBusEntity(e.block) ?? e.block;
 
     const mainhandSlot = getPlayerMainhandSlot(e.player);
     const heldItem = mainhandSlot.getItem();
     if (heldItem) {
-      setExportBusExportItemId(entity, heldItem.typeId);
+      setExportBusExportItemId(dynamicPropertyTarget, heldItem.typeId);
 
       // reset optional values
-      setExportBusExportItemEnchantments(entity, "ignore");
-      setExportBusExportItemDamageRange(entity, { min: 0 });
+      setExportBusExportItemEnchantments(dynamicPropertyTarget, "ignore");
+      setExportBusExportItemDamageRange(dynamicPropertyTarget, { min: 0 });
     }
 
-    void showExportBusUi(e.player, entity);
+    void showExportBusUi(e.player, dynamicPropertyTarget);
   },
   onTick(e) {
     updateBlockConnectStates(

@@ -9,7 +9,10 @@ import {
 } from "@minecraft/server";
 import { logWarn } from "./log";
 import { ModalFormData } from "@minecraft/server-ui";
-import { DynamicPropertyAccessor } from "./utils/dynamic_property";
+import {
+  DynamicPropertyAccessor,
+  removeAllDynamicPropertiesForBlock,
+} from "./utils/dynamic_property";
 import {
   STR_DIRECTIONS,
   StrCardinalDirection,
@@ -23,7 +26,6 @@ import {
   busUpdateBlockConnectStatesTransformer,
   updateBlockConnectStates,
 } from "./utils/block_connect";
-import { Vector3Utils } from "@minecraft/math";
 import { BlockStateSuperset } from "@minecraft/vanilla-data";
 
 const OPERATOR_STRS = [">", "<", "==", "!="];
@@ -69,16 +71,10 @@ const levelEmitterItemMaxDamage =
   );
 
 export const levelEmitterComponent: BlockCustomComponent = {
-  onPlace(e) {
-    if (e.previousBlock.type.id === "fluffyalien_asn:level_emitter") return;
-
-    e.block.dimension.spawnEntity("fluffyalien_asn:level_emitter_entity", {
-      x: e.block.x + 0.5,
-      y: e.block.y,
-      z: e.block.z + 0.5,
-    });
-  },
   onPlayerDestroy(e) {
+    removeAllDynamicPropertiesForBlock(e.block);
+
+    // legacy support - remove the entity if it exists
     getEntityAtBlockLocation(
       e.block,
       "fluffyalien_asn:level_emitter_entity",
@@ -87,29 +83,24 @@ export const levelEmitterComponent: BlockCustomComponent = {
   onPlayerInteract(e) {
     if (!e.player) return;
 
-    const entity = getEntityAtBlockLocation(
-      e.block,
-      "fluffyalien_asn:level_emitter_entity",
-    );
-    if (!entity) {
-      logWarn(
-        `could not get level emitter entity at ${Vector3Utils.toString(e.block.location)} in ${e.block.dimension.id}`,
-      );
-      return;
-    }
+    const dynamicPropertyTarget =
+      getEntityAtBlockLocation(
+        e.block,
+        "fluffyalien_asn:level_emitter_entity",
+      ) ?? e.block;
 
     const mainhandSlot = getPlayerMainhandSlot(e.player);
     const heldItem = mainhandSlot.getItem();
     if (heldItem) {
-      levelEmitterItem.set(entity, heldItem.typeId);
+      levelEmitterItem.set(dynamicPropertyTarget, heldItem.typeId);
 
       // reset optional values
-      levelEmitterTestEnchantments.set(entity);
-      levelEmitterItemMinDamage.set(entity);
-      levelEmitterItemMaxDamage.set(entity);
+      levelEmitterTestEnchantments.set(dynamicPropertyTarget);
+      levelEmitterItemMinDamage.set(dynamicPropertyTarget);
+      levelEmitterItemMaxDamage.set(dynamicPropertyTarget);
     }
 
-    void showLevelEmitterUi(e.player, entity);
+    void showLevelEmitterUi(e.player, dynamicPropertyTarget);
   },
   onTick(e) {
     updateBlockConnectStates(
@@ -127,9 +118,9 @@ export const levelEmitterComponent: BlockCustomComponent = {
 
 async function showLevelEmitterUi(
   player: Player,
-  dummyEntity: Entity,
+  dynamicPropertyTarget: Entity | Block,
 ): Promise<void> {
-  const itemId = levelEmitterItem.get(dummyEntity);
+  const itemId = levelEmitterItem.get(dynamicPropertyTarget);
 
   if (!itemId) {
     return void showForm(
@@ -173,20 +164,22 @@ async function showLevelEmitterUi(
       ],
     },
     OPERATOR_STRS,
-    levelEmitterOperator.get(dummyEntity),
+    levelEmitterOperator.get(dynamicPropertyTarget),
   );
 
   form.textField(
     { translate: "fluffyalien_asn.ui.levelEmitter.amount" },
     "",
-    (levelEmitterTestAmount.get(dummyEntity) ?? 0).toString(),
+    (levelEmitterTestAmount.get(dynamicPropertyTarget) ?? 0).toString(),
   );
 
   const itemStack = new ItemStack(itemId);
   const enchantable = itemStack.hasComponent("enchantable");
   const breakable = itemStack.hasComponent("durability");
 
-  const itemEnchantmentsStatus = levelEmitterTestEnchantments.get(dummyEntity);
+  const itemEnchantmentsStatus = levelEmitterTestEnchantments.get(
+    dynamicPropertyTarget,
+  );
 
   if (enchantable) {
     form.dropdown(
@@ -217,13 +210,13 @@ async function showLevelEmitterUi(
     form.textField(
       { translate: "fluffyalien_asn.ui.exportBus.exportItemMinDamage" },
       "0",
-      (levelEmitterItemMinDamage.get(dummyEntity) ?? 0).toString(),
+      (levelEmitterItemMinDamage.get(dynamicPropertyTarget) ?? 0).toString(),
     );
 
     form.textField(
       { translate: "fluffyalien_asn.ui.exportBus.exportItemMaxDamage" },
       "",
-      levelEmitterItemMaxDamage.get(dummyEntity)?.toString(),
+      levelEmitterItemMaxDamage.get(dynamicPropertyTarget)?.toString(),
     );
   }
 
@@ -282,11 +275,14 @@ async function showLevelEmitterUi(
     );
   }
 
-  levelEmitterOperator.set(dummyEntity, operator);
-  levelEmitterTestAmount.set(dummyEntity, amount);
-  levelEmitterTestEnchantments.set(dummyEntity, enchantmentsDropdownResponse);
-  levelEmitterItemMinDamage.set(dummyEntity, minDamageResponse);
-  levelEmitterItemMaxDamage.set(dummyEntity, maxDamageResponse);
+  levelEmitterOperator.set(dynamicPropertyTarget, operator);
+  levelEmitterTestAmount.set(dynamicPropertyTarget, amount);
+  levelEmitterTestEnchantments.set(
+    dynamicPropertyTarget,
+    enchantmentsDropdownResponse,
+  );
+  levelEmitterItemMinDamage.set(dynamicPropertyTarget, minDamageResponse);
+  levelEmitterItemMaxDamage.set(dynamicPropertyTarget, maxDamageResponse);
 }
 
 export function updateLevelEmitter(

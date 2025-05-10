@@ -1,5 +1,4 @@
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
-import { logWarn } from "./log";
 import { StorageNetwork } from "./storage_network";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { makeErrorMessageUi, showForm } from "./utils/ui";
@@ -11,14 +10,26 @@ import {
   ItemStack,
   Player,
 } from "@minecraft/server";
+import {
+  getBlockDynamicProperty,
+  removeAllDynamicPropertiesForBlock,
+  setBlockDynamicProperty,
+} from "./utils/dynamic_property";
 
 export const MAX_STORAGE_DRIVE_DATA_LENGTH = 3_000;
+/**
+ * @deprecated
+ * This is a legacy property that should only be used for backwards compatibility.
+ */
 export const STORAGE_DATA_DYNAMIC_PROPERTY_ID = "fluffyalien_asn:storage_data";
 
 /**
  * Gets the storage drive dummy entity at a {@link DimensionLocation}
  * @param location the block location of the storage drive
  * @returns the {@link Entity} or undefined if it could not be found
+ * @deprecated
+ * Storage drive data is now stored on the block itself, this function is only
+ * used for backwards compatibility.
  */
 function getStorageDriveEntity(
   location: DimensionLocation,
@@ -31,34 +42,36 @@ function getStorageDriveEntity(
 /**
  * Gets the serialized storage data of a storage drive
  * @param location the block location of the storage drive
- * @returns the serialized data, `undefined` if the data does not exist, or `false` if there was an error
+ * @returns the serialized data, `undefined` if the data does not exist
  */
 export function getStorageDriveSerializedData(
   location: DimensionLocation,
-): string | undefined | false {
+): string | undefined {
   const entity = getStorageDriveEntity(location);
-  if (!entity) return false;
-  return entity.getDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID) as
-    | string
-    | undefined;
+  if (entity) {
+    // legacy support
+    return entity.getDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID) as
+      | string
+      | undefined;
+  }
+  return getBlockDynamicProperty(location, "storageData") as string | undefined;
 }
 
 /**
  * Sets the serialized storage data of a storage drive
  * @param location the block location of the storage drive
  * @param data the serialized data
- * @returns a boolean indicating whether the operation was successful or not
  */
 export function setStorageDriveSerializedData(
   location: DimensionLocation,
   data: string,
-): boolean {
+): void {
   const entity = getStorageDriveEntity(location);
-  if (!entity) return false;
-
-  entity.setDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID, data);
-
-  return true;
+  if (entity) {
+    entity.setDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID, data);
+  } else {
+    setBlockDynamicProperty(location, "storageData", data);
+  }
 }
 
 function showStorageDriveUi(
@@ -77,11 +90,8 @@ function showStorageDriveUi(
       rawtext: [
         {
           text:
-            (
-              getStorageDriveEntity(storageDrive)?.getDynamicProperty(
-                STORAGE_DATA_DYNAMIC_PROPERTY_ID,
-              ) as string | undefined
-            )?.length.toString() ?? "0",
+            getStorageDriveSerializedData(storageDrive)?.length.toString() ??
+            "0",
         },
       ],
     },
@@ -95,31 +105,17 @@ function showStorageDriveUi(
 }
 
 export const storageDriveComponent: BlockCustomComponent = {
-  onPlace(e) {
-    if (e.previousBlock.type.id === "fluffyalien_asn:storage_drive") return;
-
-    e.block.dimension.spawnEntity("fluffyalien_asn:storage_drive_entity", {
-      x: e.block.x + 0.5,
-      y: e.block.y,
-      z: e.block.z + 0.5,
-    });
-  },
   onPlayerDestroy(e) {
     const data = getStorageDriveSerializedData(e.block);
-    if (data === false) {
-      logWarn(
-        `couldn't create storage disk with data: could not read data from storage drive at (${e.block.x.toString()}, ${e.block.y.toString()}, ${e.block.z.toString()}) in ${
-          e.block.dimension.id
-        }`,
-      );
-    }
-
     if (data) {
       const itemStack = new ItemStack("fluffyalien_asn:used_storage_disk");
       itemStack.setDynamicProperty(STORAGE_DATA_DYNAMIC_PROPERTY_ID, data);
       e.block.dimension.spawnItem(itemStack, e.block.location);
     }
 
+    removeAllDynamicPropertiesForBlock(e.block);
+
+    // legacy support - remove the entity if it exists
     getStorageDriveEntity(e.block)?.triggerEvent("fluffyalien_asn:despawn");
   },
   onPlayerInteract(e) {

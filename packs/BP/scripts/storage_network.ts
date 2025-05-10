@@ -249,14 +249,6 @@ export class StorageNetwork extends StorageSystem {
 
     for (const drive of this.connections.storageDrives) {
       const serialized = getStorageDriveSerializedData(drive);
-
-      if (serialized === false) {
-        logWarn(
-          `could not read data from storage drive at (${drive.x.toString()}, ${drive.y.toString()}, ${drive.z.toString()}) in ${
-            drive.dimension.id
-          } to get stored item stacks in network. skipping. some items may be missing`,
-        );
-      }
       if (!serialized) {
         continue;
       }
@@ -298,13 +290,7 @@ export class StorageNetwork extends StorageSystem {
         itemsStored++;
       }
 
-      if (!setStorageDriveSerializedData(drive, serializedData)) {
-        logWarn(
-          `could not set data in storage drive at (${drive.x.toString()}, ${drive.y.toString()}, ${drive.z.toString()}) in ${
-            drive.dimension.id
-          }. skipping. some items may be missing or duplicated`,
-        );
-      }
+      setStorageDriveSerializedData(drive, serializedData);
     }
 
     if (itemsStored < storedItems.length) {
@@ -538,14 +524,6 @@ export class StorageNetwork extends StorageSystem {
 
     for (const drive of this.connections.storageDrives) {
       const serialized = getStorageDriveSerializedData(drive);
-
-      if (serialized === false) {
-        logWarn(
-          `could not read data from storage drive at (${drive.x.toString()}, ${drive.y.toString()}, ${drive.z.toString()}) in ${
-            drive.dimension.id
-          } to get used data length. skipping. result may not be accurate`,
-        );
-      }
       if (!serialized) {
         continue;
       }
