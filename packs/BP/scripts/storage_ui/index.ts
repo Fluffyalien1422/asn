@@ -332,20 +332,9 @@ function isStorageInventoryItemTaken(
   return true;
 }
 
-/**
- * removes an item taken from the interface entity's inventory from the player
- */
-function clearTakenItemFromPlayer(
-  player: Player,
-  takenItem: StorageSystemItemStack,
-): void {
+function clearUiItemsFromPlayer(player: Player): void {
   const playerCursorInventory = player.getComponent("cursor_inventory")!;
-  if (
-    playerCursorInventory.item &&
-    takenItem.isStackableWith(
-      StorageSystemItemStack.fromItemStack(playerCursorInventory.item),
-    )
-  ) {
+  if (playerCursorInventory.item && isUiItem(playerCursorInventory.item)) {
     playerCursorInventory.clear();
     return;
   }
@@ -354,28 +343,10 @@ function clearTakenItemFromPlayer(
   for (let i = 0; i < playerInventory.size; i++) {
     const item = playerInventory.getItem(i);
 
-    if (
-      item &&
-      takenItem.isStackableWith(StorageSystemItemStack.fromItemStack(item))
-    ) {
+    if (item && isUiItem(item)) {
       playerInventory.setItem(i);
       return;
     }
-  }
-}
-
-/**
- * clear an item taken from the interface entity's inventory from the player's inventory and give the player `itemStack` if it is defined
- */
-function handleTakenItem(
-  player: Player,
-  itemId: string,
-  itemStack?: ItemStack,
-): void {
-  clearTakenItemFromPlayer(player, new StorageSystemItemStack(itemId));
-
-  if (itemStack) {
-    player.dimension.spawnItem(itemStack, player.location);
   }
 }
 
@@ -458,7 +429,7 @@ system.runInterval(() => {
 
     const backBtnSlotItem = inventory.getItem(BACK_BUTTON_INDEX);
     if (backBtnSlotItem?.typeId !== BACK_BUTTON_ITEM_ID) {
-      handleTakenItem(data.playerInUi, BACK_BUTTON_ITEM_ID, backBtnSlotItem);
+      clearUiItemsFromPlayer(data.playerInUi);
 
       data.page = Math.max(data.page - 1, 0);
       fillViewerInventory(entity, data);
@@ -468,7 +439,7 @@ system.runInterval(() => {
 
     const nextBtnSlotItem = inventory.getItem(NEXT_BUTTON_INDEX);
     if (nextBtnSlotItem?.typeId !== NEXT_BUTTON_ITEM_ID) {
-      handleTakenItem(data.playerInUi, NEXT_BUTTON_ITEM_ID, nextBtnSlotItem);
+      clearUiItemsFromPlayer(data.playerInUi);
 
       data.page++;
       fillViewerInventory(entity, data);
@@ -479,11 +450,7 @@ system.runInterval(() => {
     const expectedStackSizeBtnItemId = `fluffyalien_asn:storage_viewer_ui_stack_size_${data.stackSize.toString()}`;
     const stackSizeBtnSlotItem = inventory.getItem(STACK_SIZE_BUTTON_INDEX);
     if (stackSizeBtnSlotItem?.typeId !== expectedStackSizeBtnItemId) {
-      handleTakenItem(
-        data.playerInUi,
-        expectedStackSizeBtnItemId,
-        stackSizeBtnSlotItem,
-      );
+      clearUiItemsFromPlayer(data.playerInUi);
 
       data.stackSize = (
         data.stackSize >= 64 ? 1 : data.stackSize * 2
@@ -498,11 +465,7 @@ system.runInterval(() => {
 
     if (data.hasQuery) {
       if (searchButtonSlotItem?.typeId !== CANCEL_SEARCH_BUTTON_ITEM_ID) {
-        handleTakenItem(
-          data.playerInUi,
-          CANCEL_SEARCH_BUTTON_ITEM_ID,
-          searchButtonSlotItem,
-        );
+        clearUiItemsFromPlayer(data.playerInUi);
 
         data.hasQuery = false;
         refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
@@ -511,11 +474,7 @@ system.runInterval(() => {
       }
 
       if (sortButtonSlotItem?.typeId !== SORT_RELEVANCY_ITEM_ID) {
-        handleTakenItem(
-          data.playerInUi,
-          SORT_RELEVANCY_ITEM_ID,
-          sortButtonSlotItem,
-        );
+        clearUiItemsFromPlayer(data.playerInUi);
 
         refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
 
@@ -523,11 +482,7 @@ system.runInterval(() => {
       }
     } else {
       if (searchButtonSlotItem?.typeId !== SEARCH_BUTTON_ITEM_ID) {
-        handleTakenItem(
-          data.playerInUi,
-          SEARCH_BUTTON_ITEM_ID,
-          searchButtonSlotItem,
-        );
+        clearUiItemsFromPlayer(data.playerInUi);
 
         data.enabled = false;
         void search(entity, data);
@@ -539,11 +494,7 @@ system.runInterval(() => {
         data.sortOrder === "insertion" &&
         sortButtonSlotItem?.typeId !== SORT_INSERTION_ITEM_ID
       ) {
-        handleTakenItem(
-          data.playerInUi,
-          SORT_INSERTION_ITEM_ID,
-          sortButtonSlotItem,
-        );
+        clearUiItemsFromPlayer(data.playerInUi);
 
         data.sortOrder = "amount";
         refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
@@ -555,11 +506,7 @@ system.runInterval(() => {
         data.sortOrder === "amount" &&
         sortButtonSlotItem?.typeId !== SORT_AMOUNT_ITEM_ID
       ) {
-        handleTakenItem(
-          data.playerInUi,
-          SORT_AMOUNT_ITEM_ID,
-          sortButtonSlotItem,
-        );
+        clearUiItemsFromPlayer(data.playerInUi);
 
         data.sortOrder = "insertion";
         refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
@@ -590,13 +537,7 @@ system.runInterval(() => {
         continue;
       }
 
-      clearTakenItemFromPlayer(
-        data.playerInUi,
-        storageItem.withLore([
-          getDisplayItemLoreStr(storageItem.amount),
-          ...storageItem.lore,
-        ]),
-      );
+      clearUiItemsFromPlayer(data.playerInUi);
 
       if (inventoryItem) {
         // give the item back
