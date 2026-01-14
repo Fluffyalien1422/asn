@@ -3,7 +3,7 @@
   "briefDescription": "Advanced Storage Network finally fixes your storage problem. Build a storage network that can hold infinite items, automate it, access it wirelessly, expand it infinitely, and so much more.",
   "dependencies": [
     {
-      "name": "Bedrock Energistics Core v0.8.x",
+      "name": "Bedrock Energistics Core v0.10.x",
       "description": "Required for energy usage. See <strong>Energy (EXPERIMENTAL)</strong> (on this page or in the in-game tutorial book) for more information.",
       "optional": true,
       "mcpedlUrl": "https://mcpedl.com/bedrock-energistics-core",
