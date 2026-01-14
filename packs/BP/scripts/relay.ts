@@ -15,11 +15,9 @@ async function showRelayUi(player: Player, relayEntity: Entity): Promise<void> {
   const form = new ModalFormData();
   form.title({ translate: "fluffyalien_asn.ui.relay.title" });
 
-  form.textField(
-    { translate: "fluffyalien_asn.ui.relay.name" },
-    "",
-    relayName.get(relayEntity),
-  );
+  form.textField({ translate: "fluffyalien_asn.ui.relay.name" }, "", {
+    defaultValue: relayName.get(relayEntity),
+  });
 
   const response = await showForm(form, player);
   if (!response.formValues) return;
@@ -48,7 +46,7 @@ export const storageRelayComponent: BlockCustomComponent = {
       z: e.block.z + 0.5,
     });
   },
-  onPlayerDestroy(e) {
+  onPlayerBreak(e) {
     getEntityAtBlockLocation(e.block, "fluffyalien_asn:relay_entity")?.remove();
   },
   onPlayerInteract(e) {

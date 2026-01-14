@@ -15,7 +15,7 @@ import { STR_DIRECTIONS, StrCardinalDirection } from "../utils/direction";
 import { removeAllDynamicPropertiesForBlock } from "../utils/dynamic_property";
 
 export const exportBusComponent: BlockCustomComponent = {
-  onPlayerDestroy(e) {
+  onPlayerBreak(e) {
     removeAllDynamicPropertiesForBlock(e.block);
 
     // legacy support - remove the entity if it exists

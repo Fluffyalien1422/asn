@@ -47,11 +47,13 @@ async function showFluidExportBusUi(
       translate: "fluffyalien_asn.ui.fluidExportBus.storageType",
     },
     ["None", ...storageTypes.map((storageType) => storageType.name)],
-    existingStorageType
-      ? storageTypes.findIndex(
-          (storageType) => storageType.id === existingStorageType,
-        ) + 1
-      : 0,
+    {
+      defaultValueIndex: existingStorageType
+        ? storageTypes.findIndex(
+            (storageType) => storageType.id === existingStorageType,
+          ) + 1
+        : 0,
+    },
   );
 
   const response = await showForm(form, player);
@@ -116,7 +118,7 @@ export const fluidExportBusComponent: BlockCustomComponent = {
       );
     });
   },
-  onPlayerDestroy(e) {
+  onPlayerBreak(e) {
     removeAllDynamicPropertiesForBlock(e.block);
   },
   onTick(e) {

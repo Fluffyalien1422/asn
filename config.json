@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/Bedrock-OSS/regolith-schemas/main/config/v1.2.json",
+  "$schema": "https://raw.githubusercontent.com/Bedrock-OSS/regolith-schemas/main/config/v1.4.json",
   "author": "Fluffyalien1422",
   "name": "Advanced Storage Network",
   "packs": {
@@ -7,7 +7,7 @@
     "resourcePack": "./packs/RP"
   },
   "regolith": {
-    "formatVersion": "1.2.0",
+    "formatVersion": "1.4.0",
     "dataPath": "./packs/data",
     "filterDefinitions": {
       "simple_manifest": {
@@ -16,7 +16,7 @@
       },
       "build_scripts": {
         "runWith": "shell",
-        "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --log-level=warning --external:@minecraft/server --external:@minecraft/server-ui"
+        "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --log-level=warning --external:@minecraft/server --external:@minecraft/server-ui --preserve-symlinks"
       },
       "minify_and_clean_scripts": {
         "runWith": "shell",
@@ -30,7 +30,8 @@
     "profiles": {
       "default": {
         "export": {
-          "target": "development"
+          "target": "development",
+          "build": "standard"
         },
         "filters": [
           {

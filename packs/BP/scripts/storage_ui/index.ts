@@ -1,4 +1,4 @@
-import { end, nether, overworld } from "../utils/dimension";
+import { getEntitiesInAllDimensions } from "../utils/dimension";
 import { makeErrorString } from "../log";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { wait } from "../utils/async";
@@ -94,7 +94,7 @@ function getItemsOnPage(
 }
 
 function fillViewerInventory(entity: Entity, data: ViewerData): void {
-  const inventory = entity.getComponent("inventory")!.container!;
+  const inventory = entity.getComponent("inventory")!.container;
   inventory.clearAll();
 
   const itemsOnPage = getItemsOnPage(data.items, data.page);
@@ -339,7 +339,7 @@ function clearUiItemsFromPlayer(player: Player): void {
     return;
   }
 
-  const playerInventory = player.getComponent("inventory")!.container!;
+  const playerInventory = player.getComponent("inventory")!.container;
   for (let i = 0; i < playerInventory.size; i++) {
     const item = playerInventory.getItem(i);
 
@@ -382,7 +382,7 @@ function addItemToStorage(
 }
 
 world.afterEvents.entitySpawn.subscribe((e) => {
-  if (e.entity.typeId !== "minecraft:item" || !e.entity.isValid()) return;
+  if (e.entity.typeId !== "minecraft:item" || !e.entity.isValid) return;
 
   const itemStack = e.entity.getComponent("item")!.itemStack;
   if (isUiItem(itemStack)) {
@@ -396,11 +396,7 @@ system.runInterval(() => {
     families: ["fluffyalien_asn:storage_viewer"],
   };
 
-  for (const entity of [
-    ...overworld.getEntities(entityQueryOptions),
-    ...nether.getEntities(entityQueryOptions),
-    ...end.getEntities(entityQueryOptions),
-  ]) {
+  for (const entity of getEntitiesInAllDimensions(entityQueryOptions)) {
     const data = viewerData.get(entity.id);
     if (
       !data?.enabled ||
@@ -411,7 +407,7 @@ system.runInterval(() => {
     )
       continue;
 
-    const inventory = entity.getComponent("inventory")!.container!;
+    const inventory = entity.getComponent("inventory")!.container;
 
     const inputSlotItem = inventory.getItem(INPUT_SLOT_INDEX);
     if (inputSlotItem) {

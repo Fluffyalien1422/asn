@@ -167,11 +167,11 @@ export const storageCoreComponent: BlockCustomComponent = {
 
     StorageNetwork.updateConnectableNetworks(e.block);
   },
-  onPlayerDestroy(e) {
+  onPlayerBreak(e) {
     getStorageCoreEntity(e.block)?.triggerEvent("fluffyalien_asn:despawn");
     StorageNetwork.getNetwork(
       e.block,
-      e.destroyedBlockPermutation.type.id,
+      e.brokenBlockPermutation.type.id,
     )?.destroy();
   },
   onPlayerInteract(e) {

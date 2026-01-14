@@ -1,15 +1,20 @@
-import { Entity, EntityQueryOptions, world } from "@minecraft/server";
+import {
+  Dimension,
+  Entity,
+  EntityQueryOptions,
+  world,
+} from "@minecraft/server";
 
-export const overworld = world.getDimension("overworld");
-export const nether = world.getDimension("nether");
-export const end = world.getDimension("the_end");
+export const overworld = (): Dimension => world.getDimension("overworld");
+export const nether = (): Dimension => world.getDimension("nether");
+export const end = (): Dimension => world.getDimension("the_end");
 
 export function getEntitiesInAllDimensions(
   query: EntityQueryOptions,
 ): Entity[] {
   return [
-    ...overworld.getEntities(query),
-    ...nether.getEntities(query),
-    ...end.getEntities(query),
+    ...overworld().getEntities(query),
+    ...nether().getEntities(query),
+    ...end().getEntities(query),
   ];
 }

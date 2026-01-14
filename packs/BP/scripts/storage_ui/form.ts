@@ -98,12 +98,14 @@ export async function showRequestItemUi(
       ],
     },
     "",
-    (item.amount === 1
-      ? 1
-      : item.amount >= 64
-        ? 64
-        : Math.floor(item.amount / 2)
-    ).toString(),
+    {
+      defaultValue: (item.amount === 1
+        ? 1
+        : item.amount >= 64
+          ? 64
+          : Math.floor(item.amount / 2)
+      ).toString(),
+    },
   );
 
   const response = await showForm(form, player);

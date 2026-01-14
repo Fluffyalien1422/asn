@@ -187,7 +187,7 @@ export class StorageNetwork extends StorageSystem {
 
     this.updateIntervalRunId = system.runInterval(() => {
       for (const block of this.connections.buses) {
-        if (!block.isValid()) continue;
+        if (!block.isValid) continue;
 
         switch (block.typeId) {
           case "fluffyalien_asn:import_bus":
@@ -223,7 +223,7 @@ export class StorageNetwork extends StorageSystem {
 
     this.levelEmitterUpdateIntervalRunId = system.runInterval(() => {
       for (const block of this.connections.levelEmitters) {
-        if (!block.isValid()) continue;
+        if (!block.isValid) continue;
 
         updateLevelEmitter(block, this);
       }

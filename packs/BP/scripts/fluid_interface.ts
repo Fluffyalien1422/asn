@@ -39,7 +39,7 @@ const STORAGE_BARS_PER_PAGE = 5;
 const fluidInterfacePages = new Map<string, number>();
 
 function updatePageNumbers(entity: Entity, page: number): void {
-  const inv = entity.getComponent("inventory")!.container!;
+  const inv = entity.getComponent("inventory")!.container;
   const pageNumItems = getPageNumberItemStacks(page);
   inv.setItem(22, pageNumItems[0]);
   inv.setItem(23, pageNumItems[1]);

@@ -37,7 +37,7 @@ system.afterEvents.scriptEventReceive.subscribe(
       const playerInv = player.getComponent("inventory")!;
       const mainHandSlotIndex = player.selectedSlotIndex;
 
-      const mainHandItem = playerInv.container!.getItem(mainHandSlotIndex);
+      const mainHandItem = playerInv.container.getItem(mainHandSlotIndex);
 
       if (mainHandItem?.typeId !== "fluffyalien_asn:wireless_interface") {
         logWarn(

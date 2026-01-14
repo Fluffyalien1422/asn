@@ -113,11 +113,14 @@ export async function showExportBusUi(
             "fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.without",
         },
       ],
-      exportItemEnchantmentsStatus === "ignore"
-        ? 0
-        : exportItemEnchantmentsStatus === "with"
-          ? 1
-          : 2,
+      {
+        defaultValueIndex:
+          exportItemEnchantmentsStatus === "ignore"
+            ? 0
+            : exportItemEnchantmentsStatus === "with"
+              ? 1
+              : 2,
+      },
     );
   }
 
@@ -132,13 +135,17 @@ export async function showExportBusUi(
             ],
           },
       "0",
-      exportItemDamageRange.min.toString(),
+      {
+        defaultValue: exportItemDamageRange.min.toString(),
+      },
     );
 
     form.textField(
       { translate: "fluffyalien_asn.ui.exportBus.exportItemMaxDamage" },
       "",
-      exportItemDamageRange.max?.toString(),
+      {
+        defaultValue: exportItemDamageRange.max?.toString(),
+      },
     );
   }
 

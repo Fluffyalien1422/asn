@@ -47,7 +47,7 @@ system.runInterval(() => {
     // we need to unlock the slots if they player is not holding it
     // the slot is locked when the player interacts with the entity
     // see [#32](https://github.com/Fluffyalien1422/asn/issues/32)
-    const playerInv = player.getComponent("inventory")!.container!;
+    const playerInv = player.getComponent("inventory")!.container;
     for (let i = 0; i < playerInv.size; i++) {
       const slot = playerInv.getSlot(i);
       if (
@@ -97,7 +97,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   if (e.target.typeId !== "fluffyalien_asn:wireless_interface_entity") return;
 
   const playerInv = e.player.getComponent("inventory")!;
-  const playerInvContainer = playerInv.container!;
+  const playerInvContainer = playerInv.container;
   const playerMainHandSlotIndex = e.player.selectedSlotIndex;
 
   const mainHandSlot = playerInvContainer.getSlot(e.player.selectedSlotIndex);

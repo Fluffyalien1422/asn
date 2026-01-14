@@ -1,4 +1,4 @@
-import { world } from "@minecraft/server";
+import { system } from "@minecraft/server";
 import { storageInterfaceComponent } from "./storage_interface";
 import { storageDriveComponent } from "./storage_drive";
 import { storageCoreComponent } from "./storage_core";
@@ -20,7 +20,7 @@ import { fluidExportBusComponent } from "./fluid_export_bus";
 import { fluidStorageBlockComponent } from "./fluid_storage_block_component";
 import { fluidImportBusComponent } from "./fluid_import_bus";
 
-world.beforeEvents.worldInitialize.subscribe((e) => {
+system.beforeEvents.startup.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(
     "fluffyalien_asn:network_device",
     networkDeviceComponent,
