@@ -73,5 +73,6 @@ fs.writeFileSync(
         version: simpleManifest.version,
       },
     ],
+    capabilities: ["pbr"],
   }),
 );
