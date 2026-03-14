@@ -1,5 +1,5 @@
 {
-  "format_version": "1.20.70",
+  "format_version": "1.26.0",
   "minecraft:block": {
     "description": {
       "identifier": "fluffyalien_asn:fluid_export_bus",
@@ -16,12 +16,10 @@
       }
     },
     "components": {
-      "minecraft:custom_components": [
-        "fluffyalien_energisticscore:machine",
-        "fluffyalien_asn:network_device",
-        "fluffyalien_asn:fluid_export_bus",
-        "fluffyalien_asn:fluid_storage_block"
-      ],
+      "fluffyalien_energisticscore:machine": {},
+      "fluffyalien_asn:network_device": {},
+      "fluffyalien_asn:fluid_export_bus": {},
+      "fluffyalien_asn:fluid_storage_block": {},
       "tag:fluffyalien_asn:storage_network_connectable": {},
       "tag:fluffyalien_energisticscore:machine": {},
       "tag:fluffyalien_energisticscore:io.any": {},
@@ -60,6 +58,9 @@
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {
         "seconds_to_destroy": 1
+      },
+      "minecraft:movable": {
+        "movement_type": "immovable"
       },
 
       "minecraft:tick": {

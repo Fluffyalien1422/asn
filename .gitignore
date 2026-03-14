@@ -2,3 +2,4 @@
 /.regolith
 node_modules
 /cfpost.html
+*.tgz

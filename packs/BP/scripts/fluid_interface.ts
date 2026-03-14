@@ -8,7 +8,7 @@ import {
   getMachineStorage,
   MachineDefinition,
   RegisteredStorageType,
-  removeMachine,
+  removeMachineData,
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 import { StorageNetwork } from "./storage_network";
@@ -185,7 +185,7 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     return;
   }
 
-  void removeMachine(block).then(() => {
+  void removeMachineData(block).then(() => {
     block.setType("air");
 
     e.hitEntity.dimension.spawnItem(

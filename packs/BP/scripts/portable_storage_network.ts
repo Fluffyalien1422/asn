@@ -26,7 +26,7 @@ import { makeErrorMessageUi, makeMessageUi, showForm } from "./utils/ui";
 import { useEnergyRule } from "./addon_rules/addon_rules";
 import {
   getMachineStorage,
-  removeMachine,
+  removeMachineData,
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 
@@ -337,7 +337,7 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     }
 
     e.hitEntity.dimension.spawnItem(placerItem, e.hitEntity.location);
-    removeMachine(block).catch((err: unknown) => {
+    removeMachineData(block).catch((err: unknown) => {
       logWarn(String(err));
     });
   } else {

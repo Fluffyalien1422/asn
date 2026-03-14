@@ -158,10 +158,10 @@ let generatedContentStart = `<p>${makeThemeTag("NOTE")}
   </p>
   <p>${config.briefDescription}</p>
   <p>${makeThemeTag("NOTE")}
-    Requires Minecraft v${simpleManifest.minEngineVersion[0].toString()}.${simpleManifest.minEngineVersion[1].toString()}.${
+    Requires Minecraft v${simpleManifest.minEngineVersion[1].toString()}.${
       config.requiresBetaApis
         ? `${simpleManifest.minEngineVersion[2].toString().slice(0, -1)}x`
-        : `${simpleManifest.minEngineVersion[2].toString()} or later` // plus signs are replaced by whitespace on MCPEDL for somer reason
+        : `${simpleManifest.minEngineVersion[2].toString()} or later`
     }.
   </p>`;
 

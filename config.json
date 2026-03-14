@@ -14,6 +14,14 @@
         "runWith": "shell",
         "command": "npm run tsx ./scripts/filters/simple_manifest"
       },
+      "build_details_default": {
+        "runWith": "shell",
+        "command": "'export const BUILD_DETAILS = { isBecBuild: false };' > BP/scripts/build_details.js"
+      },
+      "build_details_bec": {
+        "runWith": "shell",
+        "command": "'export const BUILD_DETAILS = { isBecBuild: true };' > BP/scripts/build_details.js"
+      },
       "build_scripts": {
         "runWith": "shell",
         "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --log-level=warning --external:@minecraft/server --external:@minecraft/server-ui --preserve-symlinks"
@@ -36,6 +44,9 @@
         "filters": [
           {
             "filter": "simple_manifest"
+          },
+          {
+            "filter": "build_details_default"
           },
           {
             "filter": "build_scripts"

@@ -1,5 +1,5 @@
 {
-  "format_version": "1.20.70",
+  "format_version": "1.26.0",
   "minecraft:block": {
     "description": {
       "identifier": "fluffyalien_asn:portable_storage_network",
@@ -11,10 +11,8 @@
       }
     },
     "components": {
-      "minecraft:custom_components": [
-        "fluffyalien_energisticscore:machine",
-        "fluffyalien_asn:portable_storage_network"
-      ],
+      "fluffyalien_energisticscore:machine": {},
+      "fluffyalien_asn:portable_storage_network": {},
       "tag:fluffyalien_energisticscore:machine": {},
       "tag:fluffyalien_energisticscore:io.type.energy": {},
       "tag:fluffyalien_energisticscore:consumer.type.energy": {},
@@ -28,7 +26,10 @@
       "minecraft:selection_box": false,
       "minecraft:light_dampening": 0,
       "minecraft:destructible_by_explosion": false,
-      "minecraft:destructible_by_mining": false
+      "minecraft:destructible_by_mining": false,
+      "minecraft:movable": {
+        "movement_type": "immovable"
+      }
     },
     "permutations": [
       {

@@ -11,9 +11,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",
-    "@minecraft/server": "2.3.0",
+    "@minecraft/server": "2.5.0",
     "@minecraft/server-ui": "2.0.0",
-    "@minecraft/vanilla-data": "1.21.120",
+    "@minecraft/vanilla-data": "1.26.2",
     "esbuild": "^0.25.2",
     "eslint": "^9.23.0",
     "prettier": "^3.5.3",
@@ -24,7 +24,7 @@
     "typescript-eslint": "^8.29.0"
   },
   "dependencies": {
-    "@minecraft/math": "^2.2.7",
-    "bedrock-energistics-core-api": "file:../bedrock-energistics-core/public_api"
+    "@minecraft/math": "^2.4.0",
+    "bedrock-energistics-core-api": "file:bedrock-energistics-core-api-0.10.0.tgz"
   }
 }

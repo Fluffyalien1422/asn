@@ -1,5 +1,5 @@
 {
-  "format_version": "1.20.70",
+  "format_version": "1.26.0",
   "minecraft:block": {
     "description": {
       "identifier": "fluffyalien_asn:storage_power_bank",
@@ -17,20 +17,33 @@
       }
     },
     "components": {
-      "minecraft:custom_components": [
-        "fluffyalien_energisticscore:machine",
-        "fluffyalien_asn:network_device",
-        "fluffyalien_asn:storage_power_bank"
-      ],
+      "fluffyalien_energisticscore:machine": {},
+      "fluffyalien_asn:network_device": {},
+      "fluffyalien_asn:storage_power_bank": {},
       "tag:fluffyalien_asn:storage_network_connectable": {},
       "tag:fluffyalien_energisticscore:machine": {},
       "tag:fluffyalien_energisticscore:io.type.energy": {},
       "tag:fluffyalien_energisticscore:consumer.type.energy": {},
 
       "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "fluffyalien_asn:machine_casing_side"
+        },
+        "north": {
+          "texture": "fluffyalien_asn:storage_power_bank_front_off"
+        },
+        "up": {
+          "texture": "fluffyalien_asn:machine_casing_top"
+        },
+        "down": "up"
+      },
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {
         "seconds_to_destroy": 1
+      },
+      "minecraft:movable": {
+        "movement_type": "immovable"
       },
       "minecraft:tick": {
         "interval_range": [20, 20]
