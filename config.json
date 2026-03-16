@@ -16,11 +16,11 @@
       },
       "build_details_default": {
         "runWith": "shell",
-        "command": "'export const BUILD_DETAILS = { isBecBuild: false };' > BP/scripts/build_details.js"
+        "command": "Set-Content -Path BP/scripts/build_details.js -Value 'export const BUILD_DETAILS = { isBecBuild: true };' -Encoding UTF8"
       },
       "build_details_bec": {
         "runWith": "shell",
-        "command": "'export const BUILD_DETAILS = { isBecBuild: true };' > BP/scripts/build_details.js"
+        "command": "Set-Content -Path BP/scripts/build_details.js -Value 'export const BUILD_DETAILS = { isBecBuild: true };' -Encoding UTF8"
       },
       "build_scripts": {
         "runWith": "shell",

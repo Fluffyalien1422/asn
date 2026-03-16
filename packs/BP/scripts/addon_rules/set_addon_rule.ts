@@ -6,7 +6,7 @@ import { sendCurrentRuleValueMessage } from "./addon_rules_common";
 interface BaseAddonRuleCommand<T> {
   deprecated?: boolean;
   experimental?: boolean;
-  beforeSet?: (player: Player, value: T) => T | undefined;
+  beforeSet?: (player: Player | undefined, value: T) => T | undefined;
 }
 
 interface BoolAddonRuleCommand extends BaseAddonRuleCommand<boolean> {
@@ -22,7 +22,7 @@ interface NumberAddonRuleCommand extends BaseAddonRuleCommand<number> {
 export type AddonRuleCommand = BoolAddonRuleCommand | NumberAddonRuleCommand;
 
 function processBoolAddonRuleCommand(
-  player: Player,
+  player: Player | undefined,
   rawValue: string,
   ruleCommand: BoolAddonRuleCommand,
 ): boolean {
@@ -42,7 +42,7 @@ function processBoolAddonRuleCommand(
     return true;
   }
 
-  player.sendMessage({
+  player?.sendMessage({
     rawtext: [
       {
         text: "§c",
@@ -58,14 +58,14 @@ function processBoolAddonRuleCommand(
 }
 
 function processNumberAddonRuleCommand(
-  player: Player,
+  player: Player | undefined,
   rawValue: string,
   ruleCommand: NumberAddonRuleCommand,
 ): boolean {
   const numVal = Number(rawValue);
 
   if (isNaN(numVal)) {
-    player.sendMessage({
+    player?.sendMessage({
       rawtext: [
         {
           text: "§c",
@@ -81,7 +81,7 @@ function processNumberAddonRuleCommand(
   }
 
   if (ruleCommand.type === "int" && !Number.isInteger(numVal)) {
-    player.sendMessage({
+    player?.sendMessage({
       rawtext: [
         {
           text: "§c",
@@ -104,14 +104,17 @@ function processNumberAddonRuleCommand(
   return true;
 }
 
-export function processAddonRuleCommand(player: Player, message: string): void {
+export function processAddonRuleCommand(
+  player: Player | undefined,
+  message: string,
+): boolean {
   const args = message.split(" ");
 
   const rule = args[0];
   const value = args[1];
 
   if (rule === "help") {
-    player.sendMessage({
+    player?.sendMessage({
       rawtext: [
         {
           text: "§a-- Add-On Rules -- §r\n",
@@ -129,12 +132,11 @@ export function processAddonRuleCommand(player: Player, message: string): void {
         ]),
       ],
     });
-
-    return;
+    return true;
   }
 
   if (!(rule in ADDON_RULE_COMMANDS)) {
-    player.sendMessage({
+    player?.sendMessage({
       rawtext: [
         {
           text: "§c",
@@ -145,18 +147,17 @@ export function processAddonRuleCommand(player: Player, message: string): void {
         },
       ],
     });
-    return;
+    return false;
   }
 
   const ruleCommand = ADDON_RULE_COMMANDS[rule];
 
   if (!value) {
-    sendCurrentRuleValueMessage(player, rule, ruleCommand);
-    return;
+    if (player) sendCurrentRuleValueMessage(player, rule, ruleCommand);
+    return true;
   }
 
   let success = false;
-
   switch (ruleCommand.type) {
     case "bool":
       success = processBoolAddonRuleCommand(player, value, ruleCommand);
@@ -166,15 +167,14 @@ export function processAddonRuleCommand(player: Player, message: string): void {
       success = processNumberAddonRuleCommand(player, value, ruleCommand);
       break;
   }
-
   if (!success) {
-    return;
+    return false;
   }
 
-  sendCurrentRuleValueMessage(player, rule, ruleCommand);
+  if (player) sendCurrentRuleValueMessage(player, rule, ruleCommand);
 
   if (ruleCommand.deprecated) {
-    player.sendMessage({
+    player?.sendMessage({
       rawtext: [
         {
           text: "§c",
@@ -188,7 +188,7 @@ export function processAddonRuleCommand(player: Player, message: string): void {
   }
 
   if (ruleCommand.experimental) {
-    player.sendMessage({
+    player?.sendMessage({
       rawtext: [
         {
           text: "§c",
@@ -200,4 +200,6 @@ export function processAddonRuleCommand(player: Player, message: string): void {
       ],
     });
   }
+
+  return true;
 }

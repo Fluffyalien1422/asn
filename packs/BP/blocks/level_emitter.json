@@ -35,6 +35,12 @@
           "down": "q.block_state('fluffyalien_asn:down')"
         }
       },
+      "minecraft:material_instances": {
+        "*": {
+          "render_method": "alpha_test",
+          "texture": "fluffyalien_asn:level_emitter_off"
+        }
+      },
       "minecraft:collision_box": {
         "origin": [-4, 4, -8],
         "size": [8, 8, 12]

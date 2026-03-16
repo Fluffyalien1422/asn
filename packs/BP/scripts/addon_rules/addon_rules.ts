@@ -1,7 +1,7 @@
 import { Player, world } from "@minecraft/server";
 import { AddonRuleCommand } from "./set_addon_rule";
 import { DynamicPropertyAccessor } from "../utils/dynamic_property";
-import { isBedrockEnergisticsCoreInWorld } from "bedrock-energistics-core-api";
+import { BUILD_DETAILS } from "../build_details";
 
 export const forceLoadNetworksRule =
   DynamicPropertyAccessor.withDefault<boolean>(
@@ -87,10 +87,14 @@ export const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
   },
 };
 
-function requireBec<T>(defaultValue: T, player: Player, value: T): T {
-  if (value === defaultValue || isBedrockEnergisticsCoreInWorld()) return value;
+function requireBec<T>(
+  defaultValue: T,
+  player: Player | undefined,
+  value: T,
+): T {
+  if (value === defaultValue || BUILD_DETAILS.isBecBuild) return value;
 
-  player.sendMessage({
+  player?.sendMessage({
     rawtext: [
       {
         text: "§c",
@@ -104,10 +108,14 @@ function requireBec<T>(defaultValue: T, player: Player, value: T): T {
   return defaultValue;
 }
 
-function requireUseEnergy<T>(defaultValue: T, player: Player, value: T): T {
+function requireUseEnergy<T>(
+  defaultValue: T,
+  player: Player | undefined,
+  value: T,
+): T {
   if (value === defaultValue || useEnergyRule.get(world)) return value;
 
-  player.sendMessage({
+  player?.sendMessage({
     rawtext: [
       {
         text: "§c",

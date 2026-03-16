@@ -59,10 +59,11 @@ fluffyalien_asn.message.scriptEvent.addonRule.invalidRule=This rule does not exi
 fluffyalien_asn.message.scriptEvent.addonRule.expectedBoolean=Expected "true" or "false" after rule ID.
 fluffyalien_asn.message.scriptEvent.addonRule.expectedNumber=Expected a number after rule ID.
 fluffyalien_asn.message.scriptEvent.addonRule.expectedInt=Expected an integer after rule ID.
-fluffyalien_asn.message.scriptEvent.addonRule.requiresBec=This rule requires Bedrock Energistics Core to be installed and activated but it was not found in the world. The value will be reset to the default.
+fluffyalien_asn.message.scriptEvent.addonRule.requiresBec=This rule requires the Bedrock Energistics Core build of ASN. The value will be reset to the default.
 fluffyalien_asn.message.scriptEvent.addonRule.requiresPrerequisiteRule=This rule requires the '%s' rule to be set to '%s' but it is currently set to '%s'. The value will be reset to the default.
 fluffyalien_asn.message.scriptEvent.addonRule.deprecatedWarning=WARNING: This rule is deprecated. It may be removed in a future version.
 fluffyalien_asn.message.scriptEvent.addonRule.experimentalWarning=WARNING: This rule is experimental. It may not function properly and may be changed or removed in a future version.
+fluffyalien_asn.message.scriptEvent.addonRule.scriptEventUsageWarning=WARNING: The scriptevent usage of this command is deprecated and may be removed in a future version. Use '/asnrule' or '/fluffyalien_asn:asnrule' instead.
 
 fluffyalien_asn.message.scriptEvent.addonRule.help.forceLoadNetworks=When a storage network extends into unloaded chunks, force those chunks to load so the network can fully load. MAY CAUSE LAG! This will not work if all ticking area slots are used.
 fluffyalien_asn.message.scriptEvent.addonRule.help.showRequestItemDialog=Show the request item dialog when taking an item out of the storage network instead of immediately removing a stack.
@@ -205,9 +206,10 @@ fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet1=Can contain data.
 fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet2=Interact with an empty storage drive while holding a disk with data to deposit the items inside of the disk into the drive.
 
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.title=Add-On Configuration
-fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet0=Use the '/scriptevent fluffyalien_asn:rule <rule> [value]' command to change a rule.
-fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet1=Use the '/scriptevent fluffyalien_asn:rule help' command for a list of rules.
+fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet0=Use the '/asnrule <rule> [value]' command to change a rule.
+fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet1=Use the '/asnrule help' command for a list of rules.
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet2=Omit '[value]' from the command to get the current value of the rule.
+fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet3=Note that numbers must be surrounded in quotation marks when passed to 'value' (eg. "123" instead of 123).
 
 fluffyalien_asn.ui.tutorialBook.entry.energy.title=Energy (Experimental)
 fluffyalien_asn.ui.tutorialBook.entry.energy.bullet0=Energy usage can be enabled using the 'useEnergy' rule. See Add-On Configuration for more information.

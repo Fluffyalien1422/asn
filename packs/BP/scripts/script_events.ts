@@ -1,9 +1,16 @@
 import * as bec from "bedrock-energistics-core-api";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { STORAGE_DATA_DYNAMIC_PROPERTY_ID } from "./storage_drive";
-import { system, Player } from "@minecraft/server";
+import {
+  system,
+  Player,
+  CommandPermissionLevel,
+  CustomCommandParamType,
+  CustomCommandStatus,
+} from "@minecraft/server";
 import { logWarn } from "./log";
 import { processAddonRuleCommand } from "./addon_rules/set_addon_rule";
+import { ADDON_RULE_COMMANDS } from "./addon_rules/addon_rules";
 
 system.afterEvents.scriptEventReceive.subscribe(
   (e) => {
@@ -62,6 +69,18 @@ system.afterEvents.scriptEventReceive.subscribe(
       e.id === "fluffyalien_asn:rule" ||
       e.id === "fluffyalien_asn:addonrule"
     ) {
+      e.sourceEntity.sendMessage({
+        rawtext: [
+          {
+            text: "§c",
+          },
+          {
+            translate:
+              "fluffyalien_asn.message.scriptEvent.addonRule.scriptEventUsageWarning",
+          },
+        ],
+      });
+
       processAddonRuleCommand(player, e.message);
     } else {
       player.sendMessage({
@@ -79,3 +98,47 @@ system.afterEvents.scriptEventReceive.subscribe(
   },
   { namespaces: ["fluffyalien_asn"] },
 );
+
+system.beforeEvents.startup.subscribe((e) => {
+  e.customCommandRegistry.registerEnum("fluffyalien_asn:AsnRuleId", [
+    "help",
+    ...Object.keys(ADDON_RULE_COMMANDS),
+  ]);
+
+  e.customCommandRegistry.registerCommand(
+    {
+      name: "fluffyalien_asn:asnrule",
+      description: "Read or set an ASN add-on rule.",
+      permissionLevel: CommandPermissionLevel.GameDirectors,
+      mandatoryParameters: [
+        {
+          name: "fluffyalien_asn:AsnRuleId",
+          type: CustomCommandParamType.Enum,
+        },
+      ],
+      optionalParameters: [
+        {
+          name: "value",
+          type: CustomCommandParamType.String,
+        },
+      ],
+    },
+    (origin, ruleId: string, value?: string) => {
+      let argsStr = ruleId;
+      if (value !== undefined) argsStr += " " + value;
+
+      const success = processAddonRuleCommand(
+        origin.sourceEntity?.typeId === "minecraft:player"
+          ? (origin.sourceEntity as Player)
+          : undefined,
+        argsStr,
+      );
+
+      return {
+        status: success
+          ? CustomCommandStatus.Success
+          : CustomCommandStatus.Failure,
+      };
+    },
+  );
+});
