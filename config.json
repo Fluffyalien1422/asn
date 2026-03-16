@@ -16,7 +16,7 @@
       },
       "build_details_default": {
         "runWith": "shell",
-        "command": "Set-Content -Path BP/scripts/build_details.js -Value 'export const BUILD_DETAILS = { isBecBuild: true };' -Encoding UTF8"
+        "command": "Set-Content -Path BP/scripts/build_details.js -Value 'export const BUILD_DETAILS = { isBecBuild: false };' -Encoding UTF8"
       },
       "build_details_bec": {
         "runWith": "shell",
@@ -33,6 +33,14 @@
       "gen_page_number_items": {
         "runWith": "shell",
         "command": "npm run tsx ./scripts/filters/page_number_items"
+      },
+      "remove_bec_files": {
+        "runWith": "shell",
+        "command": "Get-ChildItem BP -Filter *.bec.json -Recurse | Remove-Item"
+      },
+      "remove_bec_components": {
+        "runWith": "nodejs",
+        "script": "scripts/filters/remove_bec_components.js"
       }
     },
     "profiles": {
@@ -53,6 +61,32 @@
           },
           {
             "filter": "gen_page_number_items"
+          },
+          {
+            "filter": "remove_bec_files"
+          },
+          {
+            "filter": "remove_bec_components"
+          }
+        ]
+      },
+      "dev_bec": {
+        "export": {
+          "target": "development",
+          "build": "standard"
+        },
+        "filters": [
+          {
+            "filter": "simple_manifest"
+          },
+          {
+            "filter": "build_details_bec"
+          },
+          {
+            "filter": "build_scripts"
+          },
+          {
+            "filter": "gen_page_number_items"
           }
         ]
       },
@@ -63,6 +97,19 @@
         "filters": [
           {
             "profile": "default"
+          },
+          {
+            "filter": "minify_and_clean_scripts"
+          }
+        ]
+      },
+      "prod_bec": {
+        "export": {
+          "target": "local"
+        },
+        "filters": [
+          {
+            "profile": "dev_bec"
           },
           {
             "filter": "minify_and_clean_scripts"
