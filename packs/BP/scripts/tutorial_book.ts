@@ -1,6 +1,7 @@
 import { ItemStack, Player, RawMessage, world } from "@minecraft/server";
 import { makeMessageUi, showForm } from "./utils/ui";
 import { ActionFormData } from "@minecraft/server-ui";
+import { BUILD_DETAILS } from "./build_details";
 
 const NOT_FIRST_JOIN_DYNAMIC_PROPERTY_ID = "fluffyalien_asn:not_first_join";
 
@@ -8,6 +9,7 @@ interface TutorialEntry {
   id: string;
   icon: string;
   bullets: number;
+  hidden?: boolean;
 }
 
 const TUTORIAL_ENTRIES: TutorialEntry[] = [
@@ -60,6 +62,7 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
     id: "powerBank",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/energy_icon",
     bullets: 2,
+    hidden: !BUILD_DETAILS.isBecBuild,
   },
   {
     id: "wirelessTransmitter",
@@ -90,36 +93,43 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
     id: "energy",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/energy_icon",
     bullets: 5,
+    hidden: !BUILD_DETAILS.isBecBuild,
   },
   {
     id: "fluidStorage",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_drive_icon",
     bullets: 4,
+    hidden: !BUILD_DETAILS.isBecBuild,
   },
   {
     id: "fluidDrive",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_drive_icon",
     bullets: 2,
+    hidden: !BUILD_DETAILS.isBecBuild,
   },
   {
     id: "fluidInterface",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_interface_icon",
     bullets: 1,
+    hidden: !BUILD_DETAILS.isBecBuild,
   },
   {
     id: "fluidImportBus",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_import_bus_icon",
     bullets: 2,
+    hidden: !BUILD_DETAILS.isBecBuild,
   },
   {
     id: "fluidExportBus",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_export_bus_icon",
     bullets: 4,
+    hidden: !BUILD_DETAILS.isBecBuild,
   },
   {
     id: "fluidStorageDisk",
     icon: "textures/fluffyalien/asn/items/fluid_storage_disk",
     bullets: 3,
+    hidden: !BUILD_DETAILS.isBecBuild,
   },
 ];
 
@@ -128,7 +138,10 @@ export async function showTutorialBookUi(player: Player): Promise<void> {
 
   form.title({ translate: "fluffyalien_asn.ui.tutorialBook.title" });
 
+  const visibleEntries: TutorialEntry[] = [];
   for (const entry of TUTORIAL_ENTRIES) {
+    if (entry.hidden) continue;
+    visibleEntries.push(entry);
     form.button(
       {
         translate: `fluffyalien_asn.ui.tutorialBook.entry.${entry.id}.title`,
@@ -140,7 +153,7 @@ export async function showTutorialBookUi(player: Player): Promise<void> {
   const response = await showForm(form, player);
   if (response.selection === undefined) return;
 
-  const entry = TUTORIAL_ENTRIES[response.selection];
+  const entry = visibleEntries[response.selection];
   return void showTutorialBookEntryUi(player, entry);
 }
 
