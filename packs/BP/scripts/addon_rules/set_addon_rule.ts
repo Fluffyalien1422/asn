@@ -106,13 +106,9 @@ function processNumberAddonRuleCommand(
 
 export function processAddonRuleCommand(
   player: Player | undefined,
-  message: string,
+  rule: string,
+  value?: string | null,
 ): boolean {
-  const args = message.split(" ");
-
-  const rule = args[0];
-  const value = args[1];
-
   if (rule === "help") {
     player?.sendMessage({
       rawtext: [
@@ -153,6 +149,7 @@ export function processAddonRuleCommand(
   const ruleCommand = ADDON_RULE_COMMANDS[rule];
 
   if (!value) {
+    if (value === null) ruleCommand.property.set(world);
     if (player) sendCurrentRuleValueMessage(player, rule, ruleCommand);
     return true;
   }
@@ -202,4 +199,10 @@ export function processAddonRuleCommand(
   }
 
   return true;
+}
+
+export function resetAllAddonRules(): void {
+  for (const ruleCommand of Object.values(ADDON_RULE_COMMANDS)) {
+    ruleCommand.property.set(world);
+  }
 }

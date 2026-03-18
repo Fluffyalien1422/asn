@@ -9,7 +9,10 @@ import {
   CustomCommandStatus,
 } from "@minecraft/server";
 import { logWarn } from "./log";
-import { processAddonRuleCommand } from "./addon_rules/set_addon_rule";
+import {
+  processAddonRuleCommand,
+  resetAllAddonRules,
+} from "./addon_rules/set_addon_rule";
 import { ADDON_RULE_COMMANDS } from "./addon_rules/addon_rules";
 
 system.afterEvents.scriptEventReceive.subscribe(
@@ -81,7 +84,10 @@ system.afterEvents.scriptEventReceive.subscribe(
         ],
       });
 
-      processAddonRuleCommand(player, e.message);
+      const args = e.message.split(" ");
+      const rule = args[0];
+      const value = args[1];
+      processAddonRuleCommand(player, rule, value);
     } else {
       player.sendMessage({
         rawtext: [
@@ -100,8 +106,12 @@ system.afterEvents.scriptEventReceive.subscribe(
 );
 
 system.beforeEvents.startup.subscribe((e) => {
-  e.customCommandRegistry.registerEnum("fluffyalien_asn:AsnRuleId", [
+  e.customCommandRegistry.registerEnum("fluffyalien_asn:AsnRuleIdOrHelp", [
     "help",
+    ...Object.keys(ADDON_RULE_COMMANDS),
+  ]);
+  e.customCommandRegistry.registerEnum("fluffyalien_asn:AsnRuleIdOrAll", [
+    "all",
     ...Object.keys(ADDON_RULE_COMMANDS),
   ]);
 
@@ -112,7 +122,7 @@ system.beforeEvents.startup.subscribe((e) => {
       permissionLevel: CommandPermissionLevel.GameDirectors,
       mandatoryParameters: [
         {
-          name: "fluffyalien_asn:AsnRuleId",
+          name: "fluffyalien_asn:AsnRuleIdOrHelp",
           type: CustomCommandParamType.Enum,
         },
       ],
@@ -124,14 +134,49 @@ system.beforeEvents.startup.subscribe((e) => {
       ],
     },
     (origin, ruleId: string, value?: string) => {
-      let argsStr = ruleId;
-      if (value !== undefined) argsStr += " " + value;
+      const success = processAddonRuleCommand(
+        origin.sourceEntity?.typeId === "minecraft:player"
+          ? (origin.sourceEntity as Player)
+          : undefined,
+        ruleId,
+        value,
+      );
+
+      return {
+        status: success
+          ? CustomCommandStatus.Success
+          : CustomCommandStatus.Failure,
+      };
+    },
+  );
+
+  e.customCommandRegistry.registerCommand(
+    {
+      name: "fluffyalien_asn:asnrulereset",
+      description: "Reset an ASN add-on rule.",
+      permissionLevel: CommandPermissionLevel.GameDirectors,
+      mandatoryParameters: [
+        {
+          name: "fluffyalien_asn:AsnRuleIdOrAll",
+          type: CustomCommandParamType.Enum,
+        },
+      ],
+    },
+    (origin, ruleId: string) => {
+      if (ruleId === "all") {
+        resetAllAddonRules();
+        return {
+          status: CustomCommandStatus.Success,
+          message: "Reset all add-on rules.",
+        };
+      }
 
       const success = processAddonRuleCommand(
         origin.sourceEntity?.typeId === "minecraft:player"
           ? (origin.sourceEntity as Player)
           : undefined,
-        argsStr,
+        ruleId,
+        null,
       );
 
       return {
