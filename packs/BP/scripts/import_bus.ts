@@ -9,11 +9,10 @@ import {
   StrCardinalDirection,
   getBlockInDirection,
 } from "./utils/direction";
-import { receivingRedstoneSignal } from "./utils/block";
 import { StorageSystemItemStack } from "./storage_system_item_stack";
 
 export function updateImportBus(block: Block, network: StorageNetwork): void {
-  if (receivingRedstoneSignal(block)) return;
+  if (block.getRedstonePower()) return;
 
   const cardinalDirection = block.permutation.getState(
     "minecraft:cardinal_direction",

@@ -2,7 +2,6 @@ import { StorageNetwork } from "./storage_network";
 import {
   Block,
   BlockCustomComponent,
-  BlockPermutation,
   Entity,
   ItemStack,
   Player,
@@ -12,12 +11,7 @@ import {
   DynamicPropertyAccessor,
   removeAllDynamicPropertiesForBlock,
 } from "./utils/dynamic_property";
-import {
-  STR_DIRECTIONS,
-  StrCardinalDirection,
-  getBlockInDirection,
-  reverseDirection,
-} from "./utils/direction";
+import { STR_DIRECTIONS, StrCardinalDirection } from "./utils/direction";
 import { getEntityAtBlockLocation } from "./utils/location";
 import { getItemTranslationKey, getPlayerMainhandSlot } from "./utils/item";
 import { makeErrorMessageUi, makeMessageUi, showForm } from "./utils/ui";
@@ -363,27 +357,6 @@ export function updateLevelEmitter(
       block.permutation.withState(
         "fluffyalien_asn:lit" as keyof BlockStateSuperset,
         1,
-      ),
-    );
-  }
-
-  const cardinalDirection = block.permutation.getState(
-    "minecraft:cardinal_direction",
-  ) as StrCardinalDirection;
-
-  const target = getBlockInDirection(block, cardinalDirection);
-
-  if (
-    target &&
-    (target.typeId === "minecraft:powered_repeater" ||
-      target.typeId === "minecraft:unpowered_repeater") &&
-    target.permutation.getState("minecraft:cardinal_direction") ===
-      reverseDirection(cardinalDirection)
-  ) {
-    target.setPermutation(
-      BlockPermutation.resolve(
-        "powered_repeater",
-        target.permutation.getAllStates(),
       ),
     );
   }

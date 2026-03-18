@@ -16,7 +16,6 @@ import {
 import { StorageNetwork } from "./storage_network";
 import { updateBlockConnectStates } from "./utils/block_connect";
 import { STR_DIRECTIONS } from "./utils/direction";
-import { receivingRedstoneSignal } from "./utils/block";
 
 const MAX_EXTRACTION_AMOUNT = 10; // Max amount to extract per storage network update
 
@@ -73,7 +72,7 @@ export async function updateFluidExportBus(
   block: Block,
   network: StorageNetwork,
 ): Promise<void> {
-  if (receivingRedstoneSignal(block)) return;
+  if (block.getRedstonePower()) return;
 
   const storageType = getBlockDynamicProperty(
     block,

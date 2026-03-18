@@ -1,6 +1,5 @@
 import { Block, DimensionLocation, Entity } from "@minecraft/server";
 import { StorageNetwork } from "../storage_network";
-import { receivingRedstoneSignal } from "../utils/block";
 import { StrCardinalDirection, getBlockInDirection } from "../utils/direction";
 import {
   getBlockDynamicProperty,
@@ -15,7 +14,7 @@ export interface ExportBusExportItemDamageRange {
 }
 
 export function updateExportBus(block: Block, network: StorageNetwork): void {
-  if (receivingRedstoneSignal(block)) return;
+  if (block.getRedstonePower()) return;
 
   const cardinalDirection = block.permutation.getState(
     "minecraft:cardinal_direction",

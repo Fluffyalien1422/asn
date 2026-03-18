@@ -25,6 +25,10 @@
       "tag:fluffyalien_energisticscore:io.any": {},
       "tag:fluffyalien_energisticscore:consumer.any": {},
 
+      "minecraft:redstone_consumer": {
+        "min_power": 0
+      },
+
       "minecraft:geometry": {
         "identifier": "geometry.fluffyalien_asn.fluid_bus",
         "bone_visibility": {

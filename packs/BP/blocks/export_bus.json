@@ -24,6 +24,10 @@
       "fluffyalien_asn:export_bus": {},
       "tag:fluffyalien_asn:storage_network_connectable": {},
 
+      "minecraft:redstone_consumer": {
+        "min_power": 0
+      },
+
       "minecraft:geometry": {
         "identifier": "geometry.fluffyalien_asn.storage_bus",
         "bone_visibility": {

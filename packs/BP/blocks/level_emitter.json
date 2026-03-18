@@ -70,6 +70,12 @@
               "render_method": "alpha_test",
               "texture": "fluffyalien_asn:level_emitter_off"
             }
+          },
+          "minecraft:redstone_producer": {
+            "power": 0,
+            "connected_faces": ["north"],
+            "strongly_powered_face": "north",
+            "transform_relative": true
           }
         }
       },
@@ -80,6 +86,12 @@
             "*": {
               "texture": "fluffyalien_asn:level_emitter_on"
             }
+          },
+          "minecraft:redstone_producer": {
+            "power": 15,
+            "connected_faces": ["north"],
+            "strongly_powered_face": "north",
+            "transform_relative": true
           }
         }
       },
