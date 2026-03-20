@@ -10,11 +10,15 @@
     "formatVersion": "1.4.0",
     "dataPath": "./packs/data",
     "filterDefinitions": {
-      "simple_manifest": {
+      "simple_manifest_standalone": {
         "runWith": "shell",
-        "command": "npm run tsx ./scripts/filters/simple_manifest"
+        "command": "npm run tsx ./scripts/filters/simple_manifest_standalone"
       },
-      "build_details_default": {
+      "simple_manifest_bec": {
+        "runWith": "shell",
+        "command": "npm run tsx ./scripts/filters/simple_manifest_bec"
+      },
+      "build_details_standalone": {
         "runWith": "shell",
         "command": "Set-Content -Path BP/scripts/build_details.js -Value 'export const BUILD_DETAILS = { isBecBuild: false };' -Encoding UTF8"
       },
@@ -51,10 +55,10 @@
         },
         "filters": [
           {
-            "filter": "simple_manifest"
+            "filter": "simple_manifest_standalone"
           },
           {
-            "filter": "build_details_default"
+            "filter": "build_details_standalone"
           },
           {
             "filter": "build_scripts"
@@ -77,7 +81,7 @@
         },
         "filters": [
           {
-            "filter": "simple_manifest"
+            "filter": "simple_manifest_bec"
           },
           {
             "filter": "build_details_bec"

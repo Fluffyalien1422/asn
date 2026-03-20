@@ -1,4 +1,4 @@
-pack.name=Advanced Storage Network
+## pack.name is added by the simple manifest filter
 pack.description=A fix for your storage problem.
 
 item.fluffyalien_asn:storage_viewer_ui_back=Previous
