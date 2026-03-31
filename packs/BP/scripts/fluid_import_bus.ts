@@ -40,7 +40,8 @@ export const fluidImportBusMachine: MachineDefinition = {
 export const fluidImportBusComponent: BlockCustomComponent = {
   onTick(e) {
     updateBlockConnectStates(e.block, STR_DIRECTIONS, (other) =>
-      other.hasTag("fluffyalien_energisticscore:machine")
+      other.hasTag("fluffyalien_energisticscore:machine") ||
+      other.hasTag("fluffyalien_energisticscore:conduit")
         ? "bus"
         : other.hasTag("fluffyalien_asn:storage_network_connectable")
           ? "cable"
