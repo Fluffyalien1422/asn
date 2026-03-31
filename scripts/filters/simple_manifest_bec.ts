@@ -1,11 +1,11 @@
 import { addPackName, createManifests } from "./simple_manifest";
 
-const BP_HEADER_UUID = "2b57e33d-5ed7-4d2d-bc1b-93ca2760f3c9";
-const BP_DATA_UUID = "a4b44634-903c-4eb9-8b39-ca8c023da172";
-const BP_SCRIPT_UUID = "dd4cf7ba-afb3-4d04-bdaa-03cb5a359916";
+const BP_HEADER_UUID = "b12feea5-4a14-473c-9995-66ae2c0f7e53";
+const BP_DATA_UUID = "0ed16116-03ca-496d-b51b-85b0a9af6f7d";
+const BP_SCRIPT_UUID = "d6b39452-de71-4e5a-9401-a1c48bc1cda2";
 
-const RP_HEADER_UUID = "8c5ac2dd-adcc-4806-be05-8f6405a292d6";
-const RP_RESOURCES_UUID = "72e18105-91c9-4323-84ad-81de24326165";
+const RP_HEADER_UUID = "113a422d-7436-461b-83dd-22064d63da99";
+const RP_RESOURCES_UUID = "2a23f8c9-4d67-4e43-95f2-2a1b8cc11565";
 
 createManifests(
   BP_HEADER_UUID,
