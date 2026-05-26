@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/Bedrock-OSS/regolith-schemas/main/config/v1.4.json",
   "author": "Fluffyalien1422",
-  "name": "Advanced Storage Network",
+  "name": "asn",
   "packs": {
     "behaviorPack": "./packs/BP",
     "resourcePack": "./packs/RP"
@@ -12,11 +12,11 @@
     "filterDefinitions": {
       "simple_manifest_standalone": {
         "runWith": "shell",
-        "command": "npm run tsx ./scripts/filters/simple_manifest_standalone"
+        "command": "node --experimental-transform-types ../../scripts/filters/simple_manifest_standalone.ts"
       },
       "simple_manifest_bec": {
         "runWith": "shell",
-        "command": "npm run tsx ./scripts/filters/simple_manifest_bec"
+        "command": "node --experimental-transform-types ../../scripts/filters/simple_manifest_bec.ts"
       },
       "build_details_standalone": {
         "runWith": "shell",
@@ -34,9 +34,9 @@
         "runWith": "shell",
         "command": "npx terser ./BP/scripts/__bundle.js --module -cmo ./BP/scripts/__bundle.js; Remove-Item ./BP/scripts/* -Recurse -Exclude __bundle.js"
       },
-      "gen_page_number_items": {
-        "runWith": "shell",
-        "command": "npm run tsx ./scripts/filters/page_number_items"
+      "page_number_items": {
+        "runWith": "nodejs",
+        "script": "scripts/filters/page_number_items.ts"
       },
       "remove_bec_files": {
         "runWith": "shell",
@@ -48,7 +48,20 @@
       }
     },
     "profiles": {
-      "default": {
+      "dev_shared": {
+        "export": {
+          "target": "none"
+        },
+        "filters": [
+          {
+            "filter": "build_scripts"
+          },
+          {
+            "filter": "page_number_items"
+          }
+        ]
+      },
+      "dev_standalone": {
         "export": {
           "target": "development",
           "build": "standard"
@@ -61,10 +74,7 @@
             "filter": "build_details_standalone"
           },
           {
-            "filter": "build_scripts"
-          },
-          {
-            "filter": "gen_page_number_items"
+            "profile": "dev_shared"
           },
           {
             "filter": "remove_bec_files"
@@ -87,20 +97,17 @@
             "filter": "build_details_bec"
           },
           {
-            "filter": "build_scripts"
-          },
-          {
-            "filter": "gen_page_number_items"
+            "profile": "dev_shared"
           }
         ]
       },
-      "prod": {
+      "prod_standalone": {
         "export": {
           "target": "local"
         },
         "filters": [
           {
-            "profile": "default"
+            "profile": "dev_standalone"
           },
           {
             "filter": "minify_and_clean_scripts"

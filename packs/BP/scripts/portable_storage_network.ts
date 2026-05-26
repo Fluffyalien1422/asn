@@ -64,10 +64,7 @@ class PortableStorageNetwork extends StorageSystem {
   }
 
   private getStoredItemStacksMutable(): StorageSystemItemStack[] {
-    if (!this.items) {
-      this.items = deserialize(this.getSerializedData() ?? "");
-    }
-
+    this.items ??= deserialize(this.getSerializedData() ?? "");
     return this.items;
   }
 

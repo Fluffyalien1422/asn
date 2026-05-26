@@ -67,6 +67,9 @@ export function busUpdateBlockConnectStatesTransformer(
         switch (direction) {
           case "north":
             return;
+          case "east":
+          case "south":
+          case "west":
           default:
             return direction;
         }
@@ -86,6 +89,9 @@ export function busUpdateBlockConnectStatesTransformer(
         switch (direction) {
           case "south":
             return;
+          case "north":
+          case "east":
+          case "west":
           default:
             return reverseDirection(direction);
         }

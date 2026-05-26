@@ -4,8 +4,6 @@
 
 import * as imgManip from "imagescript";
 import * as fs from "fs";
-import * as path from "path";
-import { TMP_DIR } from "./common";
 
 const CHARACTER_WIDTH = 3;
 const CHARACTER_HEIGHT = 5;
@@ -14,10 +12,10 @@ const CHARACTER_TOTAL_WIDTH = CHARACTER_WIDTH + WIDTH_PADDING;
 const CHARACTER_COUNT = 11; // 0-9 and +
 
 const pageNumbers = (await imgManip.decode(
-  fs.readFileSync("packs/data/ui/page_numbers.png"),
+  fs.readFileSync("data/ui/page_numbers.png"),
 )) as imgManip.Image;
 
-const itemTexturePath = path.join(TMP_DIR, "RP/textures/item_texture.json");
+const itemTexturePath = "RP/textures/item_texture.json";
 
 const itemTexture = JSON.parse(fs.readFileSync(itemTexturePath, "utf8")) as {
   texture_data: Record<string, { textures: string }>;
@@ -51,10 +49,7 @@ for (let i = 0; i < CHARACTER_COUNT; i++) {
   const shortId = `ui_page_number${i.toString()}`;
   const itemId = `fluffyalien_asn:${shortId}`;
 
-  fs.writeFileSync(
-    path.join(TMP_DIR, `BP/items/${shortId}.json`),
-    createUiItem(itemId),
-  );
+  fs.writeFileSync(`BP/items/${shortId}.json`, createUiItem(itemId));
 
   const texturePath = `textures/fluffyalien/asn/${shortId}`;
   itemTexture.texture_data[itemId] = { textures: texturePath };
@@ -73,10 +68,7 @@ for (let i = 0; i < CHARACTER_COUNT; i++) {
 
   img = new imgManip.Image(16, 16).composite(img, 0, 0);
 
-  fs.writeFileSync(
-    path.join(TMP_DIR, `RP/${texturePath}.png`),
-    await img.encode(),
-  );
+  fs.writeFileSync(`RP/${texturePath}.png`, await img.encode());
 }
 
 fs.writeFileSync(itemTexturePath, JSON.stringify(itemTexture));

@@ -68,7 +68,7 @@ function getDisplayItemLoreStr(amount: number): string {
 function isUiItem(itemStack: ItemStack): boolean {
   return (
     itemStack.hasTag("fluffyalien_asn:ui_item") ||
-    !!itemStack.getLore()[0]?.endsWith(DISPLAY_ITEM_LORE_STR_END)
+    itemStack.getLore()[0]?.endsWith(DISPLAY_ITEM_LORE_STR_END)
   );
 }
 
