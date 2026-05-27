@@ -3,3 +3,5 @@ import "./energistics";
 import "./script_events";
 import "./tutorial_book";
 import "./wireless_interface";
+
+import "./v3storagetest";

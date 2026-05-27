@@ -1,0 +1,218 @@
+import {
+  ContainerSlot,
+  Dimension,
+  DimensionLocation,
+  Entity,
+  ItemStack,
+  StructureSaveMode,
+  world,
+} from "@minecraft/server";
+import { DynamicPropertyAccessor } from "./utils/dynamic_property";
+import { err, ok, Result } from "neverthrow";
+
+const TICKING_AREA_ID = "fluffyalien_asn:disk_data_area";
+const DATA_LOCATION = { x: 0, y: -63, z: 0 };
+const DATA_LOCATION_DIMENSION_ID = "minecraft:overworld";
+
+const diskIdProperty = DynamicPropertyAccessor.withoutDefault<string>(
+  "fluffyalien_asn:disk_id",
+);
+
+function getDataDimensionLocation(): Result<DimensionLocation, Error> {
+  let dimension: Dimension;
+  try {
+    dimension = world.getDimension(DATA_LOCATION_DIMENSION_ID);
+  } catch (e) {
+    return err(new Error(`Failed to get dimension: ${String(e)}`));
+  }
+
+  return ok({ ...DATA_LOCATION, dimension });
+}
+
+function structureIdFromDiskId(diskId: string): string {
+  return `fluffyalien_asn:disk_struct${diskId}`;
+}
+
+async function loadDataArea(): Promise<Result<void, Error>> {
+  if (world.tickingAreaManager.hasTickingArea(TICKING_AREA_ID)) return ok();
+
+  const locationr = getDataDimensionLocation();
+  if (locationr.isErr()) {
+    return err(new Error(`Failed to load data area: ${locationr.error}`));
+  }
+  const location = locationr.value;
+
+  try {
+    await world.tickingAreaManager.createTickingArea(TICKING_AREA_ID, {
+      dimension: location.dimension,
+      from: location,
+      to: location,
+    });
+  } catch (e) {
+    return err(new Error(`Failed to load data area: ${String(e)}`));
+  }
+
+  return ok();
+}
+
+function unloadDataArea(): void {
+  try {
+    world.tickingAreaManager.removeTickingArea(TICKING_AREA_ID);
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
+function getEntityFromDisk(diskId: string): Result<Entity, Error> {
+  const locationr = getDataDimensionLocation();
+  if (locationr.isErr()) {
+    return err(
+      new Error(`Failed to get entity from storage disk: ${locationr.error}`),
+    );
+  }
+  const location = locationr.value;
+
+  const structId = structureIdFromDiskId(diskId);
+  console.warn("structId:", structId);
+  try {
+    world.structureManager.place(structId, location.dimension, location);
+  } catch (e) {
+    return err(
+      new Error(`Failed to get entity from storage disk: ${String(e)}`),
+    );
+  }
+
+  const entity = location.dimension
+    .getEntitiesAtBlockLocation(location)
+    .find((e) => e.typeId === "fluffyalien_asn:storage_disk_entity_v3");
+  if (!entity) {
+    return err(
+      new Error("Failed to get entity from storage disk: Entity not found."),
+    );
+  }
+
+  return ok(entity);
+}
+
+export async function saveItems<T extends ItemStack | ContainerSlot>(
+  disk: T,
+  items: ItemStack[],
+): Promise<Result<T, Error>> {
+  if (items.length > 64) {
+    return err(
+      new Error("Trying to save too many items to storage disk (>64)."),
+    );
+  }
+
+  const locationr = getDataDimensionLocation();
+  if (locationr.isErr()) {
+    return err(
+      new Error(`Failed to save items to storage disk: ${locationr.error}`),
+    );
+  }
+  const location = locationr.value;
+  const diskId = diskIdProperty.get(disk);
+  await loadDataArea();
+
+  let entity: Entity;
+  let structId: string;
+  if (diskId) {
+    structId = structureIdFromDiskId(diskId);
+    const loadedEntityr = getEntityFromDisk(diskId);
+    if (loadedEntityr.isErr()) {
+      return err(
+        new Error(
+          `Failed to save items to storage disk: ${loadedEntityr.error}`,
+        ),
+      );
+    }
+    const loadedEntity = loadedEntityr.value;
+    entity = loadedEntity;
+  } else {
+    try {
+      entity = location.dimension.spawnEntity(
+        "fluffyalien_asn:storage_disk_entity_v3",
+        location,
+      );
+    } catch (e) {
+      return err(
+        new Error(`Failed to save items to storage disk: ${String(e)}`),
+      );
+    }
+    structId = structureIdFromDiskId(entity.id);
+    diskIdProperty.set(disk, entity.id);
+  }
+
+  const container = entity.getComponent("inventory")?.container;
+  if (!container) {
+    return err(
+      new Error(
+        "Failed to save items to storage disk: Cannot get entity container.",
+      ),
+    );
+  }
+  container.clearAll();
+  for (let i = 0; i < items.length; i++) {
+    container.setItem(i, items[i]);
+  }
+
+  try {
+    world.structureManager.delete(structId);
+    world.structureManager.createFromWorld(
+      structId,
+      location.dimension,
+      location,
+      location,
+      {
+        includeBlocks: false,
+        includeEntities: true,
+        saveMode: StructureSaveMode.World,
+      },
+    );
+  } catch (e) {
+    return err(new Error(`Failed to save items to storage disk: ${String(e)}`));
+  }
+
+  entity.remove();
+  unloadDataArea();
+
+  return ok(disk);
+}
+
+export async function loadItems(
+  disk: ItemStack | ContainerSlot,
+): Promise<Result<ItemStack[], Error>> {
+  const diskId = diskIdProperty.get(disk);
+  if (!diskId) {
+    return ok([]);
+  }
+
+  const items: ItemStack[] = [];
+  await loadDataArea();
+
+  const entityr = getEntityFromDisk(diskId);
+  if (entityr.isErr()) {
+    return err(
+      new Error(`Failed to load items from storage disk: ${entityr.error}`),
+    );
+  }
+  const entity = entityr.value;
+
+  const container = entity.getComponent("inventory")?.container;
+  if (!container) {
+    return err(
+      new Error(
+        "Failed to load items from storage disk: Cannot get entity container.",
+      ),
+    );
+  }
+  for (let i = 0; i < container.size; i++) {
+    const item = container.getItem(i);
+    if (item) items.push(item);
+  }
+
+  entity.remove();
+  unloadDataArea();
+
+  return ok(items);
+}
