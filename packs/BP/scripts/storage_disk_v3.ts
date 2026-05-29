@@ -7,14 +7,16 @@ import {
   StructureSaveMode,
   world,
 } from "@minecraft/server";
-import { DynamicPropertyAccessor } from "./utils/dynamic_property";
+import { DynamicPropertyAccessor } from "./utils/dynamic_property_v3";
 import { err, ok, Result } from "neverthrow";
+import { getEntityAtBlockLocation } from "./utils/location";
 
 const TICKING_AREA_ID = "fluffyalien_asn:disk_data_area";
 const DATA_LOCATION = { x: 0, y: -63, z: 0 };
 const DATA_LOCATION_DIMENSION_ID = "minecraft:overworld";
+const DISK_ENTITY_ID = "fluffyalien_asn:storage_disk_entity_v3";
 
-const diskIdProperty = DynamicPropertyAccessor.withoutDefault<string>(
+const diskIdProperty = new DynamicPropertyAccessor<string>(
   "fluffyalien_asn:disk_id",
 );
 
@@ -23,7 +25,9 @@ function getDataDimensionLocation(): Result<DimensionLocation, Error> {
   try {
     dimension = world.getDimension(DATA_LOCATION_DIMENSION_ID);
   } catch (e) {
-    return err(new Error(`Failed to get dimension: ${String(e)}`));
+    return err(
+      new Error(`Failed to get data dimension location: ${String(e)}`),
+    );
   }
 
   return ok({ ...DATA_LOCATION, dimension });
@@ -73,7 +77,6 @@ function getEntityFromDisk(diskId: string): Result<Entity, Error> {
   const location = locationr.value;
 
   const structId = structureIdFromDiskId(diskId);
-  console.warn("structId:", structId);
   try {
     world.structureManager.place(structId, location.dimension, location);
   } catch (e) {
@@ -82,9 +85,7 @@ function getEntityFromDisk(diskId: string): Result<Entity, Error> {
     );
   }
 
-  const entity = location.dimension
-    .getEntitiesAtBlockLocation(location)
-    .find((e) => e.typeId === "fluffyalien_asn:storage_disk_entity_v3");
+  const entity = getEntityAtBlockLocation(location, DISK_ENTITY_ID);
   if (!entity) {
     return err(
       new Error("Failed to get entity from storage disk: Entity not found."),
@@ -111,7 +112,7 @@ export async function saveItems<T extends ItemStack | ContainerSlot>(
     );
   }
   const location = locationr.value;
-  const diskId = diskIdProperty.get(disk);
+  const diskId = diskIdProperty.safeGet(disk);
   await loadDataArea();
 
   let entity: Entity;
@@ -130,10 +131,7 @@ export async function saveItems<T extends ItemStack | ContainerSlot>(
     entity = loadedEntity;
   } else {
     try {
-      entity = location.dimension.spawnEntity(
-        "fluffyalien_asn:storage_disk_entity_v3",
-        location,
-      );
+      entity = location.dimension.spawnEntity(DISK_ENTITY_ID, location);
     } catch (e) {
       return err(
         new Error(`Failed to save items to storage disk: ${String(e)}`),
@@ -182,7 +180,7 @@ export async function saveItems<T extends ItemStack | ContainerSlot>(
 export async function loadItems(
   disk: ItemStack | ContainerSlot,
 ): Promise<Result<ItemStack[], Error>> {
-  const diskId = diskIdProperty.get(disk);
+  const diskId = diskIdProperty.safeGet(disk);
   if (!diskId) {
     return ok([]);
   }
@@ -198,14 +196,7 @@ export async function loadItems(
   }
   const entity = entityr.value;
 
-  const container = entity.getComponent("inventory")?.container;
-  if (!container) {
-    return err(
-      new Error(
-        "Failed to load items from storage disk: Cannot get entity container.",
-      ),
-    );
-  }
+  const container = entity.getComponent("inventory")!.container;
   for (let i = 0; i < container.size; i++) {
     const item = container.getItem(i);
     if (item) items.push(item);

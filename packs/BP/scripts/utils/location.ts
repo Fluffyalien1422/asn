@@ -20,3 +20,7 @@ export function vector3AsDimensionLocation(
 ): DimensionLocation {
   return { ...vec, dimension };
 }
+
+export function dimensionLocationFromEntity(entity: Entity): DimensionLocation {
+  return vector3AsDimensionLocation(entity.location, entity.dimension);
+}

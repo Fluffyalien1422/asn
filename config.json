@@ -48,6 +48,17 @@
       }
     },
     "profiles": {
+      "default": {
+        "export": {
+          "target": "development",
+          "build": "standard"
+        },
+        "filters": [
+          {
+            "profile": "dev_bec"
+          }
+        ]
+      },
       "dev_shared": {
         "export": {
           "target": "none"
