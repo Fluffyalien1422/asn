@@ -1,18 +1,14 @@
-import { system, Block, world } from "@minecraft/server";
+import { system, Block, world, ItemStack } from "@minecraft/server";
 import {
   CableNetworkConnections,
   DiscoverCableNetworkConnectionsError,
   discoverCableNetworkConnections,
 } from "./cable_network";
-import { ErrorResult, Result, failure, success } from "./utils/result";
 import {
   MAX_STORAGE_DRIVE_DATA_LENGTH,
   getStorageDriveSerializedData,
-  setStorageDriveSerializedData,
 } from "./storage_drive";
-import { StorageSystemItemStack } from "./storage_system_item_stack";
-import { deserialize, serialize } from "./serialize";
-import { STRING_DYNAMIC_PROPERTY_MAX_LENGTH } from "./constants";
+import * as resultlegacy from "./utils/result";
 import { DeepReadonly } from "ts-essentials";
 import { updateImportBus } from "./import_bus";
 import { Vector3Utils } from "@minecraft/math";
@@ -28,17 +24,20 @@ import {
   driveEnergyConsumptionRule,
   useEnergyRule,
 } from "./addon_rules/addon_rules";
-import {
-  AddItemStackToStorageError,
-  isBannedItem,
-  StorageSystem,
-} from "./storage_system";
+import { AddItemStackToStorageError, StorageSystem } from "./storage_system";
 import { FLUID_DRIVE_CAPACITY } from "./fluid_drive";
 import {
   getBlockDynamicProperty,
   setBlockDynamicProperty,
 } from "./utils/dynamic_property";
 import { updateFluidExportBus } from "./fluid_export_bus";
+import { getDisksInDrive } from "./storage_drive_v3";
+import {
+  loadDataArea,
+  loadItemsFromDisk,
+  unloadDataArea,
+} from "./storage_disk_v3";
+import { err, ok, Result } from "neverthrow";
 
 export const STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL = 10;
 
@@ -61,7 +60,9 @@ export class StorageNetwork extends StorageSystem {
    */
   static async establishNetwork(
     origin: Block,
-  ): Promise<Result<StorageNetwork, DiscoverCableNetworkConnectionsError>> {
+  ): Promise<
+    resultlegacy.Result<StorageNetwork, DiscoverCableNetworkConnectionsError>
+  > {
     const result = await discoverCableNetworkConnections(origin);
     if (!result.success) {
       return result;
@@ -69,7 +70,7 @@ export class StorageNetwork extends StorageSystem {
 
     const connections = result.value;
 
-    return success(new StorageNetwork(connections));
+    return resultlegacy.success(new StorageNetwork(connections));
   }
 
   /**
@@ -165,16 +166,18 @@ export class StorageNetwork extends StorageSystem {
    */
   static async getOrEstablishNetwork(
     block: Block,
-  ): Promise<Result<StorageNetwork, DiscoverCableNetworkConnectionsError>> {
+  ): Promise<
+    resultlegacy.Result<StorageNetwork, DiscoverCableNetworkConnectionsError>
+  > {
     const existingNetwork = StorageNetwork.getNetwork(block);
     if (existingNetwork) {
-      return success(existingNetwork);
+      return resultlegacy.success(existingNetwork);
     }
 
     return StorageNetwork.establishNetwork(block);
   }
 
-  private storedItems?: StorageSystemItemStack[];
+  private storedItems?: ItemStack[];
   private readonly updateIntervalRunId: number;
   private readonly levelEmitterUpdateIntervalRunId: number;
 
@@ -240,24 +243,46 @@ export class StorageNetwork extends StorageSystem {
     }
   }
 
-  private getStoredItemStacksMutable(): StorageSystemItemStack[] {
+  async getStoredItemStacks(): Promise<Result<ItemStack[], Error>> {
     if (this.storedItems) {
-      return this.storedItems;
+      return ok(this.storedItems);
     }
 
-    const itemStacks: StorageSystemItemStack[] = [];
+    const loadDataAreaResult = await loadDataArea();
+    if (loadDataAreaResult.isErr()) {
+      return err(
+        new Error(
+          `Failed to get stored item stacks: ${loadDataAreaResult.error}`,
+        ),
+      );
+    }
+
+    const itemStacks: ItemStack[] = [];
 
     for (const drive of this.connections.storageDrives) {
-      const serialized = getStorageDriveSerializedData(drive);
-      if (!serialized) {
+      const disksr = getDisksInDrive(drive);
+      if (disksr.isErr()) {
+        console.warn(`Error while getting stored item stacks: ${disksr.error}`);
         continue;
       }
-
-      itemStacks.push(...deserialize(serialized));
+      const disks = disksr.value;
+      for (const disk of disks) {
+        const itemsr = loadItemsFromDisk(disk);
+        if (itemsr.isErr()) {
+          console.warn(
+            `Error while getting stored item stacks: ${itemsr.error}`,
+          );
+          continue;
+        }
+        const items = itemsr.value;
+        itemStacks.push(...items);
+      }
     }
 
+    unloadDataArea();
+
     this.storedItems = itemStacks;
-    return itemStacks;
+    return ok(itemStacks);
   }
 
   /**
@@ -265,48 +290,40 @@ export class StorageNetwork extends StorageSystem {
    * use saveData instead to save all data.
    * @param useRealMaxLength internal argument, do not use
    */
-  private saveStoredItemData(useRealMaxLength = false): void {
-    const storedItems = this.getStoredItemStacks();
-    const maxStorageDriveDataLength = useRealMaxLength
-      ? STRING_DYNAMIC_PROPERTY_MAX_LENGTH
-      : MAX_STORAGE_DRIVE_DATA_LENGTH;
-
-    let itemsStored = 0;
-
-    for (const drive of this.connections.storageDrives) {
-      let serializedData = "";
-
-      while (itemsStored < storedItems.length) {
-        const newData = serialize(storedItems[itemsStored]);
-
-        if (
-          serializedData.length + newData.length >
-          maxStorageDriveDataLength
-        ) {
-          break;
-        }
-
-        serializedData += newData;
-        itemsStored++;
-      }
-
-      setStorageDriveSerializedData(drive, serializedData);
-    }
-
-    if (itemsStored < storedItems.length) {
-      if (useRealMaxLength) {
-        // if the fallback failed as well, throw an error
-        throw new Error(
-          makeErrorString("could not save item data: reached max storage"),
-        );
-      }
-
-      // fall back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH if we could not save everything
-      logWarn(
-        "could not save item data with default max data length (MAX_STORAGE_DRIVE_DATA_LENGTH). falling back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH",
-      );
-      this.saveStoredItemData(true);
-    }
+  private async saveStoredItemData(useRealMaxLength = false): Promise<void> {
+    // const storedItems = (await this.getStoredItemStacks())._unsafeUnwrap();
+    // const maxStorageDriveDataLength = useRealMaxLength
+    //   ? STRING_DYNAMIC_PROPERTY_MAX_LENGTH
+    //   : MAX_STORAGE_DRIVE_DATA_LENGTH;
+    // let itemsStored = 0;
+    // for (const drive of this.connections.storageDrives) {
+    //   let serializedData = "";
+    //   while (itemsStored < storedItems.length) {
+    //     const newData = serialize(storedItems[itemsStored]);
+    //     if (
+    //       serializedData.length + newData.length >
+    //       maxStorageDriveDataLength
+    //     ) {
+    //       break;
+    //     }
+    //     serializedData += newData;
+    //     itemsStored++;
+    //   }
+    //   setStorageDriveSerializedData(drive, serializedData);
+    // }
+    // if (itemsStored < storedItems.length) {
+    //   if (useRealMaxLength) {
+    //     // if the fallback failed as well, throw an error
+    //     throw new Error(
+    //       makeErrorString("could not save item data: reached max storage"),
+    //     );
+    //   }
+    //   // fall back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH if we could not save everything
+    //   logWarn(
+    //     "could not save item data with default max data length (MAX_STORAGE_DRIVE_DATA_LENGTH). falling back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH",
+    //   );
+    //   this.saveStoredItemData(true);
+    // }
   }
 
   /**
@@ -398,7 +415,7 @@ export class StorageNetwork extends StorageSystem {
         return this.connections.cables.some(condition);
       case "fluffyalien_asn:storage_core":
         return condition(this.connections.storageCore);
-      case "fluffyalien_asn:storage_drive":
+      case "fluffyalien_asn:storage_drive_v3":
         return this.connections.storageDrives.some(condition);
       case "fluffyalien_asn:storage_interface":
       case "fluffyalien_asn:fluid_interface":
@@ -429,7 +446,7 @@ export class StorageNetwork extends StorageSystem {
    * @returns a result containing an error or undefined
    */
   async updateConnections(): Promise<
-    ErrorResult<DiscoverCableNetworkConnectionsError>
+    resultlegacy.ErrorResult<DiscoverCableNetworkConnectionsError>
   > {
     this.ensureValidity();
 
@@ -448,7 +465,7 @@ export class StorageNetwork extends StorageSystem {
     this.storedItems = undefined;
     this.storedFluids = undefined;
 
-    return success();
+    return resultlegacy.success();
   }
 
   /**
@@ -468,15 +485,6 @@ export class StorageNetwork extends StorageSystem {
   clearStoredFluidsCache(): void {
     this.ensureValidity();
     this.storedFluids = undefined;
-  }
-
-  /**
-   * @throws if this object is not valid
-   */
-  getStoredItemStacks(): readonly StorageSystemItemStack[] {
-    this.ensureValidity();
-
-    return this.getStoredItemStacksMutable();
   }
 
   /**
@@ -599,19 +607,12 @@ export class StorageNetwork extends StorageSystem {
   /**
    * @throws if this object is not valid
    */
-  addItemStack = (
-    itemStack: StorageSystemItemStack,
-  ): ErrorResult<AddItemStackToStorageError> => {
+  addItemStack = async (
+    itemStack: ItemStack,
+  ): Promise<resultlegacy.ErrorResult<AddItemStackToStorageError>> => {
     this.ensureValidity();
 
-    if (isBannedItem(itemStack)) {
-      return failure({
-        type: "bannedItem",
-        itemId: itemStack.typeId,
-      });
-    }
-
-    const storedItems = this.getStoredItemStacksMutable();
+    const storedItems = (await this.getStoredItemStacks())._unsafeUnwrap();
 
     const existingItemStack = storedItems.find((other) =>
       itemStack.isStackableWith(other),
@@ -620,18 +621,18 @@ export class StorageNetwork extends StorageSystem {
     if (existingItemStack) {
       existingItemStack.amount += itemStack.amount;
     } else {
-      const length = serialize(itemStack).length;
+      // const length = serialize(itemStack).length;
 
-      if (this.getUsedDataLength() + length > this.getMaxDataLength()) {
-        return failure({ type: "insufficientStorage" });
-      }
+      // if (this.getUsedDataLength() + length > this.getMaxDataLength()) {
+      //   return failure({ type: "insufficientStorage" });
+      // }
 
       storedItems.push(itemStack);
     }
 
-    this.saveStoredItemData();
+    await this.saveStoredItemData();
 
-    return success();
+    return resultlegacy.success();
   };
 
   /**
@@ -687,10 +688,10 @@ export class StorageNetwork extends StorageSystem {
    * @throws if this object is not valid
    * @returns the amount that was removed
    */
-  removeItemStack = (itemStack: StorageSystemItemStack): number => {
+  removeItemStack = async (itemStack: ItemStack): Promise<number> => {
     this.ensureValidity();
 
-    const storedItems = this.getStoredItemStacksMutable();
+    const storedItems = (await this.getStoredItemStacks())._unsafeUnwrap();
 
     const storedIndex = storedItems.findIndex((other) =>
       itemStack.isStackableWith(other),
@@ -716,7 +717,7 @@ export class StorageNetwork extends StorageSystem {
     }
 
     // save
-    this.saveStoredItemData();
+    await this.saveStoredItemData();
 
     return requestAmount;
   };

@@ -111,7 +111,7 @@ export async function discoverCableNetworkConnections(
         }
         storageCore = block;
         return success();
-      case "fluffyalien_asn:storage_drive":
+      case "fluffyalien_asn:storage_drive_v3":
         storageDrives.push(block);
         return success();
       case "fluffyalien_asn:storage_interface":

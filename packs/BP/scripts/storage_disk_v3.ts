@@ -37,7 +37,7 @@ function structureIdFromDiskId(diskId: string): string {
   return `fluffyalien_asn:disk_struct${diskId}`;
 }
 
-async function loadDataArea(): Promise<Result<void, Error>> {
+export async function loadDataArea(): Promise<Result<void, Error>> {
   if (world.tickingAreaManager.hasTickingArea(TICKING_AREA_ID)) return ok();
 
   const locationr = getDataDimensionLocation();
@@ -59,12 +59,16 @@ async function loadDataArea(): Promise<Result<void, Error>> {
   return ok();
 }
 
-function unloadDataArea(): void {
+export function unloadDataArea(): void {
   try {
     world.tickingAreaManager.removeTickingArea(TICKING_AREA_ID);
   } catch (e) {
     console.warn(e);
   }
+}
+
+export function isDataAreaLoaded(): boolean {
+  return world.tickingAreaManager.hasTickingArea(TICKING_AREA_ID);
 }
 
 function getEntityFromDisk(diskId: string): Result<Entity, Error> {
@@ -95,13 +99,15 @@ function getEntityFromDisk(diskId: string): Result<Entity, Error> {
   return ok(entity);
 }
 
-export async function saveItems<T extends ItemStack | ContainerSlot>(
+export function saveItemsToDisk<T extends ItemStack | ContainerSlot>(
   disk: T,
   items: ItemStack[],
-): Promise<Result<T, Error>> {
+): Result<T, Error> {
   if (items.length > 64) {
     return err(
-      new Error("Trying to save too many items to storage disk (>64)."),
+      new Error(
+        "Failed to save items to storage disk: Trying to save too many items (>64).",
+      ),
     );
   }
 
@@ -113,7 +119,12 @@ export async function saveItems<T extends ItemStack | ContainerSlot>(
   }
   const location = locationr.value;
   const diskId = diskIdProperty.safeGet(disk);
-  await loadDataArea();
+
+  if (!isDataAreaLoaded()) {
+    return err(
+      new Error("Failed to save items to storage disk: Data area not loaded."),
+    );
+  }
 
   let entity: Entity;
   let structId: string;
@@ -172,21 +183,25 @@ export async function saveItems<T extends ItemStack | ContainerSlot>(
   }
 
   entity.remove();
-  unloadDataArea();
 
   return ok(disk);
 }
 
-export async function loadItems(
+export function loadItemsFromDisk(
   disk: ItemStack | ContainerSlot,
-): Promise<Result<ItemStack[], Error>> {
+): Result<ItemStack[], Error> {
   const diskId = diskIdProperty.safeGet(disk);
   if (!diskId) {
     return ok([]);
   }
 
-  const items: ItemStack[] = [];
-  await loadDataArea();
+  if (!isDataAreaLoaded()) {
+    return err(
+      new Error(
+        "Failed to load items from storage disk: Data area not loaded.",
+      ),
+    );
+  }
 
   const entityr = getEntityFromDisk(diskId);
   if (entityr.isErr()) {
@@ -196,6 +211,7 @@ export async function loadItems(
   }
   const entity = entityr.value;
 
+  const items: ItemStack[] = [];
   const container = entity.getComponent("inventory")!.container;
   for (let i = 0; i < container.size; i++) {
     const item = container.getItem(i);
@@ -203,7 +219,5 @@ export async function loadItems(
   }
 
   entity.remove();
-  unloadDataArea();
-
   return ok(items);
 }

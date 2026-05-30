@@ -45,7 +45,7 @@ type StorageViewerStackSize = 1 | 2 | 4 | 8 | 16 | 32 | 64;
 interface ViewerData {
   enabled: boolean;
   hasQuery: boolean;
-  items: StorageSystemItemStack[];
+  items: ItemStack[];
   storageSystem: StorageSystem;
   page: number;
   playerInUi: Player;
@@ -87,9 +87,9 @@ export function forceCloseInventory(entity: Entity): Promise<void> {
 }
 
 function getItemsOnPage(
-  items: readonly StorageSystemItemStack[],
+  items: readonly ItemStack[],
   page: number,
-): StorageSystemItemStack[] {
+): ItemStack[] {
   return items.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
 }
 
@@ -102,7 +102,7 @@ function fillViewerInventory(entity: Entity, data: ViewerData): void {
   for (let i = 0; i < itemsOnPage.length; i++) {
     const storageSystemItem = itemsOnPage[i];
 
-    const displayItem = storageSystemItem.toItemStack();
+    const displayItem = storageSystemItem.clone();
     displayItem.setLore([
       getDisplayItemLoreStr(storageSystemItem.amount),
       ...displayItem.getLore(),
@@ -201,12 +201,12 @@ function addItemToStorageOrShowError(
  * @returns the new ViewerData
  * @throws if the passed entity is not part of the "fluffyalien_asn:storage_viewer" type family
  */
-export function refreshStorageViewer(
+export async function refreshStorageViewer(
   interfaceEntity: Entity,
   player: Player,
   storageSystem: StorageSystem,
   preservePage = false,
-): ViewerData {
+): Promise<ViewerData> {
   if (
     !interfaceEntity.matches({
       families: ["fluffyalien_asn:storage_viewer"],
@@ -222,11 +222,11 @@ export function refreshStorageViewer(
   const oldData = viewerData.get(interfaceEntity.id);
   const sortOrder = oldData?.sortOrder ?? "insertion";
 
-  let items: StorageSystemItemStack[];
+  let items: ItemStack[];
   if (oldData?.hasQuery) {
     items = oldData.items;
   } else {
-    items = [...storageSystem.getStoredItemStacks()];
+    items = [...(await storageSystem.getStoredItemStacks())._unsafeUnwrap()];
 
     if (sortOrder === "amount") {
       items.sort((a, b) => b.amount - a.amount);
@@ -313,7 +313,7 @@ async function search(
  * check if an item in the interface inventory has been taken by the player
  */
 function isStorageInventoryItemTaken(
-  storageItem: StorageSystemItemStack,
+  storageItem: ItemStack,
   inventoryItem: ItemStack,
 ): boolean {
   inventoryItem = inventoryItem.clone();
@@ -321,11 +321,7 @@ function isStorageInventoryItemTaken(
   // remove the first lore line - it's the line that shows the amount in the storage
   inventoryItem.setLore(inventoryItem.getLore().slice(1));
 
-  if (
-    storageItem.isStackableWith(
-      StorageSystemItemStack.fromItemStack(inventoryItem),
-    )
-  ) {
+  if (storageItem.isStackableWith(inventoryItem)) {
     return false;
   }
 
@@ -372,7 +368,7 @@ function addItemToStorage(
     return false;
   }
 
-  refreshStorageViewer(
+  void refreshStorageViewer(
     interfaceEntity,
     data.playerInUi,
     data.storageSystem,
@@ -464,7 +460,7 @@ system.runInterval(() => {
         clearUiItemsFromPlayer(data.playerInUi);
 
         data.hasQuery = false;
-        refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
+        void refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
 
         continue;
       }
@@ -472,7 +468,7 @@ system.runInterval(() => {
       if (sortButtonSlotItem?.typeId !== SORT_RELEVANCY_ITEM_ID) {
         clearUiItemsFromPlayer(data.playerInUi);
 
-        refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
+        void refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
 
         continue;
       }
@@ -493,7 +489,7 @@ system.runInterval(() => {
         clearUiItemsFromPlayer(data.playerInUi);
 
         data.sortOrder = "amount";
-        refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
+        void refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
 
         continue;
       }
@@ -505,7 +501,7 @@ system.runInterval(() => {
         clearUiItemsFromPlayer(data.playerInUi);
 
         data.sortOrder = "insertion";
-        refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
+        void refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
 
         continue;
       }
@@ -514,7 +510,7 @@ system.runInterval(() => {
     const itemsOnPage = getItemsOnPage(data.items, data.page);
 
     for (let i = 0; i < ITEMS_PER_PAGE; i++) {
-      const storageItem = itemsOnPage[i] as StorageSystemItemStack | undefined;
+      const storageItem = itemsOnPage[i] as ItemStack | undefined;
       const inventoryItem = inventory.getItem(i);
 
       if (!storageItem) {
@@ -566,7 +562,12 @@ system.runInterval(() => {
         ),
       );
 
-      refreshStorageViewer(entity, data.playerInUi, data.storageSystem, true);
+      void refreshStorageViewer(
+        entity,
+        data.playerInUi,
+        data.storageSystem,
+        true,
+      );
 
       break;
     }

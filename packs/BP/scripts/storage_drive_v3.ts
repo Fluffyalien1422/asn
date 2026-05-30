@@ -1,8 +1,8 @@
 import {
   BlockCustomComponent,
+  ContainerSlot,
   DimensionLocation,
   Entity,
-  ItemStack,
   world,
 } from "@minecraft/server";
 import { err, ok, Result } from "neverthrow";
@@ -19,9 +19,9 @@ function getStorageDriveEntity(
   return getEntityAtBlockLocation(location, ENTITY_ID);
 }
 
-function getDisksInDrive(
+export function getDisksInDrive(
   location: DimensionLocation,
-): Result<ItemStack[], Error> {
+): Result<ContainerSlot[], Error> {
   const entity = getStorageDriveEntity(location);
   if (!entity) {
     return err(
@@ -30,10 +30,15 @@ function getDisksInDrive(
   }
 
   const container = entity.getComponent("inventory")!.container;
-  const disks: ItemStack[] = [];
+  const disks: ContainerSlot[] = [];
   for (let i = 0; i < container.size; i++) {
-    const item = container.getItem(i);
-    if (item) disks.push(item);
+    const slot = container.getSlot(i);
+    if (
+      slot.hasItem() &&
+      slot.typeId === "fluffyalien_asn:storage_disk_v3_64"
+    ) {
+      disks.push(slot);
+    }
   }
 
   return ok(disks);
@@ -57,7 +62,7 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     dimensionLocationFromEntity(e.hitEntity),
   ).unwrapOr([]);
   for (const disk of disks) {
-    e.hitEntity.dimension.spawnItem(disk, e.hitEntity.location);
+    e.hitEntity.dimension.spawnItem(disk.getItem()!, e.hitEntity.location);
   }
 
   e.hitEntity.runCommand("setblock ~~~ air destroy");

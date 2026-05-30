@@ -4,14 +4,21 @@ import {
   Player,
   system,
 } from "@minecraft/server";
-import { loadItems, saveItems } from "./storage_disk_v3";
+import {
+  loadDataArea,
+  loadItemsFromDisk,
+  saveItemsToDisk,
+  unloadDataArea,
+} from "./storage_disk_v3";
 
-function v3storagetest_save(player: Player): void {
+async function v3storagetest_save(player: Player): Promise<void> {
   const container = player.getComponent("inventory")!.container;
   const itemSlot = container.getSlot(0);
   const diskSlot = container.getSlot(1);
 
-  void saveItems(diskSlot, [itemSlot.getItem()!]);
+  (await loadDataArea())._unsafeUnwrap();
+  saveItemsToDisk(diskSlot, [itemSlot.getItem()!])._unsafeUnwrap();
+  unloadDataArea();
 }
 
 async function v3storagetest_load(player: Player): Promise<void> {
@@ -19,13 +26,17 @@ async function v3storagetest_load(player: Player): Promise<void> {
   const itemSlot = container.getSlot(0);
   const diskSlot = container.getSlot(1);
 
-  const loadedr = await loadItems(diskSlot);
+  (await loadDataArea())._unsafeUnwrap();
+
+  const loadedr = loadItemsFromDisk(diskSlot);
   if (loadedr.isErr()) {
     throw loadedr.error;
   }
   const loaded = loadedr.value;
 
   itemSlot.setItem(loaded[0]);
+
+  unloadDataArea();
 }
 
 system.beforeEvents.startup.subscribe((e) => {
@@ -37,7 +48,7 @@ system.beforeEvents.startup.subscribe((e) => {
     },
     (e) => {
       system.run(() => {
-        v3storagetest_save(e.sourceEntity as Player);
+        void v3storagetest_save(e.sourceEntity as Player);
       });
       return {
         status: CustomCommandStatus.Success,
@@ -53,7 +64,7 @@ system.beforeEvents.startup.subscribe((e) => {
     },
     (e) => {
       system.run(() => {
-        void v3storagetest_load(e.sourceEntity as Player);
+        v3storagetest_load(e.sourceEntity as Player);
       });
       return {
         status: CustomCommandStatus.Success,
