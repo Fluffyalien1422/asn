@@ -24,7 +24,11 @@ import {
   driveEnergyConsumptionRule,
   useEnergyRule,
 } from "./addon_rules/addon_rules";
-import { AddItemStackToStorageError, StorageSystem } from "./storage_system";
+import {
+  AddItemStackToStorageError,
+  isBannedItem,
+  StorageSystem,
+} from "./storage_system";
 import { FLUID_DRIVE_CAPACITY } from "./fluid_drive";
 import {
   getBlockDynamicProperty,
@@ -35,9 +39,17 @@ import { getDisksInDrive } from "./storage_drive_v3";
 import {
   loadDataArea,
   loadItemsFromDisk,
+  saveItemsToDisk,
   unloadDataArea,
 } from "./storage_disk_v3";
+import { cloneItemStackWithAmount, itemStacksMatch } from "./utils/item";
+import { ContainerSlot } from "@minecraft/server";
 import { err, ok, Result } from "neverthrow";
+
+/**
+ * The maximum number of item stacks (slots) that a single storage disk can hold.
+ */
+export const STORAGE_DISK_CAPACITY = 64;
 
 export const STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL = 10;
 
@@ -178,6 +190,12 @@ export class StorageNetwork extends StorageSystem {
   }
 
   private storedItems?: ItemStack[];
+  /**
+   * The disk slots that {@link StorageNetwork.storedItems} were loaded from,
+   * in the same order they were discovered. Used to write items back to disks
+   * in {@link StorageNetwork.saveStoredItemData}.
+   */
+  private storedItemDisks?: ContainerSlot[];
   private readonly updateIntervalRunId: number;
   private readonly levelEmitterUpdateIntervalRunId: number;
 
@@ -194,10 +212,10 @@ export class StorageNetwork extends StorageSystem {
 
         switch (block.typeId) {
           case "fluffyalien_asn:import_bus":
-            updateImportBus(block, this);
+            void updateImportBus(block, this);
             break;
           case "fluffyalien_asn:export_bus":
-            updateExportBus(block, this);
+            void updateExportBus(block, this);
             break;
           case "fluffyalien_asn:fluid_export_bus":
             void updateFluidExportBus(block, this);
@@ -228,7 +246,7 @@ export class StorageNetwork extends StorageSystem {
       for (const block of this.connections.levelEmitters) {
         if (!block.isValid) continue;
 
-        updateLevelEmitter(block, this);
+        void updateLevelEmitter(block, this);
       }
     });
   }
@@ -241,6 +259,24 @@ export class StorageNetwork extends StorageSystem {
     if (!this.internalIsValid) {
       throw new Error(makeErrorString(`StorageNetwork: object destroyed`));
     }
+  }
+
+  /**
+   * Gets all disk slots across every storage drive in this network.
+   */
+  private getDisks(): ContainerSlot[] {
+    const disks: ContainerSlot[] = [];
+
+    for (const drive of this.connections.storageDrives) {
+      const disksr = getDisksInDrive(drive);
+      if (disksr.isErr()) {
+        console.warn(`Error while getting disks: ${disksr.error}`);
+        continue;
+      }
+      disks.push(...disksr.value);
+    }
+
+    return disks;
   }
 
   async getStoredItemStacks(): Promise<Result<ItemStack[], Error>> {
@@ -258,72 +294,71 @@ export class StorageNetwork extends StorageSystem {
     }
 
     const itemStacks: ItemStack[] = [];
+    const disks = this.getDisks();
 
-    for (const drive of this.connections.storageDrives) {
-      const disksr = getDisksInDrive(drive);
-      if (disksr.isErr()) {
-        console.warn(`Error while getting stored item stacks: ${disksr.error}`);
+    for (const disk of disks) {
+      const itemsr = loadItemsFromDisk(disk);
+      if (itemsr.isErr()) {
+        console.warn(`Error while getting stored item stacks: ${itemsr.error}`);
         continue;
       }
-      const disks = disksr.value;
-      for (const disk of disks) {
-        const itemsr = loadItemsFromDisk(disk);
-        if (itemsr.isErr()) {
-          console.warn(
-            `Error while getting stored item stacks: ${itemsr.error}`,
-          );
-          continue;
-        }
-        const items = itemsr.value;
-        itemStacks.push(...items);
-      }
+      itemStacks.push(...itemsr.value);
     }
 
     unloadDataArea();
 
     this.storedItems = itemStacks;
+    this.storedItemDisks = disks;
     return ok(itemStacks);
   }
 
   /**
-   * Writes in-memory item data to dynamic properties on drives.
-   * use saveData instead to save all data.
-   * @param useRealMaxLength internal argument, do not use
+   * The total number of item stacks (slots) that this network can hold across
+   * all of its disks.
    */
-  private async saveStoredItemData(useRealMaxLength = false): Promise<void> {
-    // const storedItems = (await this.getStoredItemStacks())._unsafeUnwrap();
-    // const maxStorageDriveDataLength = useRealMaxLength
-    //   ? STRING_DYNAMIC_PROPERTY_MAX_LENGTH
-    //   : MAX_STORAGE_DRIVE_DATA_LENGTH;
-    // let itemsStored = 0;
-    // for (const drive of this.connections.storageDrives) {
-    //   let serializedData = "";
-    //   while (itemsStored < storedItems.length) {
-    //     const newData = serialize(storedItems[itemsStored]);
-    //     if (
-    //       serializedData.length + newData.length >
-    //       maxStorageDriveDataLength
-    //     ) {
-    //       break;
-    //     }
-    //     serializedData += newData;
-    //     itemsStored++;
-    //   }
-    //   setStorageDriveSerializedData(drive, serializedData);
-    // }
-    // if (itemsStored < storedItems.length) {
-    //   if (useRealMaxLength) {
-    //     // if the fallback failed as well, throw an error
-    //     throw new Error(
-    //       makeErrorString("could not save item data: reached max storage"),
-    //     );
-    //   }
-    //   // fall back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH if we could not save everything
-    //   logWarn(
-    //     "could not save item data with default max data length (MAX_STORAGE_DRIVE_DATA_LENGTH). falling back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH",
-    //   );
-    //   this.saveStoredItemData(true);
-    // }
+  private getStorageCapacity(): number {
+    return this.getDisks().length * STORAGE_DISK_CAPACITY;
+  }
+
+  /**
+   * Writes the in-memory item data ({@link StorageNetwork.storedItems}) back to
+   * the network's disks. Items are distributed across the disks that they were
+   * loaded from, up to {@link STORAGE_DISK_CAPACITY} stacks per disk.
+   * @throws if the data area could not be loaded
+   */
+  private async saveStoredItemData(): Promise<void> {
+    // nothing to save if items were never loaded
+    if (!this.storedItems || !this.storedItemDisks) {
+      return;
+    }
+
+    const loadDataAreaResult = await loadDataArea();
+    if (loadDataAreaResult.isErr()) {
+      throw new Error(
+        makeErrorString(
+          `could not save item data: ${loadDataAreaResult.error.message}`,
+        ),
+      );
+    }
+
+    const storedItems = this.storedItems;
+    const disks = this.storedItemDisks;
+
+    let itemsStored = 0;
+    for (const disk of disks) {
+      const diskItems = storedItems.slice(
+        itemsStored,
+        itemsStored + STORAGE_DISK_CAPACITY,
+      );
+      itemsStored += diskItems.length;
+
+      const saveResult = saveItemsToDisk(disk, diskItems);
+      if (saveResult.isErr()) {
+        logWarn(`could not save item data: ${saveResult.error.message}`);
+      }
+    }
+
+    unloadDataArea();
   }
 
   /**
@@ -463,6 +498,7 @@ export class StorageNetwork extends StorageSystem {
     // we need to clear storage because a drive may have been removed
     // these will be updated the next time their get function is called
     this.storedItems = undefined;
+    this.storedItemDisks = undefined;
     this.storedFluids = undefined;
 
     return resultlegacy.success();
@@ -476,6 +512,7 @@ export class StorageNetwork extends StorageSystem {
   clearStoredItemsCache(): void {
     this.ensureValidity();
     this.storedItems = undefined;
+    this.storedItemDisks = undefined;
   }
 
   /**
@@ -612,22 +649,55 @@ export class StorageNetwork extends StorageSystem {
   ): Promise<resultlegacy.ErrorResult<AddItemStackToStorageError>> => {
     this.ensureValidity();
 
+    if (isBannedItem(itemStack)) {
+      return resultlegacy.failure({
+        type: "bannedItem",
+        itemId: itemStack.typeId,
+      });
+    }
+
     const storedItems = (await this.getStoredItemStacks())._unsafeUnwrap();
 
-    const existingItemStack = storedItems.find((other) =>
-      itemStack.isStackableWith(other),
-    );
+    // the items are now stored as real ItemStacks, so each stored stack can
+    // only hold up to its max stack size. before mutating anything, make sure
+    // the whole incoming amount fits so the add is all-or-nothing (a partial
+    // add followed by a failure would duplicate items in the import bus).
+    const maxAmount = itemStack.maxAmount;
 
-    if (existingItemStack) {
-      existingItemStack.amount += itemStack.amount;
-    } else {
-      // const length = serialize(itemStack).length;
+    let spaceInExisting = 0;
+    for (const stored of storedItems) {
+      if (!itemStacksMatch(stored, itemStack)) continue;
+      spaceInExisting += maxAmount - stored.amount;
+    }
 
-      // if (this.getUsedDataLength() + length > this.getMaxDataLength()) {
-      //   return failure({ type: "insufficientStorage" });
-      // }
+    const freeSlots = this.getStorageCapacity() - storedItems.length;
+    const totalSpace = spaceInExisting + freeSlots * maxAmount;
 
-      storedItems.push(itemStack);
+    if (itemStack.amount > totalSpace) {
+      return resultlegacy.failure({ type: "insufficientStorage" });
+    }
+
+    // distribute the incoming amount across the existing matching stacks
+    // first, then create new stacks for any overflow.
+    let amountRemaining = itemStack.amount;
+
+    for (const stored of storedItems) {
+      if (amountRemaining <= 0) break;
+      if (!itemStacksMatch(stored, itemStack)) continue;
+
+      const space = maxAmount - stored.amount;
+      if (space <= 0) continue;
+
+      const amountToAdd = Math.min(space, amountRemaining);
+      stored.amount += amountToAdd;
+      amountRemaining -= amountToAdd;
+    }
+
+    // create new stacks for any overflow
+    while (amountRemaining > 0) {
+      const amount = Math.min(maxAmount, amountRemaining);
+      storedItems.push(cloneItemStackWithAmount(itemStack, amount));
+      amountRemaining -= amount;
     }
 
     await this.saveStoredItemData();
@@ -693,27 +763,42 @@ export class StorageNetwork extends StorageSystem {
 
     const storedItems = (await this.getStoredItemStacks())._unsafeUnwrap();
 
-    const storedIndex = storedItems.findIndex((other) =>
-      itemStack.isStackableWith(other),
+    // items may be spread across multiple stacks (each capped at the max stack
+    // size), so the requested amount has to be taken from several stacks.
+    const totalAvailable = storedItems.reduce(
+      (total, other) =>
+        itemStacksMatch(other, itemStack) ? total + other.amount : total,
+      0,
     );
 
-    if (storedIndex === -1) {
+    if (totalAvailable <= 0) {
       logWarn(
-        `couldn't remove item stack (${itemStack.typeId}): no matching StorageSystemItemStack was found`,
+        `couldn't remove item stack (${itemStack.typeId}): no matching item stack was found`,
       );
       return 0;
     }
 
-    const stored = storedItems[storedIndex];
-
     const requestAmount = Math.max(
-      Math.min(itemStack.amount, stored.amount),
+      Math.min(itemStack.amount, totalAvailable),
       1,
     );
 
-    stored.amount -= requestAmount;
-    if (stored.amount <= 0) {
-      storedItems.splice(storedIndex, 1);
+    let amountRemaining = requestAmount;
+    for (let i = storedItems.length - 1; i >= 0; i--) {
+      if (amountRemaining <= 0) break;
+
+      const stored = storedItems[i];
+      if (!itemStacksMatch(stored, itemStack)) continue;
+
+      const amountToRemove = Math.min(stored.amount, amountRemaining);
+      const newAmount = stored.amount - amountToRemove;
+      amountRemaining -= amountToRemove;
+
+      if (newAmount <= 0) {
+        storedItems.splice(i, 1);
+      } else {
+        stored.amount = newAmount;
+      }
     }
 
     // save

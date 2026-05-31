@@ -252,6 +252,6 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
       );
     }
 
-    refreshStorageViewer(e.target, e.player, network);
+    void refreshStorageViewer(e.target, e.player, network);
   })();
 });

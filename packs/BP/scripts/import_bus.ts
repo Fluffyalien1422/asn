@@ -9,9 +9,11 @@ import {
   StrCardinalDirection,
   getBlockInDirection,
 } from "./utils/direction";
-import { StorageSystemItemStack } from "./storage_system_item_stack";
 
-export function updateImportBus(block: Block, network: StorageNetwork): void {
+export async function updateImportBus(
+  block: Block,
+  network: StorageNetwork,
+): Promise<void> {
   if (block.getRedstonePower()) return;
 
   const cardinalDirection = block.permutation.getState(
@@ -27,9 +29,7 @@ export function updateImportBus(block: Block, network: StorageNetwork): void {
     const item = container.getItem(i);
     if (!item) continue;
 
-    const result = network.addItemStack(
-      StorageSystemItemStack.fromItemStack(item),
-    );
+    const result = await network.addItemStack(item);
     if (!result.success) {
       if (result.error.type === "bannedItem") continue;
       else return;

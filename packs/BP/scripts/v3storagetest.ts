@@ -64,7 +64,7 @@ system.beforeEvents.startup.subscribe((e) => {
     },
     (e) => {
       system.run(() => {
-        v3storagetest_load(e.sourceEntity as Player);
+        void v3storagetest_load(e.sourceEntity as Player);
       });
       return {
         status: CustomCommandStatus.Success,

@@ -1,9 +1,11 @@
 import { getEntitiesInAllDimensions } from "../utils/dimension";
 import { makeErrorString } from "../log";
-import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { wait } from "../utils/async";
-import { getItemTranslationKey } from "../utils/item";
-import { abbreviateNumber } from "../utils/string";
+import {
+  cloneItemStackWithAmount,
+  getItemTranslationKey,
+  itemStacksMatch,
+} from "../utils/item";
 import { makeErrorMessageUi, showForm } from "../utils/ui";
 import { showRequestItemUi, showSearchUi } from "./form";
 import {
@@ -37,7 +39,16 @@ const SEARCH_BUTTON_INDEX = 30;
 const SORT_BUTTON_INDEX = 33;
 const STACK_SIZE_BUTTON_INDEX = 34;
 
-const DISPLAY_ITEM_LORE_STR_END = "§a§s§n§r";
+/**
+ * hidden lore marker appended to display items so they can be identified as ui
+ * items. the vanilla items shown in the storage viewer do not have the
+ * `fluffyalien_asn:ui_item` tag, so this marker is needed to detect them.
+ *
+ * every character is hidden behind a color code (`§a§s§n` spells "asn") and the
+ * trailing `§r` resets the color. the game does not render any visible text for
+ * this string, but it can still be read back from the item's lore.
+ */
+const DISPLAY_ITEM_LORE_MARKER = "§a§s§n§r";
 
 type StorageViewerSortOrder = "insertion" | "amount";
 type StorageViewerStackSize = 1 | 2 | 4 | 8 | 16 | 32 | 64;
@@ -61,14 +72,10 @@ interface ViewerData {
  */
 const viewerData = new Map<string, ViewerData>();
 
-function getDisplayItemLoreStr(amount: number): string {
-  return `§r§2§l${abbreviateNumber(amount)}${DISPLAY_ITEM_LORE_STR_END}`;
-}
-
 function isUiItem(itemStack: ItemStack): boolean {
   return (
     itemStack.hasTag("fluffyalien_asn:ui_item") ||
-    itemStack.getLore()[0]?.endsWith(DISPLAY_ITEM_LORE_STR_END)
+    itemStack.getLore()[0] === DISPLAY_ITEM_LORE_MARKER
   );
 }
 
@@ -100,14 +107,15 @@ function fillViewerInventory(entity: Entity, data: ViewerData): void {
   const itemsOnPage = getItemsOnPage(data.items, data.page);
 
   for (let i = 0; i < itemsOnPage.length; i++) {
-    const storageSystemItem = itemsOnPage[i];
-
-    const displayItem = storageSystemItem.clone();
-    displayItem.setLore([
-      getDisplayItemLoreStr(storageSystemItem.amount),
-      ...displayItem.getLore(),
-    ]);
-
+    // items are stored as real ItemStacks (each up to its max stack size) and
+    // the amount is set directly on the stack, so the item can be displayed
+    // as-is without using lore to show the amount.
+    //
+    // the vanilla items shown here do not have the `fluffyalien_asn:ui_item`
+    // tag, so a hidden lore marker is prepended so `isUiItem` can still
+    // identify them as display items.
+    const displayItem = itemsOnPage[i].clone();
+    displayItem.setLore([DISPLAY_ITEM_LORE_MARKER, ...displayItem.getLore()]);
     inventory.setItem(i, displayItem);
   }
 
@@ -143,13 +151,15 @@ function fillViewerInventory(entity: Entity, data: ViewerData): void {
   inventory.setItem(PAGE_NUM_DIGIT2_INDEX, pageNumItems[1]);
 }
 
-function addItemToStorageOrShowError(
+async function addItemToStorageOrShowError(
   interfaceEntity: Entity,
   data: ViewerData,
-  itemStack: StorageSystemItemStack,
-): boolean {
-  const res = data.storageSystem.addItemStack(itemStack, data.playerInUi);
+  itemStack: ItemStack,
+): Promise<boolean> {
+  const res = await data.storageSystem.addItemStack(itemStack, data.playerInUi);
   if (res.success) return true;
+
+  console.warn(JSON.stringify(res));
 
   void forceCloseInventory(interfaceEntity).then(() => {
     switch (res.error.type) {
@@ -255,14 +265,14 @@ async function requestItemLegacy(
   interfaceEntity: Entity,
   player: Player,
   network: StorageSystem,
-  item: StorageSystemItemStack,
+  item: ItemStack,
 ): Promise<void> {
   await forceCloseInventory(interfaceEntity);
 
   const requestedItemStack = await showRequestItemUi(player, item);
   if (!requestedItemStack) return;
 
-  network.takeOutItemStack(player, requestedItemStack);
+  await network.takeOutItemStack(player, requestedItemStack);
 }
 
 async function search(
@@ -318,14 +328,13 @@ function isStorageInventoryItemTaken(
 ): boolean {
   inventoryItem = inventoryItem.clone();
 
-  // remove the first lore line - it's the line that shows the amount in the storage
+  // remove the first lore line - it's the hidden marker added to display items
+  // so they match the stored item again
   inventoryItem.setLore(inventoryItem.getLore().slice(1));
 
-  if (storageItem.isStackableWith(inventoryItem)) {
-    return false;
-  }
-
-  return true;
+  // use itemStacksMatch instead of ItemStack#isStackableWith because
+  // isStackableWith always returns false for non-stackable items.
+  return !itemStacksMatch(storageItem, inventoryItem);
 }
 
 function clearUiItemsFromPlayer(player: Player): void {
@@ -348,33 +357,36 @@ function clearUiItemsFromPlayer(player: Player): void {
 
 /**
  * add an item to the storage or show the appropriate error. automatically refreshes the interface if the item was added.
- * if the item was not added then the item will be given back to the player
- * @returns whether the item was added or not. note: if this returns false then assume that the inventory has been closed and an error UI is displayed
+ * if the item was not added then the item will be given back to the player.
+ *
+ * the viewer is disabled while the (possibly asynchronous) add is in progress
+ * and re-enabled when the interface is refreshed. always `continue`/`break`
+ * after calling this so the viewer is not processed again until it finishes.
  */
 function addItemToStorage(
   interfaceEntity: Entity,
   data: ViewerData,
   itemStack: ItemStack,
-): boolean {
-  const added = addItemToStorageOrShowError(
-    interfaceEntity,
-    data,
-    StorageSystemItemStack.fromItemStack(itemStack),
-  );
+): void {
+  // disable the viewer until the add finishes so it isn't processed again while
+  // the asynchronous add/save is in progress
+  data.enabled = false;
 
-  if (!added) {
-    data.enabled = false;
-    data.playerInUi.dimension.spawnItem(itemStack, data.playerInUi.location);
-    return false;
-  }
+  void Promise.resolve(
+    addItemToStorageOrShowError(interfaceEntity, data, itemStack),
+  ).then((added) => {
+    if (!added) {
+      data.playerInUi.dimension.spawnItem(itemStack, data.playerInUi.location);
+      return;
+    }
 
-  void refreshStorageViewer(
-    interfaceEntity,
-    data.playerInUi,
-    data.storageSystem,
-    true,
-  );
-  return true;
+    void refreshStorageViewer(
+      interfaceEntity,
+      data.playerInUi,
+      data.storageSystem,
+      true,
+    );
+  });
 }
 
 world.afterEvents.entitySpawn.subscribe((e) => {
@@ -414,9 +426,8 @@ system.runInterval(() => {
         continue;
       }
 
-      if (!addItemToStorage(entity, data, inputSlotItem)) {
-        continue;
-      }
+      addItemToStorage(entity, data, inputSlotItem);
+      continue;
     }
 
     const backBtnSlotItem = inventory.getItem(BACK_BUTTON_INDEX);
@@ -554,20 +565,23 @@ system.runInterval(() => {
         break;
       }
 
-      data.storageSystem.takeOutItemStack(
-        data.playerInUi,
-        // takeOutItemStack will clamp this value if it is greater than the amount available in storage
-        storageItem.withAmount(
-          Math.min(data.stackSize, new ItemStack(storageItem.typeId).maxAmount),
+      void Promise.resolve(
+        data.storageSystem.takeOutItemStack(
+          data.playerInUi,
+          // takeOutItemStack will clamp this value if it is greater than the amount available in storage
+          cloneItemStackWithAmount(
+            storageItem,
+            Math.min(data.stackSize, storageItem.maxAmount),
+          ),
         ),
-      );
-
-      void refreshStorageViewer(
-        entity,
-        data.playerInUi,
-        data.storageSystem,
-        true,
-      );
+      ).then(() => {
+        void refreshStorageViewer(
+          entity,
+          data.playerInUi,
+          data.storageSystem,
+          true,
+        );
+      });
 
       break;
     }

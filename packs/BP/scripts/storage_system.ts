@@ -1,8 +1,8 @@
 import { ItemStack, Player } from "@minecraft/server";
-import { StorageSystemItemStack } from "./storage_system_item_stack";
 import { ErrorResult } from "./utils/result";
 import { Result } from "neverthrow";
 import { MaybePromise } from "./utils/async";
+import { cloneItemStackWithAmount } from "./utils/item";
 
 export type AddItemStackToStorageError =
   | {
@@ -46,21 +46,20 @@ export abstract class StorageSystem {
    * @throws if this object is not valid
    * @see {@link StorageSystem.removeItemStack}
    */
-  takeOutItemStack(player: Player, itemStack: StorageSystemItemStack): void {
-    // const requestAmount = this.removeItemStack(itemStack, player);
-    // const mcItemStack = itemStack.toItemStack();
-    // let amountRemaining = requestAmount;
-    // while (amountRemaining > 0) {
-    //   const amount = Math.min(mcItemStack.maxAmount, amountRemaining);
-    //   amountRemaining -= amount;
-    //   const newItemStack = mcItemStack.clone();
-    //   newItemStack.amount = amount;
-    //   player.dimension.spawnItem(newItemStack, player.location);
-    // }
+  async takeOutItemStack(player: Player, itemStack: ItemStack): Promise<void> {
+    const requestAmount = await this.removeItemStack(itemStack, player);
+
+    let amountRemaining = requestAmount;
+    while (amountRemaining > 0) {
+      const amount = Math.min(itemStack.maxAmount, amountRemaining);
+      amountRemaining -= amount;
+      const newItemStack = cloneItemStackWithAmount(itemStack, amount);
+      player.dimension.spawnItem(newItemStack, player.location);
+    }
   }
 }
 
-export function isBannedItem(itemStack: StorageSystemItemStack): boolean {
+export function isBannedItem(itemStack: ItemStack): boolean {
   return (
     itemStack.typeId === "minecraft:potion" ||
     itemStack.typeId === "minecraft:splash_potion" ||

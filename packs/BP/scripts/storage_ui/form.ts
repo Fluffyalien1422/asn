@@ -1,23 +1,30 @@
-import { Player, RawMessage } from "@minecraft/server";
+import { ItemStack, Player, RawMessage } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
-import { StorageSystemItemStack } from "../storage_system_item_stack";
 import { ENCHANTMENT_TRANSLATION_KEYS } from "../enchantment_translations";
-import { getEnchantmentTypeId, getItemTranslationKey } from "../utils/item";
+import {
+  cloneItemStackWithAmount,
+  getEnchantmentTypeId,
+  getItemStackDamage,
+  getItemTranslationKey,
+} from "../utils/item";
 import { makeErrorMessageUi, showForm } from "../utils/ui";
 
 export async function showRequestItemUi(
   player: Player,
-  item: StorageSystemItemStack,
-): Promise<StorageSystemItemStack | undefined> {
+  item: ItemStack,
+): Promise<ItemStack | undefined> {
   const form = new ModalFormData();
 
   form.title({
     translate: "fluffyalien_asn.ui.storageInterface.title",
   });
 
-  const mcItemStack = item.toItemStack();
-  const maxDurability =
-    mcItemStack.getComponent("durability")?.maxDurability ?? 0;
+  const damage = getItemStackDamage(item);
+  const enchantments =
+    item.getComponent("enchantable")?.getEnchantments() ?? [];
+  const lore = item.getLore();
+  const dynamicPropertyIds = item.getDynamicPropertyIds();
+  const maxDurability = item.getComponent("durability")?.maxDurability ?? 0;
 
   form.textField(
     {
@@ -31,7 +38,7 @@ export async function showRequestItemUi(
         {
           text: "§r" + (item.nameTag ? ` §o${item.nameTag}§r` : ""),
         },
-        ...(item.damage
+        ...(damage
           ? [
               { text: "\n" },
               {
@@ -39,21 +46,21 @@ export async function showRequestItemUi(
                   "fluffyalien_asn.ui.storageInterface.requestItem.itemDurability",
                 with: {
                   rawtext: [
-                    { text: (maxDurability - item.damage).toString() },
+                    { text: (maxDurability - damage).toString() },
                     { text: maxDurability.toString() },
                   ],
                 },
               },
             ]
           : []),
-        ...(item.enchantments.length
+        ...(enchantments.length
           ? [
               { text: "\n" },
               {
                 translate:
                   "fluffyalien_asn.ui.storageInterface.requestItem.itemEnchantments",
               },
-              ...item.enchantments.flatMap((enchantment) => {
+              ...enchantments.flatMap((enchantment) => {
                 const enchantmentTypeId = getEnchantmentTypeId(enchantment);
                 const name: RawMessage =
                   enchantmentTypeId in ENCHANTMENT_TRANSLATION_KEYS
@@ -73,19 +80,21 @@ export async function showRequestItemUi(
               }),
             ]
           : []),
-        ...(item.lore.length
+        ...(lore.length
           ? [
               { text: "§r\n" },
               {
                 translate:
                   "fluffyalien_asn.ui.storageInterface.requestItem.itemLore",
               },
-              ...item.lore.flatMap((lore) =>
-                lore.split("\n").map((line) => ({ text: "\n§r- §5§o" + line })),
+              ...lore.flatMap((loreLine) =>
+                loreLine
+                  .split("\n")
+                  .map((line) => ({ text: "\n§r- §5§o" + line })),
               ),
             ]
           : []),
-        ...(item.dynamicProperties.length
+        ...(dynamicPropertyIds.length
           ? [{ text: "§r\n§7" }, { translate: "item.customProperties" }]
           : []),
         {
@@ -142,7 +151,7 @@ export async function showRequestItemUi(
     return showRequestItemUi(player, item);
   }
 
-  return item.withAmount(amount);
+  return cloneItemStackWithAmount(item, amount);
 }
 
 export async function showSearchUi(
