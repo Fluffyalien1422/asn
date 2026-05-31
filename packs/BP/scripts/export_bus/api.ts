@@ -5,6 +5,7 @@ import {
   getBlockDynamicProperty,
   setBlockDynamicProperty,
 } from "../utils/dynamic_property";
+import { cloneItemStackWithAmount, getItemStackDamage } from "../utils/item";
 
 export type ExportBusExportItemEnchantments = "with" | "without" | "ignore";
 
@@ -13,7 +14,10 @@ export interface ExportBusExportItemDamageRange {
   max?: number;
 }
 
-export function updateExportBus(block: Block, network: StorageNetwork): void {
+export async function updateExportBus(
+  block: Block,
+  network: StorageNetwork,
+): Promise<void> {
   if (block.getRedstonePower()) return;
 
   const cardinalDirection = block.permutation.getState(
@@ -40,31 +44,38 @@ export function updateExportBus(block: Block, network: StorageNetwork): void {
     dynamicPropertyTarget,
   );
 
-  const itemStack = network
-    .getStoredItemStacks()
-    .find(
-      (itemStack) =>
-        itemStack.typeId === exportItemId &&
-        (exportItemEnchantmentsStatus === "ignore" ||
-          (exportItemEnchantmentsStatus === "with" &&
-            itemStack.enchantments.length) ||
-          (exportItemEnchantmentsStatus === "without" &&
-            !itemStack.enchantments.length)) &&
-        itemStack.damage >= exportItemDamageRange.min &&
-        (exportItemDamageRange.max === undefined ||
-          itemStack.damage <= exportItemDamageRange.max),
+  const storedItemStacksResult = await network.getStoredItemStacks();
+  if (storedItemStacksResult.isErr()) {
+    return;
+  }
+
+  const itemStack = storedItemStacksResult.value.find((itemStack) => {
+    const hasEnchantments =
+      (itemStack.getComponent("enchantable")?.getEnchantments().length ?? 0) >
+      0;
+    const damage = getItemStackDamage(itemStack);
+
+    return (
+      itemStack.typeId === exportItemId &&
+      (exportItemEnchantmentsStatus === "ignore" ||
+        (exportItemEnchantmentsStatus === "with" && hasEnchantments) ||
+        (exportItemEnchantmentsStatus === "without" && !hasEnchantments)) &&
+      damage >= exportItemDamageRange.min &&
+      (exportItemDamageRange.max === undefined ||
+        damage <= exportItemDamageRange.max)
     );
+  });
 
   if (!itemStack) {
     return;
   }
 
-  const notAdded = container.addItem(itemStack.toItemStack(1));
+  const notAdded = container.addItem(cloneItemStackWithAmount(itemStack, 1));
   if (notAdded) {
     return;
   }
 
-  network.removeItemStack(itemStack.withAmount(1));
+  await network.removeItemStack(cloneItemStackWithAmount(itemStack, 1));
 }
 
 /**

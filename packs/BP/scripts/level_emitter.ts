@@ -13,7 +13,11 @@ import {
 } from "./utils/dynamic_property";
 import { STR_DIRECTIONS, StrCardinalDirection } from "./utils/direction";
 import { getEntityAtBlockLocation } from "./utils/location";
-import { getItemTranslationKey, getPlayerMainhandSlot } from "./utils/item";
+import {
+  getItemStackDamage,
+  getItemTranslationKey,
+  getPlayerMainhandSlot,
+} from "./utils/item";
 import { makeErrorMessageUi, makeMessageUi, showForm } from "./utils/ui";
 import {
   busUpdateBlockConnectStatesTransformer,
@@ -286,10 +290,10 @@ async function showLevelEmitterUi(
   levelEmitterItemMaxDamage.set(dynamicPropertyTarget, maxDamageResponse);
 }
 
-export function updateLevelEmitter(
+export async function updateLevelEmitter(
   block: Block,
   network: StorageNetwork,
-): void {
+): Promise<void> {
   const dummy = getEntityAtBlockLocation(
     block,
     "fluffyalien_asn:level_emitter_entity",
@@ -309,20 +313,31 @@ export function updateLevelEmitter(
   const minDamage = levelEmitterItemMinDamage.get(dynamicPropertyTarget) ?? 0;
   const maxDamage = levelEmitterItemMaxDamage.get(dynamicPropertyTarget);
 
-  const matchingItemStacks = network
-    .getStoredItemStacks()
-    .filter(
-      (itemStack) =>
+  const storedItemStacksResult = await network.getStoredItemStacks();
+  if (storedItemStacksResult.isErr()) {
+    return;
+  }
+
+  const matchingItemStacks = storedItemStacksResult.value.filter(
+    (itemStack) => {
+      const hasEnchantments =
+        (itemStack.getComponent("enchantable")?.getEnchantments().length ?? 0) >
+        0;
+      const damage = getItemStackDamage(itemStack);
+
+      return (
         itemStack.typeId === itemId &&
         (enchantmentsStatus === TestItemEnchantableStatus.Ignore ||
           (enchantmentsStatus === TestItemEnchantableStatus.WithEnchantments &&
-            itemStack.enchantments.length) ||
+            hasEnchantments) ||
           (enchantmentsStatus ===
             TestItemEnchantableStatus.WithoutEnchantments &&
-            !itemStack.enchantments.length)) &&
-        itemStack.damage >= minDamage &&
-        (maxDamage === undefined || itemStack.damage <= maxDamage),
-    );
+            !hasEnchantments)) &&
+        damage >= minDamage &&
+        (maxDamage === undefined || damage <= maxDamage)
+      );
+    },
+  );
 
   let totalMatchingAmount = 0;
   for (const matchingItemStack of matchingItemStacks) {

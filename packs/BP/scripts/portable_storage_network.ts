@@ -15,6 +15,7 @@ import {
 } from "./storage_system";
 import { StorageSystemItemStack } from "./storage_system_item_stack";
 import { ErrorResult, failure, success } from "./utils/result";
+import { ok, Result } from "neverthrow";
 import { deserialize, serialize, serializeMultiple } from "./serialize";
 import {
   MAX_STORAGE_DRIVE_DATA_LENGTH,
@@ -95,10 +96,26 @@ class PortableStorageNetwork extends StorageSystem {
   /**
    * @throws if this object is not valid
    */
-  getStoredItemStacks(): readonly StorageSystemItemStack[] {
+  getStoredItemStacks(): Result<readonly ItemStack[], Error> {
     this.ensureValidity();
 
-    return this.getStoredItemStacksMutable();
+    // items are stored internally as StorageSystemItemStacks (which can hold
+    // any amount), but the storage system now exposes real ItemStacks that are
+    // each capped at their max stack size, so split them into separate stacks.
+    const itemStacks: ItemStack[] = [];
+
+    for (const stored of this.getStoredItemStacksMutable()) {
+      const maxAmount = stored.toItemStack().maxAmount;
+
+      let amountRemaining = stored.amount;
+      while (amountRemaining > 0) {
+        const amount = Math.min(maxAmount, amountRemaining);
+        amountRemaining -= amount;
+        itemStacks.push(stored.toItemStack(amount));
+      }
+    }
+
+    return ok(itemStacks);
   }
 
   getSerializedData(): string | undefined {
@@ -164,7 +181,7 @@ class PortableStorageNetwork extends StorageSystem {
    * @throws if this object is not valid
    */
   addItemStack = (
-    itemStack: StorageSystemItemStack,
+    itemStack: ItemStack,
     player?: Player,
   ): ErrorResult<AddItemStackToStorageError> => {
     this.ensureValidity();
@@ -175,6 +192,10 @@ class PortableStorageNetwork extends StorageSystem {
         itemId: itemStack.typeId,
       });
     }
+
+    // convert the incoming ItemStack to the internal representation
+    const storageSystemItemStack =
+      StorageSystemItemStack.fromItemStack(itemStack);
 
     if (player) {
       if (!this.consumeEnergyOrShowError(player)) {
@@ -192,14 +213,16 @@ class PortableStorageNetwork extends StorageSystem {
 
     const storedItems = this.getStoredItemStacksMutable();
 
+    // note: use StorageSystemItemStack#isStackableWith (not
+    // ItemStack#isStackableWith) to compare the internal stacks.
     const existingItemStack = storedItems.find((other) =>
-      itemStack.isStackableWith(other),
+      storageSystemItemStack.isStackableWith(other),
     );
 
     if (existingItemStack) {
-      existingItemStack.amount += itemStack.amount;
+      existingItemStack.amount += storageSystemItemStack.amount;
     } else {
-      const length = serialize(itemStack).length;
+      const length = serialize(storageSystemItemStack).length;
 
       if (
         (this.getSerializedData()?.length ?? 0) + length >
@@ -208,7 +231,7 @@ class PortableStorageNetwork extends StorageSystem {
         return failure({ type: "insufficientStorage" });
       }
 
-      storedItems.push(itemStack);
+      storedItems.push(storageSystemItemStack);
     }
 
     this.saveData();
@@ -221,11 +244,12 @@ class PortableStorageNetwork extends StorageSystem {
    * @throws if this object is not valid
    * @returns the amount that was removed
    */
-  removeItemStack = (
-    itemStack: StorageSystemItemStack,
-    player?: Player,
-  ): number => {
+  removeItemStack = (itemStack: ItemStack, player?: Player): number => {
     this.ensureValidity();
+
+    // convert the incoming ItemStack to the internal representation
+    const storageSystemItemStack =
+      StorageSystemItemStack.fromItemStack(itemStack);
 
     if (player) {
       if (!this.consumeEnergyOrShowError(player)) {
@@ -239,8 +263,10 @@ class PortableStorageNetwork extends StorageSystem {
 
     const storedItems = this.getStoredItemStacksMutable();
 
+    // note: use StorageSystemItemStack#isStackableWith (not
+    // ItemStack#isStackableWith) to compare the internal stacks.
     const storedIndex = storedItems.findIndex((other) =>
-      itemStack.isStackableWith(other),
+      storageSystemItemStack.isStackableWith(other),
     );
 
     if (storedIndex === -1) {
@@ -253,7 +279,7 @@ class PortableStorageNetwork extends StorageSystem {
     const stored = storedItems[storedIndex];
 
     const requestAmount = Math.max(
-      Math.min(itemStack.amount, stored.amount),
+      Math.min(storageSystemItemStack.amount, stored.amount),
       1,
     );
 
@@ -447,5 +473,5 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     }
   }
 
-  refreshStorageViewer(e.target, e.player, network);
+  void refreshStorageViewer(e.target, e.player, network);
 });
