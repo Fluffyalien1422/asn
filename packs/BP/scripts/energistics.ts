@@ -29,12 +29,6 @@ world.afterEvents.worldLoad.subscribe(() => {
     },
   });
 
-  bec.registerMachine({
-    description: {
-      id: "fluffyalien_asn:portable_storage_network",
-    },
-  });
-
   bec.registerItemMachine({
     description: {
       id: "fluffyalien_asn:wireless_interface",

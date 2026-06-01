@@ -75,11 +75,6 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
     bullets: 3,
   },
   {
-    id: "portableStorageNetwork",
-    icon: "textures/fluffyalien/asn/items/portable_storage_network_placer",
-    bullets: 5,
-  },
-  {
     id: "storageDisk",
     icon: "textures/fluffyalien/asn/items/storage_disk",
     bullets: 3,
