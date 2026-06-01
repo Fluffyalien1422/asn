@@ -6,10 +6,7 @@ import "./wireless_interface";
 
 import "./v3storagetest";
 
-//TODO: update network when a disk is added or removed from a drive
 //TOOD: ui for drive
-//TODO: removing half (right click) of an item doesn't count as an interaction and allows you to duplicate an item
-//TODO: update sorting (group stacks of same item type together)
 //TODO: update legacy code, stop using legacy 'Result'
 //TODO: remove standalone build and portable storage network
 //TODO: different disk sizes

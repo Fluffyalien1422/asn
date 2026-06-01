@@ -36,9 +36,14 @@ export function getItemStackDamage(itemStack: ItemStack): number {
  * (eg. items with durability). This function compares the relevant item data
  * directly, mirroring the legacy `StorageSystemItemStack#isStackableWith`.
  */
-export function itemStacksMatch(a: ItemStack, b: ItemStack): boolean {
+export function itemStacksMatch(
+  a: ItemStack,
+  b: ItemStack,
+  compareAmount = false,
+): boolean {
   if (a.typeId !== b.typeId) return false;
   if (a.nameTag !== b.nameTag) return false;
+  if (compareAmount && a.amount !== b.amount) return false;
   if (getItemStackDamage(a) !== getItemStackDamage(b)) return false;
 
   // lore

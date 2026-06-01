@@ -307,9 +307,25 @@ export class StorageNetwork extends StorageSystem {
 
     unloadDataArea();
 
-    this.storedItems = itemStacks;
+    const groups: ItemStack[] = [];
+    const indexed = itemStacks.map((stack) => {
+      let groupIdx = groups.findIndex((g) => itemStacksMatch(g, stack));
+      if (groupIdx === -1) {
+        groupIdx = groups.length;
+        groups.push(stack);
+      }
+      return { stack, groupIdx };
+    });
+    indexed.sort((a, b) =>
+      a.groupIdx !== b.groupIdx
+        ? a.groupIdx - b.groupIdx
+        : a.stack.amount - b.stack.amount,
+    );
+    const sorted = indexed.map(({ stack }) => stack);
+
+    this.storedItems = sorted;
     this.storedItemDisks = disks;
-    return ok(itemStacks);
+    return ok(sorted);
   }
 
   /**
@@ -505,8 +521,8 @@ export class StorageNetwork extends StorageSystem {
   }
 
   /**
-   * Clear the stored items cache. The cache will be created again when {@link StorageNetwork.getStoredItemStacksMutable} or {@link StorageNetwork.getStoredItemStacks} is called.
-   * @see {@link StorageNetwork.getStoredItemStacks} and {@link StorageNetwork.getStoredItemStacksMutable}
+   * Clear the stored items cache. The cache will be created again when {@link StorageNetwork.getStoredItemStacks} is called.
+   * @see {@link StorageNetwork.getStoredItemStacks}
    * @throws if this object is invalid
    */
   clearStoredItemsCache(): void {
@@ -680,11 +696,14 @@ export class StorageNetwork extends StorageSystem {
     // distribute the incoming amount across the existing matching stacks
     // first, then create new stacks for any overflow.
     let amountRemaining = itemStack.amount;
+    let lastMatchIndex = -1;
 
-    for (const stored of storedItems) {
+    for (let i = 0; i < storedItems.length; i++) {
       if (amountRemaining <= 0) break;
+      const stored = storedItems[i];
       if (!itemStacksMatch(stored, itemStack)) continue;
 
+      lastMatchIndex = i;
       const space = maxAmount - stored.amount;
       if (space <= 0) continue;
 
@@ -693,11 +712,19 @@ export class StorageNetwork extends StorageSystem {
       amountRemaining -= amountToAdd;
     }
 
-    // create new stacks for any overflow
+    // create new stacks for any overflow, inserted after the last matching stack
+    const insertIndex =
+      lastMatchIndex === -1 ? storedItems.length : lastMatchIndex + 1;
+    let offset = 0;
     while (amountRemaining > 0) {
       const amount = Math.min(maxAmount, amountRemaining);
-      storedItems.push(cloneItemStackWithAmount(itemStack, amount));
+      storedItems.splice(
+        insertIndex + offset,
+        0,
+        cloneItemStackWithAmount(itemStack, amount),
+      );
       amountRemaining -= amount;
+      offset++;
     }
 
     await this.saveStoredItemData();

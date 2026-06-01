@@ -29,15 +29,15 @@ import {
   SORT_RELEVANCY_ITEM_ID,
 } from "./shared";
 
-const ITEMS_PER_PAGE = 27;
-const INPUT_SLOT_INDEX = 27;
-const BACK_BUTTON_INDEX = 28;
-const NEXT_BUTTON_INDEX = 29;
-const PAGE_NUM_DIGIT1_INDEX = 31;
-const PAGE_NUM_DIGIT2_INDEX = 32;
-const SEARCH_BUTTON_INDEX = 30;
-const SORT_BUTTON_INDEX = 33;
-const STACK_SIZE_BUTTON_INDEX = 34;
+const ITEMS_PER_PAGE = 50;
+const INPUT_SLOT_INDEX = 51;
+const BACK_BUTTON_INDEX = 52;
+const NEXT_BUTTON_INDEX = 53;
+const PAGE_NUM_DIGIT1_INDEX = 54;
+const PAGE_NUM_DIGIT2_INDEX = 55;
+const SEARCH_BUTTON_INDEX = 56;
+const SORT_BUTTON_INDEX = 57;
+const STACK_SIZE_BUTTON_INDEX = 58;
 
 /**
  * hidden lore marker appended to display items so they can be identified as ui
@@ -158,8 +158,6 @@ async function addItemToStorageOrShowError(
 ): Promise<boolean> {
   const res = await data.storageSystem.addItemStack(itemStack, data.playerInUi);
   if (res.success) return true;
-
-  console.warn(JSON.stringify(res));
 
   void forceCloseInventory(interfaceEntity).then(() => {
     switch (res.error.type) {
@@ -324,9 +322,9 @@ async function search(
  */
 function isStorageInventoryItemTaken(
   storageItem: ItemStack,
-  inventoryItem: ItemStack,
+  inventoryItem_: ItemStack,
 ): boolean {
-  inventoryItem = inventoryItem.clone();
+  const inventoryItem = inventoryItem_.clone();
 
   // remove the first lore line - it's the hidden marker added to display items
   // so they match the stored item again
@@ -334,7 +332,7 @@ function isStorageInventoryItemTaken(
 
   // use itemStacksMatch instead of ItemStack#isStackableWith because
   // isStackableWith always returns false for non-stackable items.
-  return !itemStacksMatch(storageItem, inventoryItem);
+  return !itemStacksMatch(storageItem, inventoryItem, true);
 }
 
 function clearUiItemsFromPlayer(player: Player): void {
@@ -412,8 +410,9 @@ system.runInterval(() => {
         location: entity.location,
         maxDistance: 10,
       }).length
-    )
+    ) {
       continue;
+    }
 
     const inventory = entity.getComponent("inventory")!.container;
 
@@ -587,3 +586,8 @@ system.runInterval(() => {
     }
   }
 }, 4);
+
+world.afterEvents.playerInventoryItemChange.subscribe((e) => {
+  if (!e.itemStack || !isUiItem(e.itemStack)) return;
+  e.player.getComponent("inventory")?.container.setItem(e.slot);
+});

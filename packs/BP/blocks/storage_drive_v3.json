@@ -35,6 +35,9 @@
       "minecraft:destructible_by_mining": false,
       "minecraft:movable": {
         "movement_type": "immovable"
+      },
+      "minecraft:tick": {
+        "interval_range": [10, 10]
       }
     },
     "permutations": [

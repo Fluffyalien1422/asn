@@ -20,7 +20,7 @@
       {
         "root_panel@common.root_panel": {
           "layer": 1,
-          "size": [180, 180],
+          "size": [198, 216],
           "controls": [
             {
               "common_panel@common.common_panel": {}
@@ -86,10 +86,10 @@
   },
   "grid": {
     "type": "grid",
-    "size": [162, 54],
+    "size": [180, 90],
     "anchor_from": "top_left",
     "anchor_to": "top_left",
-    "grid_dimensions": [9, 3],
+    "grid_dimensions": [10, 5],
     "grid_item_template": "chest.chest_grid_item",
     "collection_name": "container_items"
   },
@@ -105,19 +105,19 @@
       },
       {
         "input_slot@fluffyalien_asn:storage_interface.item_slot": {
-          "$index": 27,
+          "$index": 51,
           "offset": [9, 8]
         }
       },
       {
         "back_btn_slot@fluffyalien_asn:storage_interface.item_slot": {
-          "$index": 28,
+          "$index": 52,
           "offset": [36, 8]
         }
       },
       {
         "page_num_digit1_slot@fluffyalien_asn:storage_interface.item_slot": {
-          "$index": 31,
+          "$index": 54,
           "offset": [66, 22.5],
           "$slot_size": [0, 0],
           "$slot_image_size": [0, 0],
@@ -126,7 +126,7 @@
       },
       {
         "page_num_digit2_slot@fluffyalien_asn:storage_interface.item_slot": {
-          "$index": 32,
+          "$index": 55,
           "offset": [70, 22.5],
           "$slot_size": [0, 0],
           "$slot_image_size": [0, 0],
@@ -135,25 +135,25 @@
       },
       {
         "next_btn_slot@fluffyalien_asn:storage_interface.item_slot": {
-          "$index": 29,
+          "$index": 53,
           "offset": [69, 8]
         }
       },
       {
         "search_btn_slot@fluffyalien_asn:storage_interface.item_slot": {
-          "$index": 30,
+          "$index": 56,
           "offset": [99, 8]
         }
       },
       {
         "sort_btn_slot@fluffyalien_asn:storage_interface.item_slot": {
-          "$index": 33,
+          "$index": 57,
           "offset": [117, 8]
         }
       },
       {
         "stack_size_btn_slot@fluffyalien_asn:storage_interface.item_slot": {
-          "$index": 34,
+          "$index": 58,
           "offset": [135, 8]
         }
       },
