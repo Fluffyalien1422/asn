@@ -157,7 +157,7 @@ async function addItemToStorageOrShowError(
   itemStack: ItemStack,
 ): Promise<boolean> {
   const res = await data.storageSystem.addItemStack(itemStack, data.playerInUi);
-  if (res.success) return true;
+  if (res.isOk()) return true;
 
   void forceCloseInventory(interfaceEntity).then(() => {
     switch (res.error.type) {
@@ -234,10 +234,16 @@ export async function refreshStorageViewer(
   if (oldData?.hasQuery) {
     items = oldData.items;
   } else {
-    items = [...(await storageSystem.getStoredItemStacks())._unsafeUnwrap()];
+    const storedItemsr = await storageSystem.getStoredItemStacks();
+    if (storedItemsr.isErr()) {
+      console.warn(makeErrorString(`refreshStorageViewer: failed to get stored item stacks: ${storedItemsr.error.message}`));
+      items = [];
+    } else {
+      items = [...storedItemsr.value];
 
-    if (sortOrder === "amount") {
-      items.sort((a, b) => b.amount - a.amount);
+      if (sortOrder === "amount") {
+        items.sort((a, b) => b.amount - a.amount);
+      }
     }
   }
 

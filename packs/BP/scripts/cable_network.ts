@@ -6,7 +6,7 @@ import {
   Vector3,
   world,
 } from "@minecraft/server";
-import { ErrorResult, Result, failure, success } from "./utils/result";
+import { err, ok, Result } from "neverthrow";
 import { Vector3Utils } from "@minecraft/math";
 import { ActionFormResponse } from "@minecraft/server-ui";
 import { logWarn } from "./log";
@@ -88,14 +88,14 @@ export async function discoverCableNetworkConnections(
 
   function handleBlock(
     block: Block,
-  ): ErrorResult<DiscoverCableNetworkConnectionsError> {
+  ): Result<void, DiscoverCableNetworkConnectionsError> {
     if (
       !block.hasTag("fluffyalien_asn:storage_network_connectable") ||
       visitedLocations.some((vector) =>
         Vector3Utils.equals(block.location, vector),
       )
     ) {
-      return success();
+      return ok();
     }
 
     visitedLocations.push(block.location);
@@ -104,38 +104,38 @@ export async function discoverCableNetworkConnections(
     switch (block.typeId) {
       case "fluffyalien_asn:storage_cable":
         cables.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:storage_core":
         if (storageCore) {
-          return failure("multipleStorageCores");
+          return err("multipleStorageCores");
         }
         storageCore = block;
-        return success();
+        return ok();
       case "fluffyalien_asn:storage_drive_v3":
         storageDrives.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:storage_interface":
       case "fluffyalien_asn:fluid_interface":
         interfaces.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:level_emitter":
         levelEmitters.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:storage_power_bank":
         powerBanks.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:wireless_transmitter":
         wirelessTransmitters.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:fluid_drive":
         fluidDrives.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:import_bus":
       case "fluffyalien_asn:export_bus":
       case "fluffyalien_asn:fluid_import_bus":
       case "fluffyalien_asn:fluid_export_bus":
         buses.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:storage_relay": {
         cables.push(block);
 
@@ -147,11 +147,11 @@ export async function discoverCableNetworkConnections(
           logWarn(
             `couldn't add matching relays to discovery stack: couldn't get relay entity at ${Vector3Utils.toString(block.location)} in ${block.dimension.id}`,
           );
-          return success();
+          return ok();
         }
 
         const name = relayName.get(entity);
-        if (!name) return success();
+        if (!name) return ok();
 
         for (const otherEntity of getEntitiesInAllDimensions({
           type: "fluffyalien_asn:relay_entity",
@@ -170,26 +170,26 @@ export async function discoverCableNetworkConnections(
           }
         }
 
-        return success();
+        return ok();
       }
       default:
         logWarn(
           "unknown block type in storage network discovery: " + block.typeId,
         );
-        return success();
+        return ok();
     }
   }
 
   async function next(
     block: Block,
     nextDirection: Direction,
-  ): Promise<ErrorResult<DiscoverCableNetworkConnectionsError>> {
+  ): Promise<Result<void, DiscoverCableNetworkConnectionsError>> {
     const nextBlock = await tryForceGetBlock(
       block.dimension,
       Vector3Utils.add(block.location, directionToVector3(nextDirection)),
     );
     if (!nextBlock) {
-      return success();
+      return ok();
     }
 
     return handleBlock(nextBlock);
@@ -202,40 +202,40 @@ export async function discoverCableNetworkConnections(
 
     {
       const res = await next(block, Direction.North);
-      if (!res.success) return res;
+      if (res.isErr()) return err(res.error);
     }
 
     {
       const res = await next(block, Direction.East);
-      if (!res.success) return res;
+      if (res.isErr()) return err(res.error);
     }
 
     {
       const res = await next(block, Direction.South);
-      if (!res.success) return res;
+      if (res.isErr()) return err(res.error);
     }
 
     {
       const res = await next(block, Direction.West);
-      if (!res.success) return res;
+      if (res.isErr()) return err(res.error);
     }
 
     {
       const res = await next(block, Direction.Up);
-      if (!res.success) return res;
+      if (res.isErr()) return err(res.error);
     }
 
     {
       const res = await next(block, Direction.Down);
-      if (!res.success) return res;
+      if (res.isErr()) return err(res.error);
     }
   }
 
   if (!storageCore) {
-    return failure("noStorageCore");
+    return err("noStorageCore");
   }
 
-  return success({
+  return ok({
     cables,
     storageCore,
     storageDrives,

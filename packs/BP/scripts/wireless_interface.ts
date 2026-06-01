@@ -203,7 +203,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     }
 
     const networkResult = await StorageNetwork.getOrEstablishNetwork(block);
-    if (!networkResult.success) {
+    if (networkResult.isErr()) {
       errLinkedNetworkNotFound();
       return;
     }

@@ -57,7 +57,7 @@ export async function getNetworkOrShowError(
   player: Player,
 ): Promise<StorageNetwork | undefined> {
   const networkResult = await StorageNetwork.getOrEstablishNetwork(block);
-  if (!networkResult.success) {
+  if (networkResult.isErr()) {
     await forceCloseInventory(interfaceEntity);
     void showEstablishNetworkError(player, networkResult.error);
 

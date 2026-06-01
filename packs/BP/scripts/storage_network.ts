@@ -8,7 +8,6 @@ import {
   MAX_STORAGE_DRIVE_DATA_LENGTH,
   getStorageDriveSerializedData,
 } from "./storage_drive";
-import * as resultlegacy from "./utils/result";
 import { DeepReadonly } from "ts-essentials";
 import { updateImportBus } from "./import_bus";
 import { Vector3Utils } from "@minecraft/math";
@@ -72,17 +71,15 @@ export class StorageNetwork extends StorageSystem {
    */
   static async establishNetwork(
     origin: Block,
-  ): Promise<
-    resultlegacy.Result<StorageNetwork, DiscoverCableNetworkConnectionsError>
-  > {
+  ): Promise<Result<StorageNetwork, DiscoverCableNetworkConnectionsError>> {
     const result = await discoverCableNetworkConnections(origin);
-    if (!result.success) {
-      return result;
+    if (result.isErr()) {
+      return err(result.error);
     }
 
     const connections = result.value;
 
-    return resultlegacy.success(new StorageNetwork(connections));
+    return ok(new StorageNetwork(connections));
   }
 
   /**
@@ -178,12 +175,10 @@ export class StorageNetwork extends StorageSystem {
    */
   static async getOrEstablishNetwork(
     block: Block,
-  ): Promise<
-    resultlegacy.Result<StorageNetwork, DiscoverCableNetworkConnectionsError>
-  > {
+  ): Promise<Result<StorageNetwork, DiscoverCableNetworkConnectionsError>> {
     const existingNetwork = StorageNetwork.getNetwork(block);
     if (existingNetwork) {
-      return resultlegacy.success(existingNetwork);
+      return ok(existingNetwork);
     }
 
     return StorageNetwork.establishNetwork(block);
@@ -497,16 +492,16 @@ export class StorageNetwork extends StorageSystem {
    * @returns a result containing an error or undefined
    */
   async updateConnections(): Promise<
-    resultlegacy.ErrorResult<DiscoverCableNetworkConnectionsError>
+    Result<void, DiscoverCableNetworkConnectionsError>
   > {
     this.ensureValidity();
 
     const result = await discoverCableNetworkConnections(
       this.connections.storageCore,
     );
-    if (!result.success) {
+    if (result.isErr()) {
       this.destroy();
-      return result;
+      return err(result.error);
     }
 
     this.connections = result.value;
@@ -517,7 +512,7 @@ export class StorageNetwork extends StorageSystem {
     this.storedItemDisks = undefined;
     this.storedFluids = undefined;
 
-    return resultlegacy.success();
+    return ok();
   }
 
   /**
@@ -662,17 +657,24 @@ export class StorageNetwork extends StorageSystem {
    */
   addItemStack = async (
     itemStack: ItemStack,
-  ): Promise<resultlegacy.ErrorResult<AddItemStackToStorageError>> => {
+  ): Promise<Result<void, AddItemStackToStorageError>> => {
     this.ensureValidity();
 
     if (isBannedItem(itemStack)) {
-      return resultlegacy.failure({
+      return err({
         type: "bannedItem",
         itemId: itemStack.typeId,
       });
     }
 
-    const storedItems = (await this.getStoredItemStacks())._unsafeUnwrap();
+    const storedItemsr = await this.getStoredItemStacks();
+    if (storedItemsr.isErr()) {
+      logWarn(
+        `addItemStack: failed to get stored item stacks: ${storedItemsr.error.message}`,
+      );
+      throw new Error(storedItemsr.error.message);
+    }
+    const storedItems = storedItemsr.value;
 
     // the items are now stored as real ItemStacks, so each stored stack can
     // only hold up to its max stack size. before mutating anything, make sure
@@ -690,7 +692,7 @@ export class StorageNetwork extends StorageSystem {
     const totalSpace = spaceInExisting + freeSlots * maxAmount;
 
     if (itemStack.amount > totalSpace) {
-      return resultlegacy.failure({ type: "insufficientStorage" });
+      return err({ type: "insufficientStorage" });
     }
 
     // distribute the incoming amount across the existing matching stacks
@@ -729,7 +731,7 @@ export class StorageNetwork extends StorageSystem {
 
     await this.saveStoredItemData();
 
-    return resultlegacy.success();
+    return ok();
   };
 
   /**
@@ -788,7 +790,14 @@ export class StorageNetwork extends StorageSystem {
   removeItemStack = async (itemStack: ItemStack): Promise<number> => {
     this.ensureValidity();
 
-    const storedItems = (await this.getStoredItemStacks())._unsafeUnwrap();
+    const storedItemsr = await this.getStoredItemStacks();
+    if (storedItemsr.isErr()) {
+      logWarn(
+        `removeItemStack: failed to get stored item stacks: ${storedItemsr.error.message}`,
+      );
+      return 0;
+    }
+    const storedItems = storedItemsr.value;
 
     // items may be spread across multiple stacks (each capped at the max stack
     // size), so the requested amount has to be taken from several stacks.

@@ -1,5 +1,4 @@
 import { ItemStack, Player } from "@minecraft/server";
-import { ErrorResult } from "./utils/result";
 import { Result } from "neverthrow";
 import { MaybePromise } from "./utils/async";
 import { cloneItemStackWithAmount } from "./utils/item";
@@ -26,7 +25,7 @@ export abstract class StorageSystem {
   abstract addItemStack: (
     itemStack: ItemStack,
     player?: Player,
-  ) => MaybePromise<ErrorResult<AddItemStackToStorageError>>;
+  ) => MaybePromise<Result<void, AddItemStackToStorageError>>;
 
   /**
    * Removes items from storage. Clamps the amount from 1 to the amount available in storage

@@ -204,7 +204,7 @@ export const storageCoreComponent: BlockCustomComponent = {
     }
 
     void StorageNetwork.getOrEstablishNetwork(e.block).then((networkResult) => {
-      if (!networkResult.success) {
+      if (networkResult.isErr()) {
         void showEstablishNetworkError(player, networkResult.error);
         return;
       }
