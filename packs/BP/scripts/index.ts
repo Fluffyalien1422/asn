@@ -4,9 +4,6 @@ import "./script_events";
 import "./tutorial_book";
 import "./wireless_interface";
 
-//TOOD: ui for drive
-//TODO: update legacy code, stop using legacy 'Result'
-//TODO: remove standalone build and portable storage network
 //TODO: different disk sizes
 //TODO: remove legacy drives and disks
 //TODO: update storage interface ui. ideas:
