@@ -66,7 +66,8 @@ export function getDisksInDrive(
 
 export const storageDriveV3Component: BlockCustomComponent = {
   onPlace(e) {
-    e.dimension.spawnEntity(ENTITY_ID, e.block.center());
+    e.dimension.spawnEntity(ENTITY_ID, e.block.center()).nameTag =
+      e.block.typeId;
   },
   onBreak(e) {
     const uid = getBlockUid(e.block);

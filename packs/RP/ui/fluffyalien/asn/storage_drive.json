@@ -1,5 +1,5 @@
 {
-  "namespace": "fluffyalien_asn:storage_interface",
+  "namespace": "fluffyalien_asn:storage_drive",
   "root": {
     "type": "panel",
     "controls": [
@@ -20,7 +20,6 @@
       {
         "root_panel@common.root_panel": {
           "layer": 1,
-          "size": [198, 216],
           "controls": [
             {
               "common_panel@common.common_panel": {}
@@ -32,7 +31,7 @@
                 "offset": [0, -0.5],
                 "controls": [
                   {
-                    "small_chest_panel_top_half@fluffyalien_asn:storage_interface.top_half": {}
+                    "small_chest_panel_top_half@fluffyalien_asn:storage_drive.top_half": {}
                   },
                   {
                     "inventory_panel_bottom_half_with_label@common.inventory_panel_bottom_half_with_label": {}
@@ -66,62 +65,14 @@
     "controls": [
       {
         "title@fluffyalien_energisticscore:common.container_title": {
-          "text": "Storage Interface"
-        }
-      },
-      {
-        "input_slot@fluffyalien_energisticscore:common.container_item_slot": {
-          "$index": 51,
-          "offset": [9, 8]
-        }
-      },
-      {
-        "back_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
-          "$index": 52,
-          "offset": [36, 8]
-        }
-      },
-      {
-        "page_num_digit1_slot@fluffyalien_energisticscore:common.container_slot_icon": {
-          "$index": 54,
-          "offset": [66, 22.5]
-        }
-      },
-      {
-        "page_num_digit2_slot@fluffyalien_energisticscore:common.container_slot_icon": {
-          "$index": 55,
-          "offset": [70, 22.5]
-        }
-      },
-      {
-        "next_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
-          "$index": 53,
-          "offset": [69, 8]
-        }
-      },
-      {
-        "search_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
-          "$index": 56,
-          "offset": [117, 8]
-        }
-      },
-      {
-        "sort_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
-          "$index": 57,
-          "offset": [135, 8]
-        }
-      },
-      {
-        "stack_size_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
-          "$index": 58,
-          "offset": [153, 8]
+          "text": "Storage Drive"
         }
       },
       {
         "grid@fluffyalien_asn:common.container_grid": {
-          "size": [180, 90],
-          "grid_dimensions": [10, 5],
-          "offset": [9, 28]
+          "size": [72, 36],
+          "grid_dimensions": [4, 2],
+          "offset": ["50%-36px", 19]
         }
       }
     ]

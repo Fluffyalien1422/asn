@@ -10,17 +10,9 @@
     "formatVersion": "1.4.0",
     "dataPath": "./packs/data",
     "filterDefinitions": {
-      "simple_manifest_standalone": {
-        "runWith": "shell",
-        "command": "node --experimental-transform-types ../../scripts/filters/simple_manifest_standalone.ts"
-      },
       "simple_manifest_bec": {
         "runWith": "shell",
         "command": "node --experimental-transform-types ../../scripts/filters/simple_manifest_bec.ts"
-      },
-      "build_details_standalone": {
-        "runWith": "shell",
-        "command": "Set-Content -Path BP/scripts/build_details.js -Value 'export const BUILD_DETAILS = { isBecBuild: false };' -Encoding UTF8"
       },
       "build_details_bec": {
         "runWith": "shell",
@@ -38,64 +30,13 @@
         "runWith": "nodejs",
         "script": "scripts/filters/page_number_items.ts"
       },
-      "remove_bec_files": {
-        "runWith": "shell",
-        "command": "Get-ChildItem BP -Filter *.bec.json -Recurse | Remove-Item"
-      },
-      "remove_bec_components": {
+      "ui_icons": {
         "runWith": "nodejs",
-        "script": "scripts/filters/remove_bec_components.js"
+        "script": "scripts/filters/ui_icons.ts"
       }
     },
     "profiles": {
       "default": {
-        "export": {
-          "target": "development",
-          "build": "standard"
-        },
-        "filters": [
-          {
-            "profile": "dev_bec"
-          }
-        ]
-      },
-      "dev_shared": {
-        "export": {
-          "target": "none"
-        },
-        "filters": [
-          {
-            "filter": "build_scripts"
-          },
-          {
-            "filter": "page_number_items"
-          }
-        ]
-      },
-      "dev_standalone": {
-        "export": {
-          "target": "development",
-          "build": "standard"
-        },
-        "filters": [
-          {
-            "filter": "simple_manifest_standalone"
-          },
-          {
-            "filter": "build_details_standalone"
-          },
-          {
-            "profile": "dev_shared"
-          },
-          {
-            "filter": "remove_bec_files"
-          },
-          {
-            "filter": "remove_bec_components"
-          }
-        ]
-      },
-      "dev_bec": {
         "export": {
           "target": "development",
           "build": "standard"
@@ -108,30 +49,23 @@
             "filter": "build_details_bec"
           },
           {
-            "profile": "dev_shared"
-          }
-        ]
-      },
-      "prod_standalone": {
-        "export": {
-          "target": "local"
-        },
-        "filters": [
-          {
-            "profile": "dev_standalone"
+            "filter": "build_scripts"
           },
           {
-            "filter": "minify_and_clean_scripts"
+            "filter": "page_number_items"
+          },
+          {
+            "filter": "ui_icons"
           }
         ]
       },
-      "prod_bec": {
+      "prod": {
         "export": {
           "target": "local"
         },
         "filters": [
           {
-            "profile": "dev_bec"
+            "profile": "default"
           },
           {
             "filter": "minify_and_clean_scripts"

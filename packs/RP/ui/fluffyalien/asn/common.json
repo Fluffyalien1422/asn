@@ -1,0 +1,10 @@
+{
+  "namespace": "fluffyalien_asn:common",
+  "container_grid": {
+    "type": "grid",
+    "anchor_from": "top_left",
+    "anchor_to": "top_left",
+    "grid_item_template": "chest.chest_grid_item",
+    "collection_name": "container_items"
+  }
+}

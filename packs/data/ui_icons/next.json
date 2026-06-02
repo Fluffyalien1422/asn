@@ -1,0 +1,7 @@
+{
+  "id": "fluffyalien_asn:ui_next",
+  "useEcTag": true,
+  "states": {
+    "_default": "textures/fluffyalien/asn/ui/storage_viewer/next_page"
+  }
+}

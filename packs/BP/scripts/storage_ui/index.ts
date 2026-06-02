@@ -142,7 +142,7 @@ function fillViewerInventory(entity: Entity, data: ViewerData): void {
   inventory.setItem(
     STACK_SIZE_BUTTON_INDEX,
     new ItemStack(
-      `fluffyalien_asn:storage_viewer_ui_stack_size_${data.stackSize.toString()}`,
+      `fluffyalien_asn:ui_stack_size_${data.stackSize.toString()}`,
     ),
   );
 
@@ -455,7 +455,7 @@ system.runInterval(() => {
       continue;
     }
 
-    const expectedStackSizeBtnItemId = `fluffyalien_asn:storage_viewer_ui_stack_size_${data.stackSize.toString()}`;
+    const expectedStackSizeBtnItemId = `fluffyalien_asn:ui_stack_size_${data.stackSize.toString()}`;
     const stackSizeBtnSlotItem = inventory.getItem(STACK_SIZE_BUTTON_INDEX);
     if (stackSizeBtnSlotItem?.typeId !== expectedStackSizeBtnItemId) {
       clearUiItemsFromPlayer(data.playerInUi);
