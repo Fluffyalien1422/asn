@@ -4,9 +4,8 @@ export const BACK_BUTTON_ITEM_ID = "fluffyalien_asn:ui_back";
 export const NEXT_BUTTON_ITEM_ID = "fluffyalien_asn:ui_next";
 export const SEARCH_BUTTON_ITEM_ID = "fluffyalien_asn:ui_search";
 export const CANCEL_SEARCH_BUTTON_ITEM_ID = "fluffyalien_asn:ui_cancel_search";
-export const SORT_AMOUNT_ITEM_ID = "fluffyalien_asn:ui_sort_amount";
-export const SORT_INSERTION_ITEM_ID = "fluffyalien_asn:ui_sort_insertion";
-export const SORT_RELEVANCY_ITEM_ID = "fluffyalien_asn:ui_sort_relevancy";
+export const GROUP_VIEW_OPEN_ITEM_ID = "fluffyalien_asn:ui_group_view_open";
+export const GROUP_VIEW_CLOSE_ITEM_ID = "fluffyalien_asn:ui_group_view_close";
 
 export function getPageNumberItemStacks(page: number): [ItemStack, ItemStack] {
   if (page < 9) {

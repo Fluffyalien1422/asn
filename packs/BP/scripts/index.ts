@@ -4,6 +4,8 @@ import "./script_events";
 import "./tutorial_book";
 import "./wireless_interface";
 
+//TODO: when removing item stack, clamp stack size to item max stack size
+//TODO: show total amount of items in group view
 //TODO: different disk sizes
 //TODO: remove legacy drives and disks
 //TODO: update storage interface ui. ideas:

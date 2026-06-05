@@ -22,11 +22,10 @@ import {
   BACK_BUTTON_ITEM_ID,
   CANCEL_SEARCH_BUTTON_ITEM_ID,
   getPageNumberItemStacks,
+  GROUP_VIEW_CLOSE_ITEM_ID,
+  GROUP_VIEW_OPEN_ITEM_ID,
   NEXT_BUTTON_ITEM_ID,
   SEARCH_BUTTON_ITEM_ID,
-  SORT_AMOUNT_ITEM_ID,
-  SORT_INSERTION_ITEM_ID,
-  SORT_RELEVANCY_ITEM_ID,
 } from "./shared";
 
 const ITEMS_PER_PAGE = 50;
@@ -50,20 +49,19 @@ const STACK_SIZE_BUTTON_INDEX = 58;
  */
 const DISPLAY_ITEM_LORE_MARKER = "§a§s§n§r";
 
-type StorageViewerSortOrder = "insertion" | "amount";
+type StorageViewerMode = "default" | "group" | "group_type";
 type StorageViewerStackSize = 1 | 2 | 4 | 8 | 16 | 32 | 64;
 
 interface ViewerData {
   enabled: boolean;
   hasQuery: boolean;
-  items: ItemStack[];
+  rawItems: ItemStack[];
+  filteredItems: ItemStack[];
   storageSystem: StorageSystem;
   page: number;
   playerInUi: Player;
-  /**
-   * this value should be ignored if `hasQuery` is true, sorting should be relevancy
-   */
-  sortOrder: StorageViewerSortOrder;
+  mode: StorageViewerMode;
+  groupTypeId: string | null;
   stackSize: StorageViewerStackSize;
 }
 
@@ -100,11 +98,34 @@ function getItemsOnPage(
   return items.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
 }
 
+function getGroupViewItems(items: ItemStack[]): ItemStack[] {
+  const seen = new Set<string>();
+  const result: ItemStack[] = [];
+  for (const item of items) {
+    if (!seen.has(item.typeId)) {
+      seen.add(item.typeId);
+      result.push(new ItemStack(item.typeId));
+    }
+  }
+  return result;
+}
+
+function getDisplayItems(data: ViewerData): ItemStack[] {
+  switch (data.mode) {
+    case "group":
+      return getGroupViewItems(data.filteredItems);
+    case "group_type":
+      return data.rawItems.filter((item) => item.typeId === data.groupTypeId);
+    case "default":
+      return data.filteredItems;
+  }
+}
+
 function fillViewerInventory(entity: Entity, data: ViewerData): void {
   const inventory = entity.getComponent("inventory")!.container;
   inventory.clearAll();
 
-  const itemsOnPage = getItemsOnPage(data.items, data.page);
+  const itemsOnPage = getItemsOnPage(getDisplayItems(data), data.page);
 
   for (let i = 0; i < itemsOnPage.length; i++) {
     // items are stored as real ItemStacks (each up to its max stack size) and
@@ -131,19 +152,15 @@ function fillViewerInventory(entity: Entity, data: ViewerData): void {
   inventory.setItem(
     SORT_BUTTON_INDEX,
     new ItemStack(
-      data.hasQuery
-        ? SORT_RELEVANCY_ITEM_ID
-        : data.sortOrder === "insertion"
-          ? SORT_INSERTION_ITEM_ID
-          : SORT_AMOUNT_ITEM_ID,
+      data.mode === "group"
+        ? GROUP_VIEW_CLOSE_ITEM_ID
+        : GROUP_VIEW_OPEN_ITEM_ID,
     ),
   );
 
   inventory.setItem(
     STACK_SIZE_BUTTON_INDEX,
-    new ItemStack(
-      `fluffyalien_asn:ui_stack_size_${data.stackSize.toString()}`,
-    ),
+    new ItemStack(`fluffyalien_asn:ui_stack_size_${data.stackSize.toString()}`),
   );
 
   const pageNumItems = getPageNumberItemStacks(data.page);
@@ -228,33 +245,39 @@ export async function refreshStorageViewer(
   }
 
   const oldData = viewerData.get(interfaceEntity.id);
-  const sortOrder = oldData?.sortOrder ?? "insertion";
 
-  let items: ItemStack[];
+  let rawItems: ItemStack[];
+  let filteredItems: ItemStack[];
   if (oldData?.hasQuery) {
-    items = oldData.items;
+    rawItems = oldData.rawItems;
+    filteredItems = oldData.filteredItems;
   } else {
     const storedItemsr = await storageSystem.getStoredItemStacks();
     if (storedItemsr.isErr()) {
-      console.warn(makeErrorString(`refreshStorageViewer: failed to get stored item stacks: ${storedItemsr.error.message}`));
-      items = [];
+      console.warn(
+        makeErrorString(
+          `refreshStorageViewer: failed to get stored item stacks: ${storedItemsr.error.message}`,
+        ),
+      );
+      rawItems = [];
+      filteredItems = [];
     } else {
-      items = [...storedItemsr.value];
-
-      if (sortOrder === "amount") {
-        items.sort((a, b) => b.amount - a.amount);
-      }
+      const storedItems = storedItemsr.value;
+      rawItems = [...storedItems];
+      filteredItems = [...storedItems];
     }
   }
 
   const data: ViewerData = {
     enabled: true,
     hasQuery: oldData?.hasQuery ?? false,
-    items,
+    rawItems,
+    filteredItems,
     storageSystem,
     page: preservePage ? (oldData?.page ?? 0) : 0,
     playerInUi: player,
-    sortOrder,
+    mode: oldData?.mode ?? "default",
+    groupTypeId: oldData?.groupTypeId ?? null,
     stackSize: oldData?.stackSize ?? 64,
   };
 
@@ -300,7 +323,7 @@ async function search(
       ? 1
       : 0);
 
-  data.items = data.items
+  data.filteredItems = data.rawItems
     .filter((item) =>
       queryKeywords.some((keyword) => item.typeId.includes(keyword)),
     )
@@ -469,21 +492,13 @@ system.runInterval(() => {
     }
 
     const searchButtonSlotItem = inventory.getItem(SEARCH_BUTTON_INDEX);
-    const sortButtonSlotItem = inventory.getItem(SORT_BUTTON_INDEX);
+    const groupViewButtonSlotItem = inventory.getItem(SORT_BUTTON_INDEX);
 
     if (data.hasQuery) {
       if (searchButtonSlotItem?.typeId !== CANCEL_SEARCH_BUTTON_ITEM_ID) {
         clearUiItemsFromPlayer(data.playerInUi);
 
         data.hasQuery = false;
-        void refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
-
-        continue;
-      }
-
-      if (sortButtonSlotItem?.typeId !== SORT_RELEVANCY_ITEM_ID) {
-        clearUiItemsFromPlayer(data.playerInUi);
-
         void refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
 
         continue;
@@ -497,33 +512,31 @@ system.runInterval(() => {
 
         continue;
       }
-
-      if (
-        data.sortOrder === "insertion" &&
-        sortButtonSlotItem?.typeId !== SORT_INSERTION_ITEM_ID
-      ) {
-        clearUiItemsFromPlayer(data.playerInUi);
-
-        data.sortOrder = "amount";
-        void refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
-
-        continue;
-      }
-
-      if (
-        data.sortOrder === "amount" &&
-        sortButtonSlotItem?.typeId !== SORT_AMOUNT_ITEM_ID
-      ) {
-        clearUiItemsFromPlayer(data.playerInUi);
-
-        data.sortOrder = "insertion";
-        void refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
-
-        continue;
-      }
     }
 
-    const itemsOnPage = getItemsOnPage(data.items, data.page);
+    const expectedGroupViewItemId: string =
+      data.mode === "group"
+        ? GROUP_VIEW_CLOSE_ITEM_ID
+        : GROUP_VIEW_OPEN_ITEM_ID;
+    if (groupViewButtonSlotItem?.typeId !== expectedGroupViewItemId) {
+      clearUiItemsFromPlayer(data.playerInUi);
+
+      if (data.mode === "group") {
+        data.mode = "default";
+        data.groupTypeId = null;
+        data.page = 0;
+        void refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
+      } else {
+        data.mode = "group";
+        data.groupTypeId = null;
+        data.page = 0;
+        fillViewerInventory(entity, data);
+      }
+
+      continue;
+    }
+
+    const itemsOnPage = getItemsOnPage(getDisplayItems(data), data.page);
 
     for (let i = 0; i < ITEMS_PER_PAGE; i++) {
       const storageItem = itemsOnPage[i] as ItemStack | undefined;
@@ -553,6 +566,14 @@ system.runInterval(() => {
           inventoryItem,
           data.playerInUi.location,
         );
+      }
+
+      if (data.mode === "group") {
+        data.mode = "group_type";
+        data.groupTypeId = storageItem.typeId;
+        data.page = 0;
+        fillViewerInventory(entity, data);
+        break;
       }
 
       if (showRequestItemDialogRule.get(world)) {
