@@ -71,49 +71,49 @@
       },
       {
         "input_slot@fluffyalien_energisticscore:common.container_item_slot": {
-          "$index": 51,
+          "$index": 50,
           "offset": [9, 8]
         }
       },
       {
         "back_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
-          "$index": 52,
+          "$index": 51,
           "offset": [36, 8]
         }
       },
       {
         "page_num_digit1_slot@fluffyalien_energisticscore:common.container_slot_icon": {
-          "$index": 54,
+          "$index": 53,
           "offset": [66, 22.5]
         }
       },
       {
         "page_num_digit2_slot@fluffyalien_energisticscore:common.container_slot_icon": {
-          "$index": 55,
+          "$index": 54,
           "offset": [70, 22.5]
         }
       },
       {
         "next_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
-          "$index": 53,
+          "$index": 52,
           "offset": [69, 8]
         }
       },
       {
         "search_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
-          "$index": 56,
+          "$index": 55,
           "offset": [117, 8]
         }
       },
       {
         "sort_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
-          "$index": 57,
+          "$index": 56,
           "offset": [135, 8]
         }
       },
       {
         "stack_size_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
-          "$index": 58,
+          "$index": 57,
           "offset": [153, 8]
         }
       },

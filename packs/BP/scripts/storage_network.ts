@@ -23,11 +23,7 @@ import {
   driveEnergyConsumptionRule,
   useEnergyRule,
 } from "./addon_rules/addon_rules";
-import {
-  AddItemStackToStorageError,
-  isBannedItem,
-  StorageSystem,
-} from "./storage_system";
+import { AddItemStackToStorageError, StorageSystem } from "./storage_system";
 import { FLUID_DRIVE_CAPACITY } from "./fluid_drive";
 import {
   getBlockDynamicProperty,
@@ -41,7 +37,7 @@ import {
   saveItemsToDisk,
   unloadDataArea,
 } from "./storage_disk_v3";
-import { cloneItemStackWithAmount, itemStacksMatch } from "./utils/item";
+import { cloneItemStackWithAmount } from "./utils/item";
 import { ContainerSlot } from "@minecraft/server";
 import { err, ok, Result } from "neverthrow";
 
@@ -184,7 +180,8 @@ export class StorageNetwork extends StorageSystem {
     return StorageNetwork.establishNetwork(block);
   }
 
-  private storedItems?: ItemStack[];
+  private storedItems?: Map<string, ItemStack>;
+  private nextItemId = 0;
   /**
    * The disk slots that {@link StorageNetwork.storedItems} were loaded from,
    * in the same order they were discovered. Used to write items back to disks
@@ -274,7 +271,7 @@ export class StorageNetwork extends StorageSystem {
     return disks;
   }
 
-  async getStoredItemStacks(): Promise<Result<ItemStack[], Error>> {
+  async getStoredItemStacks(): Promise<Result<Map<string, ItemStack>, Error>> {
     if (this.storedItems) {
       return ok(this.storedItems);
     }
@@ -288,7 +285,7 @@ export class StorageNetwork extends StorageSystem {
       );
     }
 
-    const itemStacks: ItemStack[] = [];
+    const storedItems = new Map<string, ItemStack>();
     const disks = this.getDisks();
 
     for (const disk of disks) {
@@ -297,30 +294,17 @@ export class StorageNetwork extends StorageSystem {
         console.warn(`Error while getting stored item stacks: ${itemsr.error}`);
         continue;
       }
-      itemStacks.push(...itemsr.value);
+      const items = itemsr.value;
+      for (const stack of items) {
+        storedItems.set(String(this.nextItemId++), stack);
+      }
     }
 
     unloadDataArea();
 
-    const groups: ItemStack[] = [];
-    const indexed = itemStacks.map((stack) => {
-      let groupIdx = groups.findIndex((g) => itemStacksMatch(g, stack));
-      if (groupIdx === -1) {
-        groupIdx = groups.length;
-        groups.push(stack);
-      }
-      return { stack, groupIdx };
-    });
-    indexed.sort((a, b) =>
-      a.groupIdx !== b.groupIdx
-        ? a.groupIdx - b.groupIdx
-        : a.stack.amount - b.stack.amount,
-    );
-    const sorted = indexed.map(({ stack }) => stack);
-
-    this.storedItems = sorted;
+    this.storedItems = storedItems;
     this.storedItemDisks = disks;
-    return ok(sorted);
+    return ok(storedItems);
   }
 
   /**
@@ -352,12 +336,12 @@ export class StorageNetwork extends StorageSystem {
       );
     }
 
-    const storedItems = this.storedItems;
+    const storedItemsArray = [...this.storedItems.values()];
     const disks = this.storedItemDisks;
 
     let itemsStored = 0;
     for (const disk of disks) {
-      const diskItems = storedItems.slice(
+      const diskItems = storedItemsArray.slice(
         itemsStored,
         itemsStored + STORAGE_DISK_CAPACITY,
       );
@@ -660,19 +644,12 @@ export class StorageNetwork extends StorageSystem {
   ): Promise<Result<void, AddItemStackToStorageError>> => {
     this.ensureValidity();
 
-    if (isBannedItem(itemStack)) {
-      return err({
-        type: "bannedItem",
-        itemId: itemStack.typeId,
-      });
-    }
-
     const storedItemsr = await this.getStoredItemStacks();
     if (storedItemsr.isErr()) {
-      logWarn(
-        `addItemStack: failed to get stored item stacks: ${storedItemsr.error.message}`,
-      );
-      throw new Error(storedItemsr.error.message);
+      return err({
+        type: "unknownError",
+        message: storedItemsr.error.toString(),
+      });
     }
     const storedItems = storedItemsr.value;
 
@@ -683,29 +660,26 @@ export class StorageNetwork extends StorageSystem {
     const maxAmount = itemStack.maxAmount;
 
     let spaceInExisting = 0;
-    for (const stored of storedItems) {
-      if (!itemStacksMatch(stored, itemStack)) continue;
+    for (const stored of storedItems.values()) {
+      if (!stored.isStackableWith(itemStack)) continue;
       spaceInExisting += maxAmount - stored.amount;
     }
 
-    const freeSlots = this.getStorageCapacity() - storedItems.length;
+    const freeSlots = this.getStorageCapacity() - storedItems.size;
     const totalSpace = spaceInExisting + freeSlots * maxAmount;
 
     if (itemStack.amount > totalSpace) {
       return err({ type: "insufficientStorage" });
     }
 
-    // distribute the incoming amount across the existing matching stacks
-    // first, then create new stacks for any overflow.
+    // distribute the incoming amount across existing matching stacks first,
+    // then create new slots for any overflow.
     let amountRemaining = itemStack.amount;
-    let lastMatchIndex = -1;
 
-    for (let i = 0; i < storedItems.length; i++) {
+    for (const stored of storedItems.values()) {
       if (amountRemaining <= 0) break;
-      const stored = storedItems[i];
-      if (!itemStacksMatch(stored, itemStack)) continue;
+      if (!stored.isStackableWith(itemStack)) continue;
 
-      lastMatchIndex = i;
       const space = maxAmount - stored.amount;
       if (space <= 0) continue;
 
@@ -714,19 +688,13 @@ export class StorageNetwork extends StorageSystem {
       amountRemaining -= amountToAdd;
     }
 
-    // create new stacks for any overflow, inserted after the last matching stack
-    const insertIndex =
-      lastMatchIndex === -1 ? storedItems.length : lastMatchIndex + 1;
-    let offset = 0;
     while (amountRemaining > 0) {
       const amount = Math.min(maxAmount, amountRemaining);
-      storedItems.splice(
-        insertIndex + offset,
-        0,
+      storedItems.set(
+        String(this.nextItemId++),
         cloneItemStackWithAmount(itemStack, amount),
       );
       amountRemaining -= amount;
-      offset++;
     }
 
     await this.saveStoredItemData();
@@ -783,11 +751,15 @@ export class StorageNetwork extends StorageSystem {
   }
 
   /**
-   * Removes items from storage. Clamps the amount from 1 to the amount available in storage
+   * Removes an item stack from storage by its unique identifier. Clamps the
+   * requested amount to the amount stored in the target slot.
    * @throws if this object is not valid
-   * @returns the amount that was removed
+   * @returns the removed {@link ItemStack}, or null if the id was not found
    */
-  removeItemStack = async (itemStack: ItemStack): Promise<number> => {
+  removeItemStack = async (
+    id: string,
+    amount: number,
+  ): Promise<ItemStack | undefined> => {
     this.ensureValidity();
 
     const storedItemsr = await this.getStoredItemStacks();
@@ -795,51 +767,28 @@ export class StorageNetwork extends StorageSystem {
       logWarn(
         `removeItemStack: failed to get stored item stacks: ${storedItemsr.error.message}`,
       );
-      return 0;
+      return;
     }
     const storedItems = storedItemsr.value;
 
-    // items may be spread across multiple stacks (each capped at the max stack
-    // size), so the requested amount has to be taken from several stacks.
-    const totalAvailable = storedItems.reduce(
-      (total, other) =>
-        itemStacksMatch(other, itemStack) ? total + other.amount : total,
-      0,
-    );
-
-    if (totalAvailable <= 0) {
-      logWarn(
-        `couldn't remove item stack (${itemStack.typeId}): no matching item stack was found`,
-      );
-      return 0;
+    const itemStack = storedItems.get(id);
+    if (!itemStack) {
+      logWarn(`removeItemStack: no item stack found with id "${id}"`);
+      return;
     }
 
-    const requestAmount = Math.max(
-      Math.min(itemStack.amount, totalAvailable),
-      1,
-    );
+    const amountToRemove = Math.min(amount, itemStack.amount);
+    const result = cloneItemStackWithAmount(itemStack, amountToRemove);
 
-    let amountRemaining = requestAmount;
-    for (let i = storedItems.length - 1; i >= 0; i--) {
-      if (amountRemaining <= 0) break;
-
-      const stored = storedItems[i];
-      if (!itemStacksMatch(stored, itemStack)) continue;
-
-      const amountToRemove = Math.min(stored.amount, amountRemaining);
-      const newAmount = stored.amount - amountToRemove;
-      amountRemaining -= amountToRemove;
-
-      if (newAmount <= 0) {
-        storedItems.splice(i, 1);
-      } else {
-        stored.amount = newAmount;
-      }
+    const newAmount = itemStack.amount - amountToRemove;
+    if (newAmount <= 0) {
+      storedItems.delete(id);
+    } else {
+      itemStack.amount = newAmount;
     }
 
-    // save
     await this.saveStoredItemData();
 
-    return requestAmount;
+    return result;
   };
 }

@@ -1,4 +1,4 @@
-import { Block, DimensionLocation, Entity } from "@minecraft/server";
+import { Block, DimensionLocation, Entity, ItemStack } from "@minecraft/server";
 import { StorageNetwork } from "../storage_network";
 import { StrCardinalDirection, getBlockInDirection } from "../utils/direction";
 import {
@@ -49,13 +49,15 @@ export async function updateExportBus(
     return;
   }
 
-  const itemStack = storedItemStacksResult.value.find((itemStack) => {
+  let foundId: string | undefined;
+  let foundItemStack: ItemStack | undefined;
+  for (const [id, itemStack] of storedItemStacksResult.value) {
     const hasEnchantments =
       (itemStack.getComponent("enchantable")?.getEnchantments().length ?? 0) >
       0;
     const damage = getItemStackDamage(itemStack);
 
-    return (
+    if (
       itemStack.typeId === exportItemId &&
       (exportItemEnchantmentsStatus === "ignore" ||
         (exportItemEnchantmentsStatus === "with" && hasEnchantments) ||
@@ -63,19 +65,23 @@ export async function updateExportBus(
       damage >= exportItemDamageRange.min &&
       (exportItemDamageRange.max === undefined ||
         damage <= exportItemDamageRange.max)
-    );
-  });
+    ) {
+      foundId = id;
+      foundItemStack = itemStack;
+      break;
+    }
+  }
 
-  if (!itemStack) {
+  if (!foundId || !foundItemStack) {
     return;
   }
 
-  const notAdded = container.addItem(cloneItemStackWithAmount(itemStack, 1));
+  const notAdded = container.addItem(cloneItemStackWithAmount(foundItemStack, 1));
   if (notAdded) {
     return;
   }
 
-  await network.removeItemStack(cloneItemStackWithAmount(itemStack, 1));
+  await network.removeItemStack(foundId, 1);
 }
 
 /**

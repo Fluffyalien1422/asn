@@ -97,6 +97,7 @@ fluffyalien_asn.ui.storageInterface.search.label=ID Search
 fluffyalien_asn.ui.storageInterface.error.insufficientStorage=Cannot add this item due to insufficient storage. Try connecting more storage drives.
 fluffyalien_asn.ui.storageInterface.error.insufficientEnergy=The storage network has insufficient energy.
 fluffyalien_asn.ui.storageInterface.error.bannedItem=%s is a banned item.
+fluffyalien_asn.ui.storageInterface.error.unknownError=An unknown error occurred: %s
 
 fluffyalien_asn.ui.storageCore.title=Storage Core
 fluffyalien_asn.ui.storageCore.body.storageUsed=Storage Used (Items) (Network): %s/%s bytes

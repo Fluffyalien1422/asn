@@ -318,7 +318,7 @@ export async function updateLevelEmitter(
     return;
   }
 
-  const matchingItemStacks = storedItemStacksResult.value.filter(
+  const matchingItemStacks = [...storedItemStacksResult.value.values()].filter(
     (itemStack) => {
       const hasEnchantments =
         (itemStack.getComponent("enchantable")?.getEnchantments().length ?? 0) >

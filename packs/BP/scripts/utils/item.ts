@@ -97,6 +97,6 @@ export function cloneItemStackWithAmount(
   amount: number,
 ): ItemStack {
   const clone = itemStack.clone();
-  clone.amount = amount;
+  clone.amount = Math.min(Math.max(amount, 1), clone.maxAmount);
   return clone;
 }

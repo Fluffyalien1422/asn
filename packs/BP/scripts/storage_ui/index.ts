@@ -1,13 +1,8 @@
 import { getEntitiesInAllDimensions } from "../utils/dimension";
 import { makeErrorString } from "../log";
-import { wait } from "../utils/async";
-import {
-  cloneItemStackWithAmount,
-  getItemTranslationKey,
-  itemStacksMatch,
-} from "../utils/item";
+import { itemStacksMatch } from "../utils/item";
 import { makeErrorMessageUi, showForm } from "../utils/ui";
-import { showRequestItemUi, showSearchUi } from "./form";
+import { showSearchUi } from "./form";
 import {
   Entity,
   EntityQueryOptions,
@@ -16,7 +11,6 @@ import {
   system,
   world,
 } from "@minecraft/server";
-import { showRequestItemDialogRule } from "../addon_rules/addon_rules";
 import { StorageSystem } from "../storage_system";
 import {
   BACK_BUTTON_ITEM_ID,
@@ -29,14 +23,14 @@ import {
 } from "./shared";
 
 const ITEMS_PER_PAGE = 50;
-const INPUT_SLOT_INDEX = 51;
-const BACK_BUTTON_INDEX = 52;
-const NEXT_BUTTON_INDEX = 53;
-const PAGE_NUM_DIGIT1_INDEX = 54;
-const PAGE_NUM_DIGIT2_INDEX = 55;
-const SEARCH_BUTTON_INDEX = 56;
-const SORT_BUTTON_INDEX = 57;
-const STACK_SIZE_BUTTON_INDEX = 58;
+const INPUT_SLOT_INDEX = 50;
+const BACK_BUTTON_INDEX = 51;
+const NEXT_BUTTON_INDEX = 52;
+const PAGE_NUM_DIGIT1_INDEX = 53;
+const PAGE_NUM_DIGIT2_INDEX = 54;
+const SEARCH_BUTTON_INDEX = 55;
+const SORT_BUTTON_INDEX = 56;
+const STACK_SIZE_BUTTON_INDEX = 57;
 
 /**
  * hidden lore marker appended to display items so they can be identified as ui
@@ -52,11 +46,14 @@ const DISPLAY_ITEM_LORE_MARKER = "§a§s§n§r";
 type StorageViewerMode = "default" | "group" | "group_type";
 type StorageViewerStackSize = 1 | 2 | 4 | 8 | 16 | 32 | 64;
 
+/** A stored item entry: [unique id, ItemStack]. */
+type StoredItem = [string, ItemStack];
+
 interface ViewerData {
   enabled: boolean;
   hasQuery: boolean;
-  rawItems: ItemStack[];
-  filteredItems: ItemStack[];
+  rawItems: readonly StoredItem[];
+  filteredItems: readonly StoredItem[];
   storageSystem: StorageSystem;
   page: number;
   playerInUi: Player;
@@ -77,7 +74,7 @@ function isUiItem(itemStack: ItemStack): boolean {
   );
 }
 
-export function forceCloseInventory(entity: Entity): Promise<void> {
+export async function forceCloseInventory(entity: Entity): Promise<void> {
   const ogLocation = { ...entity.location };
 
   entity.teleport({
@@ -86,36 +83,40 @@ export function forceCloseInventory(entity: Entity): Promise<void> {
     z: entity.location.z,
   });
 
+  await system.waitTicks(4);
+
   entity.teleport(ogLocation);
 
-  return wait(4);
+  return system.waitTicks(4);
 }
 
 function getItemsOnPage(
-  items: readonly ItemStack[],
+  items: readonly StoredItem[],
   page: number,
-): ItemStack[] {
+): StoredItem[] {
   return items.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
 }
 
-function getGroupViewItems(items: ItemStack[]): ItemStack[] {
+function getGroupViewItems(items: readonly StoredItem[]): StoredItem[] {
   const seen = new Set<string>();
-  const result: ItemStack[] = [];
-  for (const item of items) {
+  const result: StoredItem[] = [];
+  for (const [id, item] of items) {
     if (!seen.has(item.typeId)) {
       seen.add(item.typeId);
-      result.push(new ItemStack(item.typeId));
+      result.push([id, new ItemStack(item.typeId)]);
     }
   }
   return result;
 }
 
-function getDisplayItems(data: ViewerData): ItemStack[] {
+function getDisplayItems(data: ViewerData): readonly StoredItem[] {
   switch (data.mode) {
     case "group":
       return getGroupViewItems(data.filteredItems);
     case "group_type":
-      return data.rawItems.filter((item) => item.typeId === data.groupTypeId);
+      return data.rawItems.filter(
+        ([, item]) => item.typeId === data.groupTypeId,
+      );
     case "default":
       return data.filteredItems;
   }
@@ -135,7 +136,7 @@ function fillViewerInventory(entity: Entity, data: ViewerData): void {
     // the vanilla items shown here do not have the `fluffyalien_asn:ui_item`
     // tag, so a hidden lore marker is prepended so `isUiItem` can still
     // identify them as display items.
-    const displayItem = itemsOnPage[i].clone();
+    const displayItem = itemsOnPage[i][1].clone();
     displayItem.setLore([DISPLAY_ITEM_LORE_MARKER, ...displayItem.getLore()]);
     inventory.setItem(i, displayItem);
   }
@@ -176,8 +177,25 @@ async function addItemToStorageOrShowError(
   const res = await data.storageSystem.addItemStack(itemStack, data.playerInUi);
   if (res.isOk()) return true;
 
+  console.warn("isErr");
+
   void forceCloseInventory(interfaceEntity).then(() => {
     switch (res.error.type) {
+      case "unknownError":
+        void showForm(
+          makeErrorMessageUi({
+            translate: "fluffyalien_asn.ui.storageInterface.error.unknownError",
+            with: {
+              rawtext: [
+                {
+                  text: res.error.message,
+                },
+              ],
+            },
+          }),
+          data.playerInUi,
+        );
+        break;
       case "insufficientStorage":
         void showForm(
           makeErrorMessageUi({
@@ -196,29 +214,33 @@ async function addItemToStorageOrShowError(
           data.playerInUi,
         );
         break;
-      case "bannedItem":
-        void showForm(
-          makeErrorMessageUi({
-            translate: "fluffyalien_asn.ui.storageInterface.error.bannedItem",
-            with: {
-              rawtext: [
-                {
-                  rawtext: [
-                    { text: "§l" },
-                    { translate: getItemTranslationKey(res.error.itemId) },
-                    { text: "§r" },
-                  ],
-                },
-              ],
-            },
-          }),
-          data.playerInUi,
-        );
-        break;
     }
   });
 
   return false;
+}
+
+/**
+ * Sorts stored item entries the same way the network previously did: group
+ * items of the same type together, then sort within each group by amount
+ * ascending.
+ */
+function sortStoredItems(entries: readonly StoredItem[]): StoredItem[] {
+  const groups: ItemStack[] = [];
+  const indexed = entries.map(([id, stack]) => {
+    let groupIdx = groups.findIndex((g) => g.typeId === stack.typeId);
+    if (groupIdx === -1) {
+      groupIdx = groups.length;
+      groups.push(stack);
+    }
+    return { id, stack, groupIdx };
+  });
+  indexed.sort((a, b) =>
+    a.groupIdx !== b.groupIdx
+      ? a.groupIdx - b.groupIdx
+      : b.stack.amount - a.stack.amount,
+  );
+  return indexed.map(({ id, stack }) => [id, stack]);
 }
 
 /**
@@ -246,8 +268,8 @@ export async function refreshStorageViewer(
 
   const oldData = viewerData.get(interfaceEntity.id);
 
-  let rawItems: ItemStack[];
-  let filteredItems: ItemStack[];
+  let rawItems: readonly StoredItem[];
+  let filteredItems: readonly StoredItem[];
   if (oldData?.hasQuery) {
     rawItems = oldData.rawItems;
     filteredItems = oldData.filteredItems;
@@ -263,8 +285,9 @@ export async function refreshStorageViewer(
       filteredItems = [];
     } else {
       const storedItems = storedItemsr.value;
-      rawItems = [...storedItems];
-      filteredItems = [...storedItems];
+      const sorted = sortStoredItems([...storedItems.entries()]);
+      rawItems = sorted;
+      filteredItems = sorted;
     }
   }
 
@@ -286,20 +309,6 @@ export async function refreshStorageViewer(
   fillViewerInventory(interfaceEntity, data);
 
   return data;
-}
-
-async function requestItemLegacy(
-  interfaceEntity: Entity,
-  player: Player,
-  network: StorageSystem,
-  item: ItemStack,
-): Promise<void> {
-  await forceCloseInventory(interfaceEntity);
-
-  const requestedItemStack = await showRequestItemUi(player, item);
-  if (!requestedItemStack) return;
-
-  await network.takeOutItemStack(player, requestedItemStack);
 }
 
 async function search(
@@ -324,10 +333,10 @@ async function search(
       : 0);
 
   data.filteredItems = data.rawItems
-    .filter((item) =>
+    .filter(([, item]) =>
       queryKeywords.some((keyword) => item.typeId.includes(keyword)),
     )
-    .sort((a, b) => {
+    .sort(([, a], [, b]) => {
       const aKeywords = a.typeId.split(/:|_/);
       const bKeywords = b.typeId.split(/:|_/);
 
@@ -399,21 +408,25 @@ function addItemToStorage(
   // the asynchronous add/save is in progress
   data.enabled = false;
 
-  void Promise.resolve(
-    addItemToStorageOrShowError(interfaceEntity, data, itemStack),
-  ).then((added) => {
-    if (!added) {
-      data.playerInUi.dimension.spawnItem(itemStack, data.playerInUi.location);
-      return;
-    }
+  void addItemToStorageOrShowError(interfaceEntity, data, itemStack).then(
+    (added) => {
+      console.warn(added);
+      if (!added) {
+        data.playerInUi.dimension.spawnItem(
+          itemStack,
+          data.playerInUi.location,
+        );
+        return;
+      }
 
-    void refreshStorageViewer(
-      interfaceEntity,
-      data.playerInUi,
-      data.storageSystem,
-      true,
-    );
-  });
+      void refreshStorageViewer(
+        interfaceEntity,
+        data.playerInUi,
+        data.storageSystem,
+        true,
+      );
+    },
+  );
 }
 
 world.afterEvents.entitySpawn.subscribe((e) => {
@@ -539,10 +552,10 @@ system.runInterval(() => {
     const itemsOnPage = getItemsOnPage(getDisplayItems(data), data.page);
 
     for (let i = 0; i < ITEMS_PER_PAGE; i++) {
-      const storageItem = itemsOnPage[i] as ItemStack | undefined;
+      const storageEntry = itemsOnPage[i] as StoredItem | undefined;
       const inventoryItem = inventory.getItem(i);
 
-      if (!storageItem) {
+      if (!storageEntry) {
         if (inventoryItem && !isUiItem(inventoryItem)) {
           addItemToStorage(entity, data, inventoryItem);
           break;
@@ -551,9 +564,11 @@ system.runInterval(() => {
         continue;
       }
 
+      const [storageId, storageStack] = storageEntry;
+
       if (
         inventoryItem &&
-        !isStorageInventoryItemTaken(storageItem, inventoryItem)
+        !isStorageInventoryItemTaken(storageStack, inventoryItem)
       ) {
         continue;
       }
@@ -570,44 +585,26 @@ system.runInterval(() => {
 
       if (data.mode === "group") {
         data.mode = "group_type";
-        data.groupTypeId = storageItem.typeId;
+        data.groupTypeId = storageStack.typeId;
         data.page = 0;
         fillViewerInventory(entity, data);
         break;
       }
 
-      if (showRequestItemDialogRule.get(world)) {
-        data.enabled = false;
-        void requestItemLegacy(
-          entity,
-          data.playerInUi,
-          data.storageSystem,
-          storageItem,
-        );
+      if (storageStack.amount <= 0) {
         break;
       }
 
-      if (storageItem.amount <= 0) {
-        break;
-      }
-
-      void Promise.resolve(
-        data.storageSystem.takeOutItemStack(
-          data.playerInUi,
-          // takeOutItemStack will clamp this value if it is greater than the amount available in storage
-          cloneItemStackWithAmount(
-            storageItem,
-            Math.min(data.stackSize, storageItem.maxAmount),
-          ),
-        ),
-      ).then(() => {
-        void refreshStorageViewer(
-          entity,
-          data.playerInUi,
-          data.storageSystem,
-          true,
-        );
-      });
+      void data.storageSystem
+        .takeOutItemStack(data.playerInUi, storageId, data.stackSize)
+        .finally(() => {
+          void refreshStorageViewer(
+            entity,
+            data.playerInUi,
+            data.storageSystem,
+            true,
+          );
+        });
 
       break;
     }

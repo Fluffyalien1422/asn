@@ -1,18 +1,17 @@
 import { ItemStack, Player } from "@minecraft/server";
 import { Result } from "neverthrow";
 import { MaybePromise } from "./utils/async";
-import { cloneItemStackWithAmount } from "./utils/item";
 
 export type AddItemStackToStorageError =
+  | {
+      type: "unknownError";
+      message: string;
+    }
   | {
       type: "insufficientStorage";
     }
   | {
       type: "insufficientEnergy";
-    }
-  | {
-      type: "bannedItem";
-      itemId: string;
     };
 
 /**
@@ -28,42 +27,31 @@ export abstract class StorageSystem {
   ) => MaybePromise<Result<void, AddItemStackToStorageError>>;
 
   /**
-   * Removes items from storage. Clamps the amount from 1 to the amount available in storage
-   * @returns the amount that was removed
+   * Removes an item stack from storage by its unique identifier. Clamps the
+   * requested amount to the amount stored in the target slot.
+   * @returns the removed {@link ItemStack}, or null if the id was not found
    */
   abstract removeItemStack: (
-    itemStack: ItemStack,
+    id: string,
+    amount: number,
     player?: Player,
-  ) => MaybePromise<number>;
+  ) => MaybePromise<ItemStack | undefined>;
 
   abstract getStoredItemStacks(): MaybePromise<
-    Result<readonly ItemStack[], Error>
+    Result<Map<string, ItemStack>, Error>
   >;
 
   /**
-   * Take items out of storage and gives it to the player. Clamps the amount from 1 to the amount available in storage
-   * @throws if this object is not valid
+   * Takes items out of storage and spawns them for the player.
    * @see {@link StorageSystem.removeItemStack}
    */
-  async takeOutItemStack(player: Player, itemStack: ItemStack): Promise<void> {
-    const requestAmount = await this.removeItemStack(itemStack, player);
-
-    let amountRemaining = requestAmount;
-    while (amountRemaining > 0) {
-      const amount = Math.min(itemStack.maxAmount, amountRemaining);
-      amountRemaining -= amount;
-      const newItemStack = cloneItemStackWithAmount(itemStack, amount);
-      player.dimension.spawnItem(newItemStack, player.location);
-    }
+  async takeOutItemStack(
+    player: Player,
+    id: string,
+    amount: number,
+  ): Promise<void> {
+    const itemStack = await this.removeItemStack(id, amount, player);
+    if (!itemStack) return;
+    player.dimension.spawnItem(itemStack, player.location);
   }
-}
-
-export function isBannedItem(itemStack: ItemStack): boolean {
-  return (
-    itemStack.typeId === "minecraft:potion" ||
-    itemStack.typeId === "minecraft:splash_potion" ||
-    itemStack.typeId === "minecraft:lingering_potion" ||
-    (itemStack.typeId.startsWith("minecraft:") &&
-      itemStack.typeId.endsWith("_shulker_box"))
-  );
 }

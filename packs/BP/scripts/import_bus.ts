@@ -31,8 +31,7 @@ export async function updateImportBus(
 
     const result = await network.addItemStack(item);
     if (result.isErr()) {
-      if (result.error.type === "bannedItem") continue;
-      else return;
+      return;
     }
 
     container.setItem(i);
