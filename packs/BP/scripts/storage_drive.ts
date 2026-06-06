@@ -1,7 +1,7 @@
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { StorageNetwork } from "./storage_network";
 import { getPlayerMainhandSlot } from "./utils/item";
-import { makeErrorMessageUi, showForm } from "./utils/ui";
+import { createErrorMessageForm, showForm } from "./utils/ui";
 import {
   Block,
   BlockCustomComponent,
@@ -128,7 +128,7 @@ export const storageDriveComponent: BlockCustomComponent = {
       const existingData = getStorageDriveSerializedData(e.block);
       if (existingData !== undefined) {
         void showForm(
-          makeErrorMessageUi({
+          createErrorMessageForm({
             translate:
               "fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk",
           }),

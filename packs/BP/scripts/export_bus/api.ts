@@ -76,12 +76,17 @@ export async function updateExportBus(
     return;
   }
 
-  const notAdded = container.addItem(cloneItemStackWithAmount(foundItemStack, 1));
+  const notAdded = container.addItem(
+    cloneItemStackWithAmount(foundItemStack, 1),
+  );
   if (notAdded) {
     return;
   }
 
-  await network.removeItemStack(foundId, 1);
+  const removedr = await network.removeItemStack(foundId, 1);
+  if (removedr.isErr()) {
+    return;
+  }
 }
 
 /**

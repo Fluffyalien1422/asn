@@ -18,7 +18,11 @@ import {
   getItemTranslationKey,
   getPlayerMainhandSlot,
 } from "./utils/item";
-import { makeErrorMessageUi, makeMessageUi, showForm } from "./utils/ui";
+import {
+  createErrorMessageForm,
+  createMessageForm,
+  showForm,
+} from "./utils/ui";
 import {
   busUpdateBlockConnectStatesTransformer,
   updateBlockConnectStates,
@@ -121,7 +125,7 @@ async function showLevelEmitterUi(
 
   if (!itemId) {
     return void showForm(
-      makeMessageUi(
+      createMessageForm(
         { translate: "fluffyalien_asn.ui.levelEmitter.title" },
         { translate: "fluffyalien_asn.ui.levelEmitter.noItem" },
       ),
@@ -238,7 +242,7 @@ async function showLevelEmitterUi(
 
   if (isNaN(amount) || amount < 0) {
     return void showForm(
-      makeErrorMessageUi({
+      createErrorMessageForm({
         translate: "fluffyalien_asn.ui.levelEmitter.error.invalidAmount",
       }),
       player,
@@ -261,7 +265,7 @@ async function showLevelEmitterUi(
     : undefined;
   if (minDamageResponse !== undefined && isNaN(minDamageResponse)) {
     return void showForm(
-      makeErrorMessageUi({
+      createErrorMessageForm({
         translate: "fluffyalien_asn.ui.exportBus.error.invalidMinDamage",
       }),
       player,
@@ -273,7 +277,7 @@ async function showLevelEmitterUi(
     : undefined;
   if (maxDamageResponse !== undefined && isNaN(maxDamageResponse)) {
     return void showForm(
-      makeErrorMessageUi({
+      createErrorMessageForm({
         translate: "fluffyalien_asn.ui.exportBus.error.invalidMaxDamage",
       }),
       player,

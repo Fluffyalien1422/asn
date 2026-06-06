@@ -15,7 +15,7 @@ import { forceCloseInventory, refreshStorageViewer } from "./storage_ui";
 import { useEnergyRule } from "./addon_rules/addon_rules";
 import {
   getNetworkOrShowError,
-  makeErrorMessageUi,
+  createErrorMessageForm,
   showForm,
 } from "./utils/ui";
 
@@ -90,7 +90,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     if (useEnergyRule.get(world) && network.getStoredEnergy() <= 0) {
       await forceCloseInventory(e.target);
       void showForm(
-        makeErrorMessageUi({
+        createErrorMessageForm({
           translate:
             "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
         }),

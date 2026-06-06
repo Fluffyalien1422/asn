@@ -23,7 +23,11 @@ import {
   driveEnergyConsumptionRule,
   useEnergyRule,
 } from "./addon_rules/addon_rules";
-import { AddItemStackToStorageError, StorageSystem } from "./storage_system";
+import {
+  AddItemStackToStorageError,
+  RemoveItemStackFromStorageError,
+  StorageSystem,
+} from "./storage_system";
 import { FLUID_DRIVE_CAPACITY } from "./fluid_drive";
 import {
   getBlockDynamicProperty,
@@ -262,7 +266,7 @@ export class StorageNetwork extends StorageSystem {
     for (const drive of this.connections.storageDrives) {
       const disksr = getDisksInDrive(drive);
       if (disksr.isErr()) {
-        console.warn(`Error while getting disks: ${disksr.error}`);
+        logWarn(`Failed to get disks in drive: ${disksr.error}`);
         continue;
       }
       disks.push(...disksr.value);
@@ -291,7 +295,7 @@ export class StorageNetwork extends StorageSystem {
     for (const disk of disks) {
       const itemsr = loadItemsFromDisk(disk);
       if (itemsr.isErr()) {
-        console.warn(`Error while getting stored item stacks: ${itemsr.error}`);
+        logWarn(`Failed to load items from disk: ${itemsr.error}`);
         continue;
       }
       const items = itemsr.value;
@@ -639,6 +643,14 @@ export class StorageNetwork extends StorageSystem {
   /**
    * @throws if this object is not valid
    */
+  /**
+   * Adds an item stack to storage. Distributes the incoming amount across
+   * existing matching stacks before creating new slots. The add is
+   * all-or-nothing: if the full amount does not fit, nothing is stored.
+   * @param itemStack the item stack to add
+   * @returns a result containing an error if the item could not be stored
+   * @throws if this object is not valid
+   */
   addItemStack = async (
     itemStack: ItemStack,
   ): Promise<Result<void, AddItemStackToStorageError>> => {
@@ -648,7 +660,7 @@ export class StorageNetwork extends StorageSystem {
     if (storedItemsr.isErr()) {
       return err({
         type: "unknownError",
-        message: storedItemsr.error.toString(),
+        message: `An unknown error occurred while getting stored item stacks: ${storedItemsr.error}`,
       });
     }
     const storedItems = storedItemsr.value;
@@ -753,32 +765,34 @@ export class StorageNetwork extends StorageSystem {
   /**
    * Removes an item stack from storage by its unique identifier. Clamps the
    * requested amount to the amount stored in the target slot.
+   * @param id the unique identifier of the item stack to remove
+   * @param amount the number of items to remove; clamped to the amount stored in the slot
+   * @returns a result containing the removed {@link ItemStack}, or an error if
+   *   the removal failed or the id was not found
    * @throws if this object is not valid
-   * @returns the removed {@link ItemStack}, or null if the id was not found
    */
   removeItemStack = async (
     id: string,
     amount: number,
-  ): Promise<ItemStack | undefined> => {
+  ): Promise<Result<ItemStack, RemoveItemStackFromStorageError>> => {
     this.ensureValidity();
 
     const storedItemsr = await this.getStoredItemStacks();
     if (storedItemsr.isErr()) {
-      logWarn(
-        `removeItemStack: failed to get stored item stacks: ${storedItemsr.error.message}`,
-      );
-      return;
+      return err({
+        type: "unknownError",
+        message: `An unknown error occurred while getting stored item stacks: ${storedItemsr.error}`,
+      });
     }
     const storedItems = storedItemsr.value;
 
     const itemStack = storedItems.get(id);
     if (!itemStack) {
-      logWarn(`removeItemStack: no item stack found with id "${id}"`);
-      return;
+      return err({ type: "notFound" });
     }
 
     const amountToRemove = Math.min(amount, itemStack.amount);
-    const result = cloneItemStackWithAmount(itemStack, amountToRemove);
+    const removed = cloneItemStackWithAmount(itemStack, amountToRemove);
 
     const newAmount = itemStack.amount - amountToRemove;
     if (newAmount <= 0) {
@@ -789,6 +803,6 @@ export class StorageNetwork extends StorageSystem {
 
     await this.saveStoredItemData();
 
-    return result;
+    return ok(removed);
   };
 }

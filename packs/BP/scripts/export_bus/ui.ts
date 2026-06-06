@@ -14,7 +14,11 @@ import {
   setExportBusExportItemDamageRange,
   setExportBusExportItemEnchantments,
 } from ".";
-import { makeErrorMessageUi, makeMessageUi, showForm } from "../utils/ui";
+import {
+  createErrorMessageForm,
+  createMessageForm,
+  showForm,
+} from "../utils/ui";
 import { getItemTranslationKey } from "../utils/item";
 
 export async function showExportBusUi(
@@ -25,7 +29,7 @@ export async function showExportBusUi(
 
   if (!exportItemId) {
     return void showForm(
-      makeMessageUi(
+      createMessageForm(
         { translate: "fluffyalien_asn.ui.exportBus.title" },
         { translate: "fluffyalien_asn.ui.exportBus.noExportItem" },
       ),
@@ -61,7 +65,7 @@ export async function showExportBusUi(
     setExportBusExportItemDamageRange(dynamicPropertyTarget, { min: 0 });
 
     return void showForm(
-      makeMessageUi(
+      createMessageForm(
         { translate: "fluffyalien_asn.ui.exportBus.title" },
         exportItemRawMessage,
       ),
@@ -171,7 +175,7 @@ export async function showExportBusUi(
     : 0;
   if (isNaN(minDamageResponse)) {
     return void showForm(
-      makeErrorMessageUi({
+      createErrorMessageForm({
         translate: "fluffyalien_asn.ui.exportBus.error.invalidMinDamage",
       }),
       player,
@@ -183,7 +187,7 @@ export async function showExportBusUi(
     : undefined;
   if (maxDamageResponse !== undefined && isNaN(maxDamageResponse)) {
     return void showForm(
-      makeErrorMessageUi({
+      createErrorMessageForm({
         translate: "fluffyalien_asn.ui.exportBus.error.invalidMaxDamage",
       }),
       player,

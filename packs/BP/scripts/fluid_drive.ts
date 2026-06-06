@@ -7,7 +7,7 @@ import {
   RawMessage,
 } from "@minecraft/server";
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
-import { makeErrorMessageUi, showForm } from "./utils/ui";
+import { createErrorMessageForm, showForm } from "./utils/ui";
 import { RegisteredStorageType } from "bedrock-energistics-core-api";
 import {
   getBlockDynamicProperties,
@@ -108,7 +108,7 @@ export const fluidDriveComponent: BlockCustomComponent = {
       const existingData = getBlockDynamicProperties(e.block);
       if (existingData.length) {
         void showForm(
-          makeErrorMessageUi({
+          createErrorMessageForm({
             translate:
               "fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk",
           }),

@@ -9,7 +9,7 @@ import { StorageNetwork } from "../storage_network";
 import { forceCloseInventory } from "../storage_ui";
 import { showEstablishNetworkError } from "../cable_network";
 
-export function makeMessageUi(
+export function createMessageForm(
   title: RawMessage,
   body: RawMessage,
 ): ActionFormData {
@@ -24,8 +24,8 @@ export function makeMessageUi(
   return form;
 }
 
-export function makeErrorMessageUi(body: RawMessage): ActionFormData {
-  return makeMessageUi(
+export function createErrorMessageForm(body: RawMessage): ActionFormData {
+  return createMessageForm(
     {
       translate: "fluffyalien_asn.ui.common.error",
     },

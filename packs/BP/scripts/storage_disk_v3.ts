@@ -10,6 +10,7 @@ import {
 import { DynamicPropertyAccessor } from "./utils/dynamic_property_v3";
 import { err, ok, Result } from "neverthrow";
 import { getEntityAtBlockLocation } from "./utils/location";
+import { logWarn } from "./log";
 
 const TICKING_AREA_ID = "fluffyalien_asn:disk_data_area";
 const DATA_LOCATION = { x: 0, y: -63, z: 0 };
@@ -63,7 +64,7 @@ export function unloadDataArea(): void {
   try {
     world.tickingAreaManager.removeTickingArea(TICKING_AREA_ID);
   } catch (e) {
-    console.warn(e);
+    logWarn(`Failed to unload data area: ${String(e)}`);
   }
 }
 

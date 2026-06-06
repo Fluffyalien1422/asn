@@ -70,7 +70,8 @@ system.runInterval(() => {
       player.getBlockFromViewDirection({
         maxDistance: 7,
         includeTypes: ["fluffyalien_asn:storage_core"],
-      })
+      }) ||
+      entity?.hasTag("fluffyalien_asn:wireless_interface_force_close")
     ) {
       if (entity) {
         removeWirelessInterfaceEntity(player, entity);

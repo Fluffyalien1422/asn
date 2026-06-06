@@ -1,5 +1,5 @@
 import { ItemStack, Player, RawMessage, world } from "@minecraft/server";
-import { makeMessageUi, showForm } from "./utils/ui";
+import { createMessageForm, showForm } from "./utils/ui";
 import { ActionFormData } from "@minecraft/server-ui";
 import { BUILD_DETAILS } from "./build_details";
 
@@ -170,7 +170,7 @@ async function showTutorialBookEntryUi(
     });
   }
 
-  const form = makeMessageUi(
+  const form = createMessageForm(
     { translate: "fluffyalien_asn.ui.tutorialBook.title" },
     { rawtext },
   );

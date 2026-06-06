@@ -1,7 +1,7 @@
 import { getEntitiesInAllDimensions } from "../utils/dimension";
-import { makeErrorString } from "../log";
+import { logWarn, makeErrorString } from "../log";
 import { itemStacksMatch } from "../utils/item";
-import { makeErrorMessageUi, showForm } from "../utils/ui";
+import { createErrorMessageForm } from "../utils/ui";
 import { showSearchUi } from "./form";
 import {
   Entity,
@@ -75,6 +75,13 @@ function isUiItem(itemStack: ItemStack): boolean {
 }
 
 export async function forceCloseInventory(entity: Entity): Promise<void> {
+  // The wireless interface entity cannot be teleported because it follows the player.
+  // Add this tag instead, which tells the wireless interface tick to remove the entity.
+  if (entity.typeId === "fluffyalien_asn:wireless_interface_entity") {
+    entity.addTag("fluffyalien_asn:wireless_interface_force_close");
+    return system.waitTicks(4);
+  }
+
   const ogLocation = { ...entity.location };
 
   entity.teleport({
@@ -174,45 +181,35 @@ async function addItemToStorageOrShowError(
   data: ViewerData,
   itemStack: ItemStack,
 ): Promise<boolean> {
-  const res = await data.storageSystem.addItemStack(itemStack, data.playerInUi);
+  const res = await data.storageSystem.addItemStack(itemStack);
   if (res.isOk()) return true;
-
-  console.warn("isErr");
 
   void forceCloseInventory(interfaceEntity).then(() => {
     switch (res.error.type) {
       case "unknownError":
-        void showForm(
-          makeErrorMessageUi({
-            translate: "fluffyalien_asn.ui.storageInterface.error.unknownError",
-            with: {
-              rawtext: [
-                {
-                  text: res.error.message,
-                },
-              ],
-            },
-          }),
-          data.playerInUi,
-        );
+        void createErrorMessageForm({
+          translate: "fluffyalien_asn.ui.storageInterface.error.unknownError",
+          with: {
+            rawtext: [
+              {
+                text: res.error.message,
+              },
+            ],
+          },
+        }).show(data.playerInUi);
+
         break;
       case "insufficientStorage":
-        void showForm(
-          makeErrorMessageUi({
-            translate:
-              "fluffyalien_asn.ui.storageInterface.error.insufficientStorage",
-          }),
-          data.playerInUi,
-        );
+        void createErrorMessageForm({
+          translate:
+            "fluffyalien_asn.ui.storageInterface.error.insufficientStorage",
+        }).show(data.playerInUi);
         break;
       case "insufficientEnergy":
-        void showForm(
-          makeErrorMessageUi({
-            translate:
-              "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
-          }),
-          data.playerInUi,
-        );
+        void createErrorMessageForm({
+          translate:
+            "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
+        }).show(data.playerInUi);
         break;
     }
   });
@@ -276,11 +273,7 @@ export async function refreshStorageViewer(
   } else {
     const storedItemsr = await storageSystem.getStoredItemStacks();
     if (storedItemsr.isErr()) {
-      console.warn(
-        makeErrorString(
-          `refreshStorageViewer: failed to get stored item stacks: ${storedItemsr.error.message}`,
-        ),
-      );
+      logWarn(`Failed to get stored item stacks: ${storedItemsr.error}`);
       rawItems = [];
       filteredItems = [];
     } else {
@@ -410,7 +403,6 @@ function addItemToStorage(
 
   void addItemToStorageOrShowError(interfaceEntity, data, itemStack).then(
     (added) => {
-      console.warn(added);
       if (!added) {
         data.playerInUi.dimension.spawnItem(
           itemStack,
