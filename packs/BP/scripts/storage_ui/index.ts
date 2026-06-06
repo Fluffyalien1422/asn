@@ -3,6 +3,7 @@ import { logWarn, makeErrorString } from "../log";
 import { itemStacksMatch } from "../utils/item";
 import { createErrorMessageForm } from "../utils/ui";
 import { showSearchUi } from "./form";
+import { abbreviateNumber } from "../utils/string";
 import {
   Entity,
   EntityQueryOptions,
@@ -58,7 +59,7 @@ interface ViewerData {
   page: number;
   playerInUi: Player;
   mode: StorageViewerMode;
-  groupTypeId: string | null;
+  groupTypeId: string | undefined;
   stackSize: StorageViewerStackSize;
 }
 
@@ -70,8 +71,39 @@ const viewerData = new Map<string, ViewerData>();
 function isUiItem(itemStack: ItemStack): boolean {
   return (
     itemStack.hasTag("fluffyalien_asn:ui_item") ||
-    itemStack.getLore()[0] === DISPLAY_ITEM_LORE_MARKER
+    itemStack.getLore()[0]?.startsWith(DISPLAY_ITEM_LORE_MARKER)
   );
+}
+
+function addDisplayItemLoreMarker(itemStack: ItemStack): ItemStack {
+  const lore = itemStack.getLore();
+  if (!lore.length) {
+    itemStack.setLore([DISPLAY_ITEM_LORE_MARKER]);
+    return itemStack;
+  }
+  const firstLine = lore[0];
+  if (firstLine.startsWith(DISPLAY_ITEM_LORE_MARKER)) {
+    return itemStack;
+  }
+  itemStack.setLore([DISPLAY_ITEM_LORE_MARKER + firstLine, ...lore.slice(1)]);
+  return itemStack;
+}
+
+function removeDisplayItemLoreMarker(itemStack: ItemStack): ItemStack {
+  const lore = itemStack.getLore();
+  if (!lore.length) return itemStack;
+  const firstLine = lore[0];
+  if (firstLine === DISPLAY_ITEM_LORE_MARKER) {
+    itemStack.setLore(lore.slice(1));
+    return itemStack;
+  }
+  if (firstLine.startsWith(DISPLAY_ITEM_LORE_MARKER)) {
+    itemStack.setLore([
+      firstLine.slice(DISPLAY_ITEM_LORE_MARKER.length),
+      ...lore.slice(1),
+    ]);
+  }
+  return itemStack;
 }
 
 export async function forceCloseInventory(entity: Entity): Promise<void> {
@@ -105,13 +137,15 @@ function getItemsOnPage(
 }
 
 function getGroupViewItems(items: readonly StoredItem[]): StoredItem[] {
-  const seen = new Set<string>();
+  const types = new Map<string, number>();
+  for (const [, item] of items) {
+    types.set(item.typeId, (types.get(item.typeId) ?? 0) + item.amount);
+  }
   const result: StoredItem[] = [];
-  for (const [id, item] of items) {
-    if (!seen.has(item.typeId)) {
-      seen.add(item.typeId);
-      result.push([id, new ItemStack(item.typeId)]);
-    }
+  for (const [typeId, count] of types) {
+    const itemStack = new ItemStack(typeId);
+    itemStack.setLore([`§7${abbreviateNumber(count)} total`]);
+    result.push(["", itemStack]);
   }
   return result;
 }
@@ -144,7 +178,7 @@ function fillViewerInventory(entity: Entity, data: ViewerData): void {
     // tag, so a hidden lore marker is prepended so `isUiItem` can still
     // identify them as display items.
     const displayItem = itemsOnPage[i][1].clone();
-    displayItem.setLore([DISPLAY_ITEM_LORE_MARKER, ...displayItem.getLore()]);
+    addDisplayItemLoreMarker(displayItem);
     inventory.setItem(i, displayItem);
   }
 
@@ -293,7 +327,7 @@ export async function refreshStorageViewer(
     page: preservePage ? (oldData?.page ?? 0) : 0,
     playerInUi: player,
     mode: oldData?.mode ?? "default",
-    groupTypeId: oldData?.groupTypeId ?? null,
+    groupTypeId: oldData?.groupTypeId ?? undefined,
     stackSize: oldData?.stackSize ?? 64,
   };
 
@@ -356,13 +390,7 @@ function isStorageInventoryItemTaken(
   inventoryItem_: ItemStack,
 ): boolean {
   const inventoryItem = inventoryItem_.clone();
-
-  // remove the first lore line - it's the hidden marker added to display items
-  // so they match the stored item again
-  inventoryItem.setLore(inventoryItem.getLore().slice(1));
-
-  // use itemStacksMatch instead of ItemStack#isStackableWith because
-  // isStackableWith always returns false for non-stackable items.
+  removeDisplayItemLoreMarker(inventoryItem);
   return !itemStacksMatch(storageItem, inventoryItem, true);
 }
 
@@ -528,12 +556,12 @@ system.runInterval(() => {
 
       if (data.mode === "group") {
         data.mode = "default";
-        data.groupTypeId = null;
+        data.groupTypeId = undefined;
         data.page = 0;
         void refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
       } else {
         data.mode = "group";
-        data.groupTypeId = null;
+        data.groupTypeId = undefined;
         data.page = 0;
         fillViewerInventory(entity, data);
       }

@@ -185,7 +185,7 @@ export class StorageNetwork extends StorageSystem {
   }
 
   private storedItems?: Map<string, ItemStack>;
-  private nextItemId = 0;
+  private nextItemIdNum = 0;
   /**
    * The disk slots that {@link StorageNetwork.storedItems} were loaded from,
    * in the same order they were discovered. Used to write items back to disks
@@ -257,6 +257,10 @@ export class StorageNetwork extends StorageSystem {
     }
   }
 
+  private getNextItemId(): string {
+    return (this.nextItemIdNum++).toString();
+  }
+
   /**
    * Gets all disk slots across every storage drive in this network.
    */
@@ -300,7 +304,7 @@ export class StorageNetwork extends StorageSystem {
       }
       const items = itemsr.value;
       for (const stack of items) {
-        storedItems.set(String(this.nextItemId++), stack);
+        storedItems.set(this.getNextItemId(), stack);
       }
     }
 
@@ -703,7 +707,7 @@ export class StorageNetwork extends StorageSystem {
     while (amountRemaining > 0) {
       const amount = Math.min(maxAmount, amountRemaining);
       storedItems.set(
-        String(this.nextItemId++),
+        this.getNextItemId(),
         cloneItemStackWithAmount(itemStack, amount),
       );
       amountRemaining -= amount;
