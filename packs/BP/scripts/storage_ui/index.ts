@@ -9,6 +9,7 @@ import {
   EntityQueryOptions,
   ItemStack,
   Player,
+  RawMessage,
   system,
   world,
 } from "@minecraft/server";
@@ -70,40 +71,81 @@ interface ViewerData {
 const viewerData = new Map<string, ViewerData>();
 
 function isUiItem(itemStack: ItemStack): boolean {
+  if (itemStack.hasTag("fluffyalien_asn:ui_item")) return true;
+  const firstLine = itemStack.getRawLore()[0] as RawMessage | undefined;
   return (
-    itemStack.hasTag("fluffyalien_asn:ui_item") ||
-    itemStack.getLore()[0]?.startsWith(DISPLAY_ITEM_LORE_MARKER)
+    (firstLine?.text ?? firstLine?.rawtext?.[0]?.text)?.startsWith(
+      DISPLAY_ITEM_LORE_MARKER,
+    ) === true
   );
 }
 
+/**
+ * Prepends DISPLAY_ITEM_LORE_MARKER to the item's lore so it can be
+ * identified as a UI display item (see isUiItem).
+ */
 function addDisplayItemLoreMarker(itemStack: ItemStack): ItemStack {
-  const lore = itemStack.getLore();
+  if (isUiItem(itemStack)) return itemStack;
+
+  const lore = itemStack.getRawLore();
+
   if (!lore.length) {
     itemStack.setLore([DISPLAY_ITEM_LORE_MARKER]);
     return itemStack;
   }
+
+  // If the first line has text, merge the marker into it to avoid adding an
+  // extra visible line. Otherwise insert the marker as a new first line.
   const firstLine = lore[0];
-  if (firstLine.startsWith(DISPLAY_ITEM_LORE_MARKER)) {
-    return itemStack;
+  if (firstLine.text) {
+    itemStack.setLore([
+      DISPLAY_ITEM_LORE_MARKER + firstLine.text,
+      ...lore.slice(1),
+    ]);
+  } else if (firstLine.rawtext?.[0]?.text) {
+    const [first, ...restRawtext] = firstLine.rawtext;
+    itemStack.setLore([
+      {
+        rawtext: [
+          { text: DISPLAY_ITEM_LORE_MARKER + first.text! },
+          ...restRawtext,
+        ],
+      },
+      ...lore.slice(1),
+    ]);
+  } else {
+    itemStack.setLore([DISPLAY_ITEM_LORE_MARKER, ...lore]);
   }
-  itemStack.setLore([DISPLAY_ITEM_LORE_MARKER + firstLine, ...lore.slice(1)]);
   return itemStack;
 }
 
 function removeDisplayItemLoreMarker(itemStack: ItemStack): ItemStack {
-  const lore = itemStack.getLore();
-  if (!lore.length) return itemStack;
-  const firstLine = lore[0];
-  if (firstLine === DISPLAY_ITEM_LORE_MARKER) {
-    itemStack.setLore(lore.slice(1));
+  const lore = itemStack.getRawLore();
+  const firstLine = lore[0] as RawMessage | undefined;
+
+  // Strip the marker prefix. If the marker was the entire line (standalone),
+  // drop the line; otherwise keep the remaining text (merged case).
+  if (firstLine?.text?.startsWith(DISPLAY_ITEM_LORE_MARKER)) {
+    const stripped = firstLine.text.slice(DISPLAY_ITEM_LORE_MARKER.length);
+    itemStack.setLore(stripped ? [stripped, ...lore.slice(1)] : lore.slice(1));
     return itemStack;
   }
-  if (firstLine.startsWith(DISPLAY_ITEM_LORE_MARKER)) {
-    itemStack.setLore([
-      firstLine.slice(DISPLAY_ITEM_LORE_MARKER.length),
-      ...lore.slice(1),
-    ]);
+
+  const firstNestedText = firstLine?.rawtext?.[0]?.text;
+  if (firstNestedText?.startsWith(DISPLAY_ITEM_LORE_MARKER)) {
+    const stripped = firstNestedText.slice(DISPLAY_ITEM_LORE_MARKER.length);
+    const restRawtext = firstLine!.rawtext!.slice(1);
+    const newRawtext = stripped
+      ? [{ text: stripped }, ...restRawtext]
+      : restRawtext;
+    itemStack.setLore(
+      newRawtext.length
+        ? [{ rawtext: newRawtext }, ...lore.slice(1)]
+        : lore.slice(1),
+    );
+    return itemStack;
   }
+
   return itemStack;
 }
 
