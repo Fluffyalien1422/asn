@@ -1,8 +1,0 @@
-{
-  "id": "fluffyalien_asn:ui_sort",
-  "states": {
-    "amount": "textures/fluffyalien/asn/ui/storage_viewer/sort",
-    "insertion": "textures/fluffyalien/asn/ui/storage_viewer/sort",
-    "relevancy": "textures/fluffyalien/asn/ui/storage_viewer/sort"
-  }
-}

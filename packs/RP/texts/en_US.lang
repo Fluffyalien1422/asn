@@ -5,9 +5,8 @@ item.fluffyalien_asn:ui_back=Previous
 item.fluffyalien_asn:ui_next=Next
 item.fluffyalien_asn:ui_search=Search
 item.fluffyalien_asn:ui_cancel_search=Cancel Search
-item.fluffyalien_asn:ui_sort_insertion=Sorting By: Insertion
-item.fluffyalien_asn:ui_sort_amount=Sorting By: Amount
-item.fluffyalien_asn:ui_sort_relevancy=Sorting By: Relevancy
+item.fluffyalien_asn:ui_group_view_open=Group View
+item.fluffyalien_asn:ui_group_view_close=All Items View
 item.fluffyalien_asn:ui_stack_size_1=Stack Size: 1
 item.fluffyalien_asn:ui_stack_size_2=Stack Size: 2
 item.fluffyalien_asn:ui_stack_size_4=Stack Size: 4
@@ -64,7 +63,6 @@ fluffyalien_asn.message.scriptEvent.addonRule.experimentalWarning=WARNING: This 
 fluffyalien_asn.message.scriptEvent.addonRule.scriptEventUsageWarning=WARNING: The scriptevent usage of this command is deprecated and may be removed in a future version. Use '/asnrule' or '/fluffyalien_asn:asnrule' instead.
 
 fluffyalien_asn.message.scriptEvent.addonRule.help.forceLoadNetworks=When a storage network extends into unloaded chunks, force those chunks to load so the network can fully load. MAY CAUSE LAG! This will not work if all ticking area slots are used.
-fluffyalien_asn.message.scriptEvent.addonRule.help.showRequestItemDialog=Show the request item dialog when taking an item out of the storage network instead of immediately removing a stack.
 fluffyalien_asn.message.scriptEvent.addonRule.help.wirelessInterfaceRange=The max range a wireless transmitter must be from a player for them to use a wireless interface. Set this to -1 to disable range and dimension checking.
 fluffyalien_asn.message.scriptEvent.addonRule.help.useEnergy=Make storage networks require energy to operate. Requires Bedrock Energistics Core.
 fluffyalien_asn.message.scriptEvent.addonRule.help.driveEnergyConsumption=The amount of energy each storage drive consumes (every 10t). Ignored if 'useEnergy' is false.
@@ -76,27 +74,19 @@ fluffyalien_asn.actionbar.storageInterface.openToViewQueryResults=Open the stora
 fluffyalien_asn.ui.common.error=Error
 fluffyalien_asn.ui.common.close=Close
 
-fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores=Cannot establish a storage network: multiple storage cores found.
-fluffyalien_asn.ui.cableNetwork.error.noStorageCores=Cannot establish a storage network: no storage cores found.
+fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores=Cannot establish a storage network: Multiple storage cores found.
+fluffyalien_asn.ui.cableNetwork.error.noStorageCores=Cannot establish a storage network: No storage cores found.
 
 fluffyalien_asn.ui.storageDrive.title=Storage Drive
 fluffyalien_asn.ui.storageDrive.body.storageUsed=Storage Used (Drive): %s/3000 bytes
-fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk=Cannot add a disk to storage drive with items in it.
 
 fluffyalien_asn.ui.fluidDrive.body.storageUsed=Storage Used (%s) (Drive): %s mL (%s%%)
 fluffyalien_asn.ui.fluidDrive.body.storageUsedTotal=Storage Used (Total) (Drive): %s/6400 mL
 
 fluffyalien_asn.ui.storageInterface.title=Storage Interface
-fluffyalien_asn.ui.storageInterface.requestItem.itemDurability=Durability: %s/%s
-fluffyalien_asn.ui.storageInterface.requestItem.itemEnchantments=Enchantments:
-fluffyalien_asn.ui.storageInterface.requestItem.itemLore=Lore:
-fluffyalien_asn.ui.storageInterface.requestItem.itemAmount=Request Amount:
-fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber=Cannot take out this amount. The value must be a valid number, greater than zero, and less than or equal to one thousand.
-fluffyalien_asn.ui.storageInterface.requestItem.error.notEnough=There is not enough of this item stored to take out this amount.
 fluffyalien_asn.ui.storageInterface.search.label=ID Search
-fluffyalien_asn.ui.storageInterface.error.insufficientStorage=Cannot add this item due to insufficient storage. Try connecting more storage drives.
+fluffyalien_asn.ui.storageInterface.error.insufficientStorage=Cannot add this item due to insufficient storage. Try adding more storage disks.
 fluffyalien_asn.ui.storageInterface.error.insufficientEnergy=The storage network has insufficient energy.
-fluffyalien_asn.ui.storageInterface.error.bannedItem=%s is a banned item.
 fluffyalien_asn.ui.storageInterface.error.unknownError=An unknown error occurred: %s
 
 fluffyalien_asn.ui.storageCore.title=Storage Core
