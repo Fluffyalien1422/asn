@@ -14,6 +14,7 @@ import { getBlockUid } from "./utils/block";
 import { logWarn } from "./log";
 import { itemStacksMatch } from "./utils/item";
 import { StorageNetwork } from "./storage_network";
+import { getDiskCapacity } from "./storage_disk_v3";
 
 const ENTITY_ID = "fluffyalien_asn:storage_drive_entity_v3";
 
@@ -51,10 +52,7 @@ export function getDisksInDrive(
   const disks: (ContainerSlot | null)[] = [];
   for (let i = 0; i < container.size; i++) {
     const slot = container.getSlot(i);
-    if (
-      slot.hasItem() &&
-      slot.typeId === "fluffyalien_asn:storage_disk_v3_64"
-    ) {
+    if (slot.hasItem() && getDiskCapacity(slot.typeId)) {
       disks.push(slot);
     } else if (useNullForEmpty) {
       disks.push(null);
@@ -66,7 +64,7 @@ export function getDisksInDrive(
 
 export const storageDriveV3Component: BlockCustomComponent = {
   onPlace(e) {
-    e.dimension.spawnEntity(ENTITY_ID, e.block.center()).nameTag =
+    e.dimension.spawnEntity(ENTITY_ID, e.block.bottomCenter()).nameTag =
       e.block.typeId;
   },
   onBreak(e) {

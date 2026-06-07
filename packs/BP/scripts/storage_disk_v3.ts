@@ -4,22 +4,80 @@ import {
   DimensionLocation,
   Entity,
   ItemStack,
+  RawMessage,
   StructureSaveMode,
+  Vector3,
   world,
 } from "@minecraft/server";
 import { DynamicPropertyAccessor } from "./utils/dynamic_property_v3";
 import { err, ok, Result } from "neverthrow";
 import { getEntityAtBlockLocation } from "./utils/location";
 import { logWarn } from "./log";
+import { abbreviateNumber } from "./utils/string";
 
 const TICKING_AREA_ID = "fluffyalien_asn:disk_data_area";
-const DATA_LOCATION = { x: 0, y: -63, z: 0 };
+const DATA_LOCATION: Vector3 = { x: 0, y: -63, z: 0 };
 const DATA_LOCATION_DIMENSION_ID = "minecraft:overworld";
 const DISK_ENTITY_ID = "fluffyalien_asn:storage_disk_entity_v3";
+const DISK_LORE_MAX_DISPLAY_TYPES = 5;
+const DISK_CAPACITIES: Record<string, number> = {
+  "fluffyalien_asn:storage_disk_v3_64": 64,
+  "fluffyalien_asn:storage_disk_v3_32": 32,
+};
 
 const diskIdProperty = new DynamicPropertyAccessor<string>(
   "fluffyalien_asn:disk_id",
 );
+
+export function getDiskCapacity(typeId: string): number {
+  return DISK_CAPACITIES[typeId] ?? 0;
+}
+
+function setDiskLore<T extends ItemStack | ContainerSlot>(
+  disk: T,
+  itemStacks: readonly ItemStack[],
+): T {
+  const localizationToAmount = new Map<string, number>();
+  let totalItemsCount = 0;
+  for (const itemStack of itemStacks) {
+    totalItemsCount += itemStack.amount;
+    localizationToAmount.set(
+      itemStack.localizationKey,
+      (localizationToAmount.get(itemStack.localizationKey) ?? 0) +
+        itemStack.amount,
+    );
+  }
+
+  const capacity = getDiskCapacity(disk.typeId);
+  const displayEntries = [...localizationToAmount.entries()]
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, DISK_LORE_MAX_DISPLAY_TYPES);
+  const displayEntriesRawMsg: RawMessage[] = displayEntries.flatMap(
+    ([localizationKey, amount]) => [
+      { text: `\n§r§7${abbreviateNumber(amount)} ` },
+      { translate: localizationKey },
+    ],
+  );
+  if (localizationToAmount.size > DISK_LORE_MAX_DISPLAY_TYPES) {
+    const remaining = localizationToAmount.size - DISK_LORE_MAX_DISPLAY_TYPES;
+    displayEntriesRawMsg.push({
+      text: `\n§r§7and ${remaining.toString()} more...`,
+    });
+  }
+
+  disk.setLore([
+    {
+      rawtext: [
+        {
+          text: `§r§7${itemStacks.length.toString()}/${capacity.toString()} stacks (${abbreviateNumber(totalItemsCount)} items)`,
+        },
+        ...displayEntriesRawMsg,
+      ],
+    },
+  ]);
+
+  return disk;
+}
 
 function getDataDimensionLocation(): Result<DimensionLocation, Error> {
   let dimension: Dimension;
@@ -103,11 +161,13 @@ function getEntityFromDisk(diskId: string): Result<Entity, Error> {
 export function saveItemsToDisk<T extends ItemStack | ContainerSlot>(
   disk: T,
   items: ItemStack[],
+  capacity_: number,
 ): Result<T, Error> {
-  if (items.length > 64) {
+  const capacity = Math.min(capacity_, 64);
+  if (items.length > capacity) {
     return err(
       new Error(
-        "Failed to save items to storage disk: Trying to save too many items (>64).",
+        `Failed to save items to storage disk: Trying to save too many items (>${capacity.toString()}).`,
       ),
     );
   }
@@ -184,6 +244,7 @@ export function saveItemsToDisk<T extends ItemStack | ContainerSlot>(
   }
 
   entity.remove();
+  setDiskLore(disk, items);
 
   return ok(disk);
 }

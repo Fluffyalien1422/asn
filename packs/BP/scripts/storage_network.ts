@@ -36,6 +36,7 @@ import {
 import { updateFluidExportBus } from "./fluid_export_bus";
 import { getDisksInDrive } from "./storage_drive_v3";
 import {
+  getDiskCapacity,
   loadDataArea,
   loadItemsFromDisk,
   saveItemsToDisk,
@@ -44,11 +45,6 @@ import {
 import { cloneItemStackWithAmount } from "./utils/item";
 import { ContainerSlot } from "@minecraft/server";
 import { err, ok, Result } from "neverthrow";
-
-/**
- * The maximum number of item stacks (slots) that a single storage disk can hold.
- */
-export const STORAGE_DISK_CAPACITY = 64;
 
 export const STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL = 10;
 
@@ -320,13 +316,17 @@ export class StorageNetwork extends StorageSystem {
    * all of its disks.
    */
   private getStorageCapacity(): number {
-    return this.getDisks().length * STORAGE_DISK_CAPACITY;
+    let total = 0;
+    for (const disk of this.getDisks()) {
+      total += getDiskCapacity(disk.typeId);
+    }
+    return total;
   }
 
   /**
    * Writes the in-memory item data ({@link StorageNetwork.storedItems}) back to
    * the network's disks. Items are distributed across the disks that they were
-   * loaded from, up to {@link STORAGE_DISK_CAPACITY} stacks per disk.
+   * loaded from, up to the capacity of each disk.
    * @throws if the data area could not be loaded
    */
   private async saveStoredItemData(): Promise<void> {
@@ -349,13 +349,14 @@ export class StorageNetwork extends StorageSystem {
 
     let itemsStored = 0;
     for (const disk of disks) {
+      const capacity = getDiskCapacity(disk.typeId);
       const diskItems = storedItemsArray.slice(
         itemsStored,
-        itemsStored + STORAGE_DISK_CAPACITY,
+        itemsStored + capacity,
       );
       itemsStored += diskItems.length;
 
-      const saveResult = saveItemsToDisk(disk, diskItems);
+      const saveResult = saveItemsToDisk(disk, diskItems, capacity);
       if (saveResult.isErr()) {
         logWarn(`could not save item data: ${saveResult.error.message}`);
       }

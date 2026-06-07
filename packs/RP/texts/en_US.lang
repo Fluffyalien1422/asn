@@ -16,6 +16,8 @@ item.fluffyalien_asn:ui_stack_size_32=Stack Size: 32
 item.fluffyalien_asn:ui_stack_size_64=Stack Size: 64
 
 item.fluffyalien_asn:storage_disk=Storage Disk
+item.fluffyalien_asn:storage_disk_v3_64=High Capacity Storage Disk
+item.fluffyalien_asn:storage_disk_v3_32=Standard Storage Disk
 item.fluffyalien_asn:fluid_storage_disk=Fluid Storage Disk §c(Experimental)
 item.fluffyalien_asn:used_storage_disk=Storage Disk
 item.fluffyalien_asn:used_fluid_storage_disk=Fluid Storage Disk §c(Experimental)
