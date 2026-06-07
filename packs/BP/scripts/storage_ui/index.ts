@@ -1,7 +1,6 @@
 import { getEntitiesInAllDimensions } from "../utils/dimension";
 import { makeErrorString } from "../log";
 import { StorageSystemItemStack } from "../storage_system_item_stack";
-import { wait } from "../utils/async";
 import { getItemTranslationKey } from "../utils/item";
 import { abbreviateNumber } from "../utils/string";
 import { makeErrorMessageUi, showForm } from "../utils/ui";
@@ -72,7 +71,10 @@ function isUiItem(itemStack: ItemStack): boolean {
   );
 }
 
-export function forceCloseInventory(entity: Entity): Promise<void> {
+export async function forceCloseInventory(entity: Entity): Promise<void> {
+  if (entity.typeId === "fluffyalien_asn:wireless_interface_entity") {
+    entity.addTag("fluffyalien_asn:wireless_interface_force_close");
+  }
   const ogLocation = { ...entity.location };
 
   entity.teleport({
@@ -81,9 +83,12 @@ export function forceCloseInventory(entity: Entity): Promise<void> {
     z: entity.location.z,
   });
 
+  await system.waitTicks(4);
   entity.teleport(ogLocation);
 
-  return wait(4);
+  if (entity.typeId === "fluffyalien_asn:wireless_interface_entity") {
+    entity.removeTag("fluffyalien_asn:wireless_interface_force_close");
+  }
 }
 
 function getItemsOnPage(

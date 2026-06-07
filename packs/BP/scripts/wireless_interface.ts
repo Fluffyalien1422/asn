@@ -89,7 +89,9 @@ system.runInterval(() => {
       wirelessInterfaceEntities.set(player.id, entity);
     }
 
-    entity.teleport(Vector3Utils.add(player.location, VECTOR3_UP));
+    if (!entity.hasTag("fluffyalien_asn:wireless_interface_force_close")) {
+      entity.teleport(Vector3Utils.add(player.location, VECTOR3_UP));
+    }
   }
 });
 
