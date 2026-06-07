@@ -1,4 +1,5 @@
-import { ItemStack } from "@minecraft/server";
+import { Vector3Utils } from "@minecraft/math";
+import { Entity, ItemStack, system } from "@minecraft/server";
 
 export const BACK_BUTTON_ITEM_ID = "fluffyalien_asn:ui_back";
 export const NEXT_BUTTON_ITEM_ID = "fluffyalien_asn:ui_next";
@@ -6,6 +7,9 @@ export const SEARCH_BUTTON_ITEM_ID = "fluffyalien_asn:ui_search";
 export const CANCEL_SEARCH_BUTTON_ITEM_ID = "fluffyalien_asn:ui_cancel_search";
 export const GROUP_VIEW_OPEN_ITEM_ID = "fluffyalien_asn:ui_group_view_open";
 export const GROUP_VIEW_CLOSE_ITEM_ID = "fluffyalien_asn:ui_group_view_close";
+
+export const STORAGE_VIEWER_FORCE_CLOSE_TAG =
+  "fluffyalien_asn:storage_viewer_force_close";
 
 export function getPageNumberItemStacks(page: number): [ItemStack, ItemStack] {
   if (page < 9) {
@@ -25,4 +29,15 @@ export function getPageNumberItemStacks(page: number): [ItemStack, ItemStack] {
       new ItemStack(`fluffyalien_asn:ui_page_number${pageNumStr[1]}`),
     ];
   }
+}
+
+export async function forceCloseStorageViewerInventory(
+  entity: Entity,
+): Promise<void> {
+  entity.addTag(STORAGE_VIEWER_FORCE_CLOSE_TAG);
+  const ogLocation = { ...entity.location };
+  entity.teleport(Vector3Utils.add(entity.location, { y: 99 }));
+  await system.waitTicks(4);
+  entity.teleport(ogLocation);
+  entity.removeTag(STORAGE_VIEWER_FORCE_CLOSE_TAG);
 }

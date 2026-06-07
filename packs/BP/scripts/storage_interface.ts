@@ -11,13 +11,14 @@ import {
   updateBlockConnectStates,
 } from "./utils/block_connect";
 import { logWarn } from "./log";
-import { forceCloseInventory, refreshStorageViewer } from "./storage_ui";
+import { refreshStorageViewer } from "./storage_ui";
 import { useEnergyRule } from "./addon_rules/addon_rules";
 import {
   getNetworkOrShowError,
   createErrorMessageForm,
   showForm,
 } from "./utils/ui";
+import { forceCloseStorageViewerInventory } from "./storage_ui/shared";
 
 export const storageInterfaceComponent: BlockCustomComponent = {
   onPlace(e) {
@@ -88,7 +89,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     if (!network) return;
 
     if (useEnergyRule.get(world) && network.getStoredEnergy() <= 0) {
-      await forceCloseInventory(e.target);
+      await forceCloseStorageViewerInventory(e.target);
       void showForm(
         createErrorMessageForm({
           translate:

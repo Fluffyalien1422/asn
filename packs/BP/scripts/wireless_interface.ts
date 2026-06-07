@@ -17,6 +17,7 @@ import { StorageNetwork } from "./storage_network";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
 import { refreshStorageViewer } from "./storage_ui";
 import { ItemMachine, StandardStorageType } from "bedrock-energistics-core-api";
+import { STORAGE_VIEWER_FORCE_CLOSE_TAG } from "./storage_ui/shared";
 
 /**
  * key = player ID
@@ -70,8 +71,7 @@ system.runInterval(() => {
       player.getBlockFromViewDirection({
         maxDistance: 7,
         includeTypes: ["fluffyalien_asn:storage_core"],
-      }) ||
-      entity?.hasTag("fluffyalien_asn:wireless_interface_force_close")
+      })
     ) {
       if (entity) {
         removeWirelessInterfaceEntity(player, entity);
@@ -90,7 +90,9 @@ system.runInterval(() => {
       wirelessInterfaceEntities.set(player.id, entity);
     }
 
-    entity.teleport(Vector3Utils.add(player.location, VECTOR3_UP));
+    if (!entity.hasTag(STORAGE_VIEWER_FORCE_CLOSE_TAG)) {
+      entity.teleport(Vector3Utils.add(player.location, VECTOR3_UP));
+    }
   }
 });
 

@@ -16,6 +16,7 @@ import { StorageSystem } from "../storage_system";
 import {
   BACK_BUTTON_ITEM_ID,
   CANCEL_SEARCH_BUTTON_ITEM_ID,
+  forceCloseStorageViewerInventory,
   getPageNumberItemStacks,
   GROUP_VIEW_CLOSE_ITEM_ID,
   GROUP_VIEW_OPEN_ITEM_ID,
@@ -104,29 +105,6 @@ function removeDisplayItemLoreMarker(itemStack: ItemStack): ItemStack {
     ]);
   }
   return itemStack;
-}
-
-export async function forceCloseInventory(entity: Entity): Promise<void> {
-  // The wireless interface entity cannot be teleported because it follows the player.
-  // Add this tag instead, which tells the wireless interface tick to remove the entity.
-  if (entity.typeId === "fluffyalien_asn:wireless_interface_entity") {
-    entity.addTag("fluffyalien_asn:wireless_interface_force_close");
-    return system.waitTicks(4);
-  }
-
-  const ogLocation = { ...entity.location };
-
-  entity.teleport({
-    x: entity.location.x,
-    y: entity.location.y + 99,
-    z: entity.location.z,
-  });
-
-  await system.waitTicks(4);
-
-  entity.teleport(ogLocation);
-
-  return system.waitTicks(4);
 }
 
 function getItemsOnPage(
@@ -218,7 +196,7 @@ async function addItemToStorageOrShowError(
   const res = await data.storageSystem.addItemStack(itemStack);
   if (res.isOk()) return true;
 
-  void forceCloseInventory(interfaceEntity).then(() => {
+  void forceCloseStorageViewerInventory(interfaceEntity).then(() => {
     switch (res.error.type) {
       case "unknownError":
         void createErrorMessageForm({
@@ -342,7 +320,7 @@ async function search(
   interfaceEntity: Entity,
   data: ViewerData,
 ): Promise<void> {
-  await forceCloseInventory(interfaceEntity);
+  await forceCloseStorageViewerInventory(interfaceEntity);
 
   const query = await showSearchUi(data.playerInUi);
   if (!query) {
@@ -483,7 +461,7 @@ system.runInterval(() => {
       if (isUiItem(inputSlotItem)) {
         inventory.setItem(INPUT_SLOT_INDEX);
         data.enabled = false;
-        void forceCloseInventory(entity);
+        void forceCloseStorageViewerInventory(entity);
         continue;
       }
 

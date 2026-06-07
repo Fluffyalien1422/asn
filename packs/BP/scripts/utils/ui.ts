@@ -6,8 +6,8 @@ import {
   ModalFormResponse,
 } from "@minecraft/server-ui";
 import { StorageNetwork } from "../storage_network";
-import { forceCloseInventory } from "../storage_ui";
 import { showEstablishNetworkError } from "../cable_network";
+import { forceCloseStorageViewerInventory } from "../storage_ui/shared";
 
 export function createMessageForm(
   title: RawMessage,
@@ -58,7 +58,7 @@ export async function getNetworkOrShowError(
 ): Promise<StorageNetwork | undefined> {
   const networkResult = await StorageNetwork.getOrEstablishNetwork(block);
   if (networkResult.isErr()) {
-    await forceCloseInventory(interfaceEntity);
+    await forceCloseStorageViewerInventory(interfaceEntity);
     void showEstablishNetworkError(player, networkResult.error);
 
     return;
