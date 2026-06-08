@@ -1,8 +1,14 @@
+/**
+ * [id, count]
+ */
 type RecipeItem = [string, number];
-interface RecipeData {
-  input: RecipeItem[];
-  count: number;
-}
+/**
+ * [count, ingredients]
+ */
+type RecipeData = [number, RecipeItem[]];
+/**
+ * resultId: recipes
+ */
 type Output = Record<string, RecipeData[]>;
 declare const o: Output;
 export default o;
