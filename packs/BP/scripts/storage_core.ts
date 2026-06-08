@@ -21,7 +21,6 @@ import {
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { fluidStorageRule, useEnergyRule } from "./addon_rules/addon_rules";
-import { showForm } from "./utils/ui";
 import { RegisteredStorageType } from "bedrock-energistics-core-api";
 
 async function showStorageCoreUi(
@@ -40,10 +39,10 @@ async function showStorageCoreUi(
       with: {
         rawtext: [
           {
-            text: network.getUsedDataLength().toString(),
+            text: (await network.getStoredItemStacksCount()).toString(),
           },
           {
-            text: network.getMaxDataLength().toString(),
+            text: network.getItemSlotsCapacity().toString(),
           },
         ],
       },
@@ -141,7 +140,7 @@ async function showStorageCoreUi(
     translate: "fluffyalien_asn.ui.common.close",
   });
 
-  return showForm(form, player);
+  return form.show(player);
 }
 
 /**

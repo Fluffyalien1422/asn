@@ -4,10 +4,6 @@ import {
   DiscoverCableNetworkConnectionsError,
   discoverCableNetworkConnections,
 } from "./cable_network";
-import {
-  MAX_STORAGE_DRIVE_DATA_LENGTH,
-  getStorageDriveSerializedData,
-} from "./storage_drive";
 import { DeepReadonly } from "ts-essentials";
 import { updateImportBus } from "./import_bus";
 import { Vector3Utils } from "@minecraft/math";
@@ -311,11 +307,15 @@ export class StorageNetwork extends StorageSystem {
     return ok(storedItems);
   }
 
+  async getStoredItemStacksCount(): Promise<number> {
+    return (await this.getStoredItemStacks()).unwrapOr({ size: 0 }).size;
+  }
+
   /**
    * The total number of item stacks (slots) that this network can hold across
    * all of its disks.
    */
-  private getStorageCapacity(): number {
+  getItemSlotsCapacity(): number {
     let total = 0;
     for (const disk of this.getDisks()) {
       total += getDiskCapacity(disk.typeId);
@@ -566,37 +566,6 @@ export class StorageNetwork extends StorageSystem {
   /**
    * @throws if this object is not valid
    */
-  getUsedDataLength(): number {
-    this.ensureValidity();
-
-    let length = 0;
-
-    for (const drive of this.connections.storageDrives) {
-      const serialized = getStorageDriveSerializedData(drive);
-      if (!serialized) {
-        continue;
-      }
-
-      length += serialized.length;
-    }
-
-    return length;
-  }
-
-  /**
-   * @throws if this object is not valid
-   */
-  getMaxDataLength(): number {
-    this.ensureValidity();
-
-    return (
-      MAX_STORAGE_DRIVE_DATA_LENGTH * this.connections.storageDrives.length
-    );
-  }
-
-  /**
-   * @throws if this object is not valid
-   */
   getFluidStorageCapacity(): number {
     this.ensureValidity();
 
@@ -682,7 +651,7 @@ export class StorageNetwork extends StorageSystem {
       spaceInExisting += maxAmount - stored.amount;
     }
 
-    const freeSlots = this.getStorageCapacity() - storedItems.size;
+    const freeSlots = this.getItemSlotsCapacity() - storedItems.size;
     const totalSpace = spaceInExisting + freeSlots * maxAmount;
 
     if (itemStack.amount > totalSpace) {
