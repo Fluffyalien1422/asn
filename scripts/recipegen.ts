@@ -102,7 +102,7 @@ interface VanillaRecipeShaped extends VanillaRecipe {
 //#endregion Types
 
 //#region Prepare
-console.log("Preparing.");
+console.log("Preparing...");
 
 if (process.argv.length < 3) {
   throw new Error("Expected path to vanilla 'recipes' directory.");
@@ -122,7 +122,7 @@ if (!fs.existsSync(scriptsGeneratedDirPath)) {
 //#endregion Prepare
 
 //#region Generate
-console.log("Generating.");
+console.log("Generating...");
 
 // Maps the result item ID to the recipe data.
 const output: Output = {};
@@ -214,7 +214,7 @@ for (const fileName of fs.readdirSync(recipesPath)) {
 //#endregion Generate
 
 //#region Finish up
-console.log("Finishing up.");
+console.log("Finishing up...");
 
 fs.writeFileSync(
   path.join(scriptsGeneratedDirPath, "recipes.js"),

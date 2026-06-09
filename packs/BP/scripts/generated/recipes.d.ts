@@ -10,5 +10,6 @@ type RecipeData = [number, RecipeItem[]];
  * resultId: recipes
  */
 type Output = Record<string, RecipeData[]>;
+
 declare const o: Output;
 export default o;
