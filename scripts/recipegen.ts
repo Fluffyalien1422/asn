@@ -58,7 +58,7 @@ const OVERRIDES: Record<string, string | null> = {
   "minecraft:dye:14": "minecraft:orange_dye",
   "minecraft:dye:11": "minecraft:yellow_dye",
   "minecraft:quartz_block:2": "minecraft:quartz_pillar",
-  "piston:1": "minecraft:piston",
+  "minecraft:piston:1": "minecraft:piston",
   "minecraft:boat:1": "minecraft:spruce_boat",
   "minecraft:chest_boat:1": "minecraft:spruce_chest_boat",
   "minecraft:sticky_piston:1": "minecraft:sticky_piston",
@@ -69,6 +69,7 @@ const OVERRIDES: Record<string, string | null> = {
 //#region Types
 /**
  * [id, count]
+ * If 'id' starts with '#' then it is a tag.
  */
 type RecipeItem = [string, number];
 /**
@@ -81,7 +82,8 @@ type RecipeData = [number, RecipeItem[]];
 type Output = Record<string, RecipeData[]>;
 
 interface VanillaItemRef {
-  item: string;
+  item?: string;
+  tag?: string;
   data?: number;
   count?: number;
 }
@@ -137,7 +139,15 @@ function hasValidTag(content: VanillaRecipe): boolean {
 }
 
 function parseItemRef(ref: VanillaItemRef): RecipeItem | null {
+  const count = ref.count ?? 1;
+
   let item = ref.item;
+  if (!item) {
+    if (!ref.tag) return null;
+    return ["#" + ref.tag, count];
+  }
+
+  if (!item.startsWith("minecraft:")) item = `minecraft:${item}`;
   if (ref.data) {
     const override = `${item}:${ref.data.toString()}`;
     if (override in OVERRIDES) {
@@ -156,7 +166,7 @@ function parseItemRef(ref: VanillaItemRef): RecipeItem | null {
     }
   }
 
-  return [item, ref.count ?? 1];
+  return [item, count];
 }
 
 function parseShapeless(content: VanillaRecipeShapeless): void {

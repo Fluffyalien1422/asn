@@ -1,5 +1,6 @@
 /**
  * [id, count]
+ * If 'id' starts with '#' then it is a tag.
  */
 type RecipeItem = [string, number];
 /**
@@ -10,8 +11,6 @@ type RecipeData = [number, RecipeItem[]];
  * resultId: recipes
  */
 type Output = Record<string, RecipeData[]>;
-
-export { RecipeItem, RecipeData, Output };
 
 declare const o: Output;
 export default o;

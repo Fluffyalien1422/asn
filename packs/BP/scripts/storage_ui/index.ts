@@ -203,6 +203,10 @@ function getCraftingViewItems(
       stack.typeId,
       (available.get(stack.typeId) ?? 0) + stack.amount,
     );
+    for (const tag of stack.getTags()) {
+      const tagId = "#" + tag;
+      available.set(tagId, (available.get(tagId) ?? 0) + stack.amount);
+    }
   }
 
   const craftable: StoredItem[] = RECIPES_ENTRIES.filter(([, recipeData]) =>
@@ -309,9 +313,8 @@ async function addItemToStorageOrShowError(
 }
 
 /**
- * Sorts stored item entries the same way the network previously did: group
- * items of the same type together, then sort within each group by amount
- * ascending.
+ * Sorts stored item entries: group items of the same type together,
+ * then sort within each group by amount ascending.
  */
 function sortStoredItems(entries: readonly StoredItem[]): StoredItem[] {
   const groups: ItemStack[] = [];
