@@ -7,6 +7,7 @@ export const SEARCH_BUTTON_ITEM_ID = "fluffyalien_asn:ui_search";
 export const CANCEL_SEARCH_BUTTON_ITEM_ID = "fluffyalien_asn:ui_cancel_search";
 export const GROUP_VIEW_OPEN_ITEM_ID = "fluffyalien_asn:ui_group_view_open";
 export const GROUP_VIEW_CLOSE_ITEM_ID = "fluffyalien_asn:ui_group_view_close";
+export const CRAFTING_VIEW_BUTTON_ITEM_ID = "fluffyalien_asn:ui_crafting_view";
 
 export const STORAGE_VIEWER_FORCE_CLOSE_TAG =
   "fluffyalien_asn:storage_viewer_force_close";

@@ -1,0 +1,6 @@
+{
+  "id": "fluffyalien_asn:ui_crafting_view",
+  "states": {
+    "_default": "textures/blocks/crafting_table_top"
+  }
+}

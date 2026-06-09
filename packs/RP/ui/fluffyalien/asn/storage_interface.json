@@ -101,6 +101,12 @@
       },
       {
         "search_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
+          "$index": 58,
+          "offset": [99, 8]
+        }
+      },
+      {
+        "crafting_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 55,
           "offset": [117, 8]
         }

@@ -9,7 +9,7 @@
     "components": {
       "minecraft:inventory": {
         "container_type": "container",
-        "inventory_size": 58
+        "inventory_size": 59
       },
       "minecraft:type_family": {
         "family": ["fluffyalien_asn:storage_viewer"]

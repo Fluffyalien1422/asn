@@ -17,6 +17,7 @@ import { StorageSystem } from "../storage_system";
 import {
   BACK_BUTTON_ITEM_ID,
   CANCEL_SEARCH_BUTTON_ITEM_ID,
+  CRAFTING_VIEW_BUTTON_ITEM_ID,
   forceCloseStorageViewerInventory,
   getPageNumberItemStacks,
   GROUP_VIEW_CLOSE_ITEM_ID,
@@ -24,6 +25,7 @@ import {
   NEXT_BUTTON_ITEM_ID,
   SEARCH_BUTTON_ITEM_ID,
 } from "./shared";
+import { RECIPES, RECIPES_ENTRIES } from "../recipes";
 
 const ITEMS_PER_PAGE = 50;
 const INPUT_SLOT_INDEX = 50;
@@ -31,9 +33,10 @@ const BACK_BUTTON_INDEX = 51;
 const NEXT_BUTTON_INDEX = 52;
 const PAGE_NUM_DIGIT1_INDEX = 53;
 const PAGE_NUM_DIGIT2_INDEX = 54;
-const SEARCH_BUTTON_INDEX = 55;
-const SORT_BUTTON_INDEX = 56;
+const CRAFTING_VIEW_BUTTON_INDEX = 55;
+const GROUP_VIEW_BUTTON_INDEX = 56;
 const STACK_SIZE_BUTTON_INDEX = 57;
+const SEARCH_BUTTON_INDEX = 58;
 
 /**
  * hidden lore marker appended to display items so they can be identified as ui
@@ -46,10 +49,14 @@ const STACK_SIZE_BUTTON_INDEX = 57;
  */
 const DISPLAY_ITEM_LORE_MARKER = "§a§s§n§r";
 
-type StorageViewerMode = "default" | "group" | "group_type";
+type StorageViewerMode = "default" | "group" | "group_type" | "crafting";
 type StorageViewerStackSize = 1 | 2 | 4 | 8 | 16 | 32 | 64;
 
-/** A stored item entry: [unique id, ItemStack]. */
+/**
+ * A stored item entry: [Unique ID, ItemStack].
+ * Unique ID refers to the UID of the ItemStack assigned by the storage system.
+ * Note: Unique ID is an empty string in views where items cannot be removed (eg. crafting, group).
+ */
 type StoredItem = [string, ItemStack];
 
 interface ViewerData {
@@ -61,8 +68,9 @@ interface ViewerData {
   page: number;
   playerInUi: Player;
   mode: StorageViewerMode;
-  groupTypeId: string | undefined;
   stackSize: StorageViewerStackSize;
+  groupTypeId?: string;
+  craftingQuery?: string;
 }
 
 /**
@@ -178,9 +186,33 @@ function getDisplayItems(data: ViewerData): readonly StoredItem[] {
       return data.rawItems.filter(
         ([, item]) => item.typeId === data.groupTypeId,
       );
+    case "crafting":
+      return getCraftingViewItems(data.rawItems, data.craftingQuery);
     case "default":
       return data.filteredItems;
   }
+}
+
+function getCraftingViewItems(
+  rawItems: readonly StoredItem[],
+  query?: string,
+): StoredItem[] {
+  const available = new Map<string, number>();
+  for (const [, stack] of rawItems) {
+    available.set(
+      stack.typeId,
+      (available.get(stack.typeId) ?? 0) + stack.amount,
+    );
+  }
+
+  const craftable: StoredItem[] = RECIPES_ENTRIES.filter(([, recipeData]) =>
+    recipeData.some(([, ingredients]) =>
+      ingredients.every(([id, count]) => (available.get(id) ?? 0) >= count),
+    ),
+  ).map(([item]) => ["", new ItemStack(item)]);
+
+  if (!query) return craftable;
+  return searchFilter(query, craftable);
 }
 
 function fillViewerInventory(entity: Entity, data: ViewerData): void {
@@ -212,7 +244,7 @@ function fillViewerInventory(entity: Entity, data: ViewerData): void {
   inventory.setItem(NEXT_BUTTON_INDEX, new ItemStack(NEXT_BUTTON_ITEM_ID));
 
   inventory.setItem(
-    SORT_BUTTON_INDEX,
+    GROUP_VIEW_BUTTON_INDEX,
     new ItemStack(
       data.mode === "group"
         ? GROUP_VIEW_CLOSE_ITEM_ID
@@ -223,6 +255,11 @@ function fillViewerInventory(entity: Entity, data: ViewerData): void {
   inventory.setItem(
     STACK_SIZE_BUTTON_INDEX,
     new ItemStack(`fluffyalien_asn:ui_stack_size_${data.stackSize.toString()}`),
+  );
+
+  inventory.setItem(
+    CRAFTING_VIEW_BUTTON_INDEX,
+    new ItemStack(CRAFTING_VIEW_BUTTON_ITEM_ID),
   );
 
   const pageNumItems = getPageNumberItemStacks(data.page);
@@ -349,6 +386,7 @@ export async function refreshStorageViewer(
     mode: oldData?.mode ?? "default",
     groupTypeId: oldData?.groupTypeId ?? undefined,
     stackSize: oldData?.stackSize ?? 64,
+    craftingQuery: oldData?.craftingQuery,
   };
 
   viewerData.set(interfaceEntity.id, data);
@@ -358,19 +396,10 @@ export async function refreshStorageViewer(
   return data;
 }
 
-async function search(
-  interfaceEntity: Entity,
-  data: ViewerData,
-): Promise<void> {
-  await forceCloseStorageViewerInventory(interfaceEntity);
-
-  const query = await showSearchUi(data.playerInUi);
-  if (!query) {
-    return;
-  }
-
-  data.hasQuery = true;
-
+function searchFilter(
+  query: string,
+  items: readonly StoredItem[],
+): StoredItem[] {
   const queryKeywords = query.toLowerCase().split(" ");
 
   const reducer = (matchingCount: number, keyword: string): number =>
@@ -379,7 +408,7 @@ async function search(
       ? 1
       : 0);
 
-  data.filteredItems = data.rawItems
+  return items
     .filter(([, item]) =>
       queryKeywords.some((keyword) => item.typeId.includes(keyword)),
     )
@@ -395,6 +424,25 @@ async function search(
 
       return bRelevancy - aRelevancy;
     });
+}
+
+async function search(
+  interfaceEntity: Entity,
+  data: ViewerData,
+): Promise<void> {
+  await forceCloseStorageViewerInventory(interfaceEntity);
+
+  const query = await showSearchUi(data.playerInUi);
+  if (!query) {
+    return;
+  }
+
+  data.hasQuery = true;
+  if (data.mode === "crafting") {
+    data.craftingQuery = query;
+  } else {
+    data.filteredItems = searchFilter(query, data.rawItems);
+  }
 
   data.playerInUi.onScreenDisplay.setActionBar({
     translate:
@@ -531,6 +579,27 @@ system.runInterval(() => {
       continue;
     }
 
+    const craftingViewBtnSlotItem = inventory.getItem(
+      CRAFTING_VIEW_BUTTON_INDEX,
+    );
+    if (craftingViewBtnSlotItem?.typeId !== CRAFTING_VIEW_BUTTON_ITEM_ID) {
+      clearUiItemsFromPlayer(data.playerInUi);
+
+      if (data.mode === "crafting") {
+        data.mode = "default";
+        data.craftingQuery = undefined;
+        data.page = 0;
+        void refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
+      } else {
+        data.mode = "crafting";
+        data.craftingQuery = undefined;
+        data.page = 0;
+        fillViewerInventory(entity, data);
+      }
+
+      continue;
+    }
+
     const expectedStackSizeBtnItemId = `fluffyalien_asn:ui_stack_size_${data.stackSize.toString()}`;
     const stackSizeBtnSlotItem = inventory.getItem(STACK_SIZE_BUTTON_INDEX);
     if (stackSizeBtnSlotItem?.typeId !== expectedStackSizeBtnItemId) {
@@ -539,19 +608,21 @@ system.runInterval(() => {
       data.stackSize = (
         data.stackSize >= 64 ? 1 : data.stackSize * 2
       ) as StorageViewerStackSize;
+
       fillViewerInventory(entity, data);
 
       continue;
     }
 
     const searchButtonSlotItem = inventory.getItem(SEARCH_BUTTON_INDEX);
-    const groupViewButtonSlotItem = inventory.getItem(SORT_BUTTON_INDEX);
+    const groupViewButtonSlotItem = inventory.getItem(GROUP_VIEW_BUTTON_INDEX);
 
     if (data.hasQuery) {
       if (searchButtonSlotItem?.typeId !== CANCEL_SEARCH_BUTTON_ITEM_ID) {
         clearUiItemsFromPlayer(data.playerInUi);
 
         data.hasQuery = false;
+        data.craftingQuery = undefined;
         void refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
 
         continue;
@@ -574,7 +645,9 @@ system.runInterval(() => {
     if (groupViewButtonSlotItem?.typeId !== expectedGroupViewItemId) {
       clearUiItemsFromPlayer(data.playerInUi);
 
-      if (data.mode === "group") {
+      if (data.mode === "crafting") {
+        fillViewerInventory(entity, data);
+      } else if (data.mode === "group") {
         data.mode = "default";
         data.groupTypeId = undefined;
         data.page = 0;
@@ -627,6 +700,15 @@ system.runInterval(() => {
         data.mode = "group_type";
         data.groupTypeId = storageStack.typeId;
         data.page = 0;
+        fillViewerInventory(entity, data);
+        break;
+      }
+
+      if (data.mode === "crafting") {
+        console.log(
+          `[ASN] Recipe selected: ${storageStack.typeId}`,
+          JSON.stringify(RECIPES[storageStack.typeId]),
+        );
         fillViewerInventory(entity, data);
         break;
       }
