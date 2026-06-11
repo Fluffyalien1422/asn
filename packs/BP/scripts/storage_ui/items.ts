@@ -55,8 +55,8 @@ export function getCraftingViewItems(
     }
   }
 
-  const craftable: StoredItem[] = RECIPES_ENTRIES.filter(([, recipeData]) =>
-    recipeData.some(([, ingredients]) =>
+  const craftable: StoredItem[] = RECIPES_ENTRIES.filter(([, recipes]) =>
+    recipes.some(([, ingredients]) =>
       ingredients.every(([id, count]) => (available.get(id) ?? 0) >= count),
     ),
   ).map(([item]) => ["", new ItemStack(item)]);

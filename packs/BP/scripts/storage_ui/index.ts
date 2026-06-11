@@ -1,6 +1,12 @@
 import { getEntitiesInAllDimensions } from "../utils/dimension";
-import { showSearchUi } from "./form";
-import { Entity, EntityQueryOptions, system, world } from "@minecraft/server";
+import { showCraftForm, showSearchForm } from "./form";
+import {
+  Entity,
+  EntityQueryOptions,
+  ItemStack,
+  system,
+  world,
+} from "@minecraft/server";
 import {
   BACK_BUTTON_ITEM_ID,
   CANCEL_SEARCH_BUTTON_ITEM_ID,
@@ -19,7 +25,6 @@ import {
   SEARCH_BUTTON_INDEX,
   STACK_SIZE_BUTTON_INDEX,
 } from "./shared";
-import { RECIPES } from "../recipes";
 import {
   StorageViewerStackSize,
   StoredItem,
@@ -34,6 +39,7 @@ import {
   isStorageInventoryItemTaken,
   isUiItem,
 } from "./ui_item";
+import { logWarn } from "../log";
 
 // Re-export the public entry point used by storage_interface / wireless_interface.
 export { refreshStorageViewer } from "./storage";
@@ -48,7 +54,7 @@ async function search(
 ): Promise<void> {
   await forceCloseStorageViewerInventory(interfaceEntity);
 
-  const query = await showSearchUi(data.playerInUi);
+  const query = await showSearchForm(data.playerInUi);
   if (!query) {
     return;
   }
@@ -64,6 +70,23 @@ async function search(
     translate:
       "fluffyalien_asn.actionbar.storageInterface.openToViewQueryResults",
   });
+}
+
+async function craft(
+  entity: Entity,
+  data: ViewerData,
+  itemStack: ItemStack,
+): Promise<void> {
+  await forceCloseStorageViewerInventory(entity);
+
+  const storedItemsr = await data.storageSystem.getStoredItemStacks();
+  if (storedItemsr.isErr()) {
+    logWarn(`Failed to prepare crafting UI: ${storedItemsr.error}`);
+    return;
+  }
+  const storedItems = storedItemsr.value;
+
+  showCraftForm(data.playerInUi, itemStack, storedItems);
 }
 
 /**
@@ -235,11 +258,8 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
     }
 
     if (data.view === "crafting") {
-      console.log(
-        `[ASN] Recipe selected: ${storageStack.typeId}`,
-        JSON.stringify(RECIPES[storageStack.typeId]),
-      );
-      fillViewerInventory(entity, data);
+      data.enabled = false;
+      void craft(entity, data, storageStack);
       break;
     }
 

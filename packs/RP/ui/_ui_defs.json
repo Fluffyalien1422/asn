@@ -2,6 +2,7 @@
   "ui_defs": [
     "ui/fluffyalien/asn/common.json",
     "ui/fluffyalien/asn/fluid_interface.json",
+    "ui/fluffyalien/asn/form.json",
     "ui/fluffyalien/asn/storage_drive.json",
     "ui/fluffyalien/asn/storage_interface.json",
     "ui/fluffyalien/asn/storage_power_bank.json"
