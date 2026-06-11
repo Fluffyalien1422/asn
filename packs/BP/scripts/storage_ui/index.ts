@@ -269,8 +269,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
     return;
   }
 
-  // Group view: toggle between the grouped view and the default view. In the
-  // crafting view this button has no effect, so it just refills the inventory.
+  // Group view: toggle between the grouped view and the default view.
   if (
     handleButton(
       GROUP_VIEW_BUTTON_INDEX,
