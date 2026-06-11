@@ -7,6 +7,7 @@ import {
   Vector3,
 } from "@minecraft/server";
 import { Vector3Utils } from "@minecraft/math";
+import { err, ok, Result } from "neverthrow";
 
 export function getPlayerMainhandSlot(player: Player): ContainerSlot {
   return player
@@ -15,7 +16,10 @@ export function getPlayerMainhandSlot(player: Player): ContainerSlot {
 }
 
 export function getItemTranslationKey(itemId: string): string {
-  return new ItemStack(itemId).localizationKey;
+  const itemStackr = createItemStack(itemId);
+  if (itemStackr.isErr()) return `item.${itemId}`;
+  const itemStack = itemStackr.value;
+  return itemStack.localizationKey;
 }
 
 export function getEnchantmentTypeId(enchantment: Enchantment): string {
@@ -99,4 +103,15 @@ export function cloneItemStackWithAmount(
   const clone = itemStack.clone();
   clone.amount = Math.min(Math.max(amount, 1), clone.maxAmount);
   return clone;
+}
+
+export function createItemStack(
+  itemType: string,
+  amount = 1,
+): Result<ItemStack, Error> {
+  try {
+    return ok(new ItemStack(itemType, amount));
+  } catch (e) {
+    return err(new Error(`Failed to create ItemStack: ${String(e)}`));
+  }
 }

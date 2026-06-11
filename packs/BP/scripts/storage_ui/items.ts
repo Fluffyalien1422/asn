@@ -4,6 +4,7 @@
 
 import { ItemStack } from "@minecraft/server";
 import { abbreviateNumber } from "../utils/string";
+import { createItemStack } from "../utils/item";
 import { RECIPES_ENTRIES } from "../recipes";
 import { ITEMS_PER_PAGE } from "./shared";
 import { StoredItem, ViewerData } from "./state";
@@ -27,7 +28,9 @@ export function getGroupViewItems(items: readonly StoredItem[]): StoredItem[] {
   }
   const result: StoredItem[] = [];
   for (const [typeId, count] of types) {
-    const itemStack = new ItemStack(typeId);
+    const itemStackr = createItemStack(typeId);
+    if (itemStackr.isErr()) continue;
+    const itemStack = itemStackr.value;
     itemStack.setLore([`§7${abbreviateNumber(count)} total`]);
     result.push(["", itemStack]);
   }
@@ -68,7 +71,9 @@ export function getCraftingViewItems(
       ),
     );
     if (amount <= 0) continue;
-    const itemStack = new ItemStack(item);
+    const itemStackr = createItemStack(item);
+    if (itemStackr.isErr()) continue;
+    const itemStack = itemStackr.value;
     itemStack.setLore([`§7${abbreviateNumber(amount)} craftable`]);
     craftable.push(["", itemStack]);
   }

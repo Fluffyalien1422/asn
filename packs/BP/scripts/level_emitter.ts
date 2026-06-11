@@ -3,7 +3,6 @@ import {
   Block,
   BlockCustomComponent,
   Entity,
-  ItemStack,
   Player,
 } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
@@ -14,6 +13,7 @@ import {
 import { STR_DIRECTIONS, StrCardinalDirection } from "./utils/direction";
 import { getEntityAtBlockLocation } from "./utils/location";
 import {
+  createItemStack,
   getItemStackDamage,
   getItemTranslationKey,
   getPlayerMainhandSlot,
@@ -174,7 +174,17 @@ async function showLevelEmitterUi(
     ).toString(),
   });
 
-  const itemStack = new ItemStack(itemId);
+  const itemStackr = createItemStack(itemId);
+  if (itemStackr.isErr()) {
+    return void showForm(
+      createErrorMessageForm({
+        translate: "fluffyalien_asn.ui.storageInterface.error.unknownError",
+        with: { rawtext: [{ text: itemStackr.error.message }] },
+      }),
+      player,
+    );
+  }
+  const itemStack = itemStackr.value;
   const enchantable = itemStack.hasComponent("enchantable");
   const breakable = itemStack.hasComponent("durability");
 

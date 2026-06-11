@@ -1,10 +1,4 @@
-import {
-  Block,
-  Entity,
-  ItemStack,
-  Player,
-  RawMessage,
-} from "@minecraft/server";
+import { Block, Entity, Player, RawMessage } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
 import {
   ExportBusExportItemEnchantments,
@@ -19,7 +13,7 @@ import {
   createMessageForm,
   showForm,
 } from "../utils/ui";
-import { getItemTranslationKey } from "../utils/item";
+import { createItemStack, getItemTranslationKey } from "../utils/item";
 
 export async function showExportBusUi(
   player: Player,
@@ -55,7 +49,17 @@ export async function showExportBusUi(
     },
   };
 
-  const mcItemStack = new ItemStack(exportItemId);
+  const mcItemStackr = createItemStack(exportItemId);
+  if (mcItemStackr.isErr()) {
+    return void showForm(
+      createErrorMessageForm({
+        translate: "fluffyalien_asn.ui.storageInterface.error.unknownError",
+        with: { rawtext: [{ text: mcItemStackr.error.message }] },
+      }),
+      player,
+    );
+  }
+  const mcItemStack = mcItemStackr.value;
   const enchantable = !!mcItemStack.getComponent("enchantable");
   const breakable = !!mcItemStack.getComponent("durability");
 

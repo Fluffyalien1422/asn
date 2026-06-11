@@ -40,6 +40,7 @@ import {
   isUiItem,
 } from "./ui_item";
 import { logWarn } from "../log";
+import { createItemStack } from "../utils/item";
 
 // Re-export the public entry point used by storage_interface / wireless_interface.
 export { refreshStorageViewer } from "./storage";
@@ -153,7 +154,12 @@ async function craft(
   let spawned = 0;
   while (spawned < totalAmount) {
     const stackAmount = Math.min(totalAmount - spawned, itemStack.maxAmount);
-    dimension.spawnItem(new ItemStack(itemStack.typeId, stackAmount), location);
+    const spawnStackr = createItemStack(itemStack.typeId, stackAmount);
+    if (spawnStackr.isErr()) {
+      logWarn(`Failed to spawn crafted item: ${spawnStackr.error.message}`);
+      break;
+    }
+    dimension.spawnItem(spawnStackr.value, location);
     spawned += stackAmount;
   }
 }

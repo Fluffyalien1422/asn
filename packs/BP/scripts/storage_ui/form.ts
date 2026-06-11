@@ -1,6 +1,7 @@
 import { ItemStack, Player, RawMessage } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { genrecipes, RECIPES } from "../recipes";
+import { getItemTranslationKey } from "../utils/item";
 
 export async function showSearchForm(
   player: Player,
@@ -70,7 +71,7 @@ export async function showCraftForm(
                   "fluffyalien_asn.ui.storageInterface.craft.button.recipe.withTag",
                 with: { rawtext: [{ text: id.slice(1) }] },
               }
-            : { translate: new ItemStack(id).localizationKey };
+            : { translate: getItemTranslationKey(id) };
           return [text, itemName];
         },
       );
