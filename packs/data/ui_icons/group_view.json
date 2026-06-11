@@ -1,7 +1,0 @@
-{
-  "id": "fluffyalien_asn:ui_group_view",
-  "states": {
-    "open": "textures/fluffyalien/asn/ui/storage_viewer/group_view_open",
-    "close": "textures/fluffyalien/asn/ui/storage_viewer/group_view_close"
-  }
-}

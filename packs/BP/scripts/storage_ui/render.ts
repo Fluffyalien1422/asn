@@ -12,10 +12,10 @@ import {
   CANCEL_SEARCH_BUTTON_ITEM_ID,
   CRAFTING_VIEW_BUTTON_ITEM_ID,
   getPageNumberItemStacks,
-  GROUP_VIEW_CLOSE_ITEM_ID,
-  GROUP_VIEW_OPEN_ITEM_ID,
   NEXT_BUTTON_ITEM_ID,
   SEARCH_BUTTON_ITEM_ID,
+  DEFAULT_VIEW_BUTTON_ITEM_ID,
+  GROUP_VIEW_BUTTON_ITEM_ID,
 } from "./shared";
 import { getDisplayItems, getItemsOnPage } from "./items";
 import { addDisplayItemLoreMarker } from "./ui_item";
@@ -57,8 +57,8 @@ export function fillViewerInventory(entity: Entity, data: ViewerData): void {
     GROUP_VIEW_BUTTON_INDEX,
     new ItemStack(
       data.view === "group"
-        ? GROUP_VIEW_CLOSE_ITEM_ID
-        : GROUP_VIEW_OPEN_ITEM_ID,
+        ? DEFAULT_VIEW_BUTTON_ITEM_ID
+        : GROUP_VIEW_BUTTON_ITEM_ID,
     ),
   );
 
@@ -69,7 +69,11 @@ export function fillViewerInventory(entity: Entity, data: ViewerData): void {
 
   inventory.setItem(
     CRAFTING_VIEW_BUTTON_INDEX,
-    new ItemStack(CRAFTING_VIEW_BUTTON_ITEM_ID),
+    new ItemStack(
+      data.view === "crafting"
+        ? DEFAULT_VIEW_BUTTON_ITEM_ID
+        : CRAFTING_VIEW_BUTTON_ITEM_ID,
+    ),
   );
 
   const pageNumItems = getPageNumberItemStacks(data.page);

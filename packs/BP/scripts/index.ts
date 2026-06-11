@@ -17,7 +17,3 @@ import "./wireless_interface";
 //TODO: fix: some items are lost when spam adding
 //TODO: update legacy code to use Results instead of logging or throwing
 //TODO: use custom components v2 and onBreak instead of onPlayerBreak for block components
-
-// crafting interface ui idea:
-// crafting button in toolbar: switches items view to show all craftable items
-// click a craftable item: opens a form with buttons to craft it

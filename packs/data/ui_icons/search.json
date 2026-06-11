@@ -1,6 +1,7 @@
 {
   "id": "fluffyalien_asn:ui_search",
   "states": {
-    "_default": "textures/fluffyalien/asn/ui/storage_viewer/search"
+    "_default": "textures/fluffyalien/asn/ui/storage_viewer/search",
+    "cancel": "textures/fluffyalien/asn/ui/storage_viewer/cancel_search"
   }
 }

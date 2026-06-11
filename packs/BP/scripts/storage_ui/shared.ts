@@ -20,10 +20,10 @@ export const SEARCH_BUTTON_INDEX = 58;
 export const BACK_BUTTON_ITEM_ID = "fluffyalien_asn:ui_back";
 export const NEXT_BUTTON_ITEM_ID = "fluffyalien_asn:ui_next";
 export const SEARCH_BUTTON_ITEM_ID = "fluffyalien_asn:ui_search";
-export const CANCEL_SEARCH_BUTTON_ITEM_ID = "fluffyalien_asn:ui_cancel_search";
-export const GROUP_VIEW_OPEN_ITEM_ID = "fluffyalien_asn:ui_group_view_open";
-export const GROUP_VIEW_CLOSE_ITEM_ID = "fluffyalien_asn:ui_group_view_close";
-export const CRAFTING_VIEW_BUTTON_ITEM_ID = "fluffyalien_asn:ui_crafting_view";
+export const CANCEL_SEARCH_BUTTON_ITEM_ID = "fluffyalien_asn:ui_search_cancel";
+export const DEFAULT_VIEW_BUTTON_ITEM_ID = "fluffyalien_asn:ui_view_default";
+export const GROUP_VIEW_BUTTON_ITEM_ID = "fluffyalien_asn:ui_view_group";
+export const CRAFTING_VIEW_BUTTON_ITEM_ID = "fluffyalien_asn:ui_view_crafting";
 
 export const STORAGE_VIEWER_FORCE_CLOSE_TAG =
   "fluffyalien_asn:storage_viewer_force_close";

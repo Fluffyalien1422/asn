@@ -1,0 +1,8 @@
+{
+  "id": "fluffyalien_asn:ui_view",
+  "states": {
+    "default": "textures/fluffyalien/asn/ui/storage_viewer/default_view",
+    "group": "textures/fluffyalien/asn/ui/storage_viewer/group_view",
+    "crafting": "textures/fluffyalien/asn/ui/storage_viewer/crafting_view"
+  }
+}

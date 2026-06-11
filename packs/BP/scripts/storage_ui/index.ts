@@ -12,8 +12,6 @@ import {
   CANCEL_SEARCH_BUTTON_ITEM_ID,
   CRAFTING_VIEW_BUTTON_ITEM_ID,
   forceCloseStorageViewerInventory,
-  GROUP_VIEW_CLOSE_ITEM_ID,
-  GROUP_VIEW_OPEN_ITEM_ID,
   NEXT_BUTTON_ITEM_ID,
   SEARCH_BUTTON_ITEM_ID,
   BACK_BUTTON_INDEX,
@@ -24,6 +22,8 @@ import {
   NEXT_BUTTON_INDEX,
   SEARCH_BUTTON_INDEX,
   STACK_SIZE_BUTTON_INDEX,
+  DEFAULT_VIEW_BUTTON_ITEM_ID,
+  GROUP_VIEW_BUTTON_ITEM_ID,
 } from "./shared";
 import {
   StorageViewerStackSize,
@@ -213,13 +213,23 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
   }
 
   // Crafting view: toggle between the crafting view and the default view.
-  if (handleButton(CRAFTING_VIEW_BUTTON_INDEX, CRAFTING_VIEW_BUTTON_ITEM_ID)) {
-    data.view = data.view === "crafting" ? "default" : "crafting";
+  if (
+    handleButton(
+      CRAFTING_VIEW_BUTTON_INDEX,
+      data.view === "crafting"
+        ? DEFAULT_VIEW_BUTTON_ITEM_ID
+        : CRAFTING_VIEW_BUTTON_ITEM_ID,
+    )
+  ) {
+    data.groupTypeId = undefined;
     data.craftingQuery = undefined;
+    data.hasQuery = false;
     data.page = 0;
-    if (data.view === "default") {
+    if (data.view === "crafting") {
+      data.view = "default";
       void refreshStorageViewer(entity, player, data.storageSystem);
     } else {
+      data.view = "crafting";
       fillViewerInventory(entity, data);
     }
     return;
@@ -265,21 +275,19 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
     handleButton(
       GROUP_VIEW_BUTTON_INDEX,
       data.view === "group"
-        ? GROUP_VIEW_CLOSE_ITEM_ID
-        : GROUP_VIEW_OPEN_ITEM_ID,
+        ? DEFAULT_VIEW_BUTTON_ITEM_ID
+        : GROUP_VIEW_BUTTON_ITEM_ID,
     )
   ) {
-    if (data.view === "crafting") {
-      fillViewerInventory(entity, data);
-    } else if (data.view === "group") {
+    data.groupTypeId = undefined;
+    data.craftingQuery = undefined;
+    data.hasQuery = false;
+    data.page = 0;
+    if (data.view === "group") {
       data.view = "default";
-      data.groupTypeId = undefined;
-      data.page = 0;
       void refreshStorageViewer(entity, player, data.storageSystem);
     } else {
       data.view = "group";
-      data.groupTypeId = undefined;
-      data.page = 0;
       fillViewerInventory(entity, data);
     }
     return;
