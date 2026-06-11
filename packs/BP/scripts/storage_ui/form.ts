@@ -1,6 +1,6 @@
 import { ItemStack, Player, RawMessage } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
-import { RECIPES } from "../recipes";
+import { genrecipes, RECIPES } from "../recipes";
 
 export async function showSearchForm(
   player: Player,
@@ -24,11 +24,11 @@ export async function showSearchForm(
   return query;
 }
 
-export function showCraftForm(
+export async function showCraftForm(
   player: Player,
   itemStack: ItemStack,
   items: Map<string, ItemStack>,
-): void {
+): Promise<[genrecipes.RecipeData, number] | undefined> {
   if (!(itemStack.typeId in RECIPES)) {
     return;
   }
@@ -57,12 +57,13 @@ export function showCraftForm(
       with: { rawtext: [{ translate: itemStack.localizationKey }] },
     });
 
-  const amounts = [1, 2, 4, 8, 16, 32, 64];
+  const amounts = [64, 32, 16, 8, 4, 2, 1];
   for (const recipe of craftable) {
+    const [recipeAmount, recipeIngredients] = recipe;
     for (const amount of amounts) {
-      const ingredientsRawMsg: RawMessage[] = recipe[1].flatMap(
+      const ingredientsRawMsg: RawMessage[] = recipeIngredients.flatMap(
         ([id, count]) => {
-          const text = { text: `\n${count.toString()} ` };
+          const text = { text: `\n${(count * amount).toString()} ` };
           const itemName = id.startsWith("#")
             ? {
                 translate:
@@ -79,7 +80,7 @@ export function showCraftForm(
             {
               translate:
                 "fluffyalien_asn.ui.storageInterface.craft.button.recipe",
-              with: { rawtext: [{ text: amount.toString() }] },
+              with: { rawtext: [{ text: (recipeAmount * amount).toString() }] },
             },
             ...ingredientsRawMsg,
           ],
@@ -89,5 +90,14 @@ export function showCraftForm(
     }
   }
 
-  void form.show(player);
+  const response = await form.show(player);
+  if (response.selection === undefined) {
+    return;
+  }
+
+  const selectedRecipeIndex = Math.floor(response.selection / amounts.length);
+  const selectedAmountIndex = response.selection % amounts.length;
+  const selectedRecipe = craftable[selectedRecipeIndex];
+  const selectedAmount = amounts[selectedAmountIndex];
+  return [selectedRecipe, selectedAmount];
 }

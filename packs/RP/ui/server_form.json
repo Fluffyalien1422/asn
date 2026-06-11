@@ -21,7 +21,7 @@
         }
       },
       {
-        "asn_craft_form@fluffyalien_asn:form.craft_form": {
+        "craft_form@fluffyalien_asn:craft_form.craft_form": {
           "bindings": [
             {
               "binding_name": "#title_text"

@@ -55,11 +55,23 @@ export function getCraftingViewItems(
     }
   }
 
-  const craftable: StoredItem[] = RECIPES_ENTRIES.filter(([, recipes]) =>
-    recipes.some(([, ingredients]) =>
-      ingredients.every(([id, count]) => (available.get(id) ?? 0) >= count),
-    ),
-  ).map(([item]) => ["", new ItemStack(item)]);
+  const craftable: StoredItem[] = [];
+  for (const [item, recipes] of RECIPES_ENTRIES) {
+    const amount = Math.max(
+      ...recipes.map(([resultCount, ingredients]) =>
+        Math.min(
+          ...ingredients.map(
+            ([id, count]) =>
+              Math.floor((available.get(id) ?? 0) / count) * resultCount,
+          ),
+        ),
+      ),
+    );
+    if (amount <= 0) continue;
+    const itemStack = new ItemStack(item);
+    itemStack.setLore([`§7${abbreviateNumber(amount)} craftable`]);
+    craftable.push(["", itemStack]);
+  }
 
   if (!query) return craftable;
   return searchFilter(query, craftable);

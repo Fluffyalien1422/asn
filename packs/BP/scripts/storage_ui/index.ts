@@ -86,7 +86,76 @@ async function craft(
   }
   const storedItems = storedItemsr.value;
 
-  showCraftForm(data.playerInUi, itemStack, storedItems);
+  const response = await showCraftForm(data.playerInUi, itemStack, storedItems);
+  if (!response) {
+    return;
+  }
+  const [recipe, craftAmount] = response;
+  const [recipeAmount, recipeIngredients] = recipe;
+
+  // `storedItems` is a live reference to the storage system's cache, so it
+  // reflects any changes made while the form was open. We compute everything
+  // against it before removing anything, so the craft is non-destructive: if it
+  // can no longer be fully satisfied we craft the maximum the current contents
+  // allow and never remove unused ingredients.
+
+  // Total available count per ingredient id (typeId, or #tag for tag matches).
+  const available = new Map<string, number>();
+  for (const [, stack] of storedItems) {
+    available.set(
+      stack.typeId,
+      (available.get(stack.typeId) ?? 0) + stack.amount,
+    );
+    for (const tag of stack.getTags()) {
+      const tagId = "#" + tag;
+      available.set(tagId, (available.get(tagId) ?? 0) + stack.amount);
+    }
+  }
+
+  // Clamp the requested craft count to what the available ingredients support.
+  let crafts = craftAmount;
+  for (const [typeId, count] of recipeIngredients) {
+    crafts = Math.min(crafts, Math.floor((available.get(typeId) ?? 0) / count));
+  }
+  if (crafts <= 0) {
+    return;
+  }
+
+  for (const [typeId, count] of recipeIngredients) {
+    let remaining = count * crafts;
+    for (const [stackId, stack] of storedItems) {
+      if (remaining <= 0) break;
+      const matches = typeId.startsWith("#")
+        ? stack.hasTag(typeId.slice(1))
+        : stack.typeId === typeId;
+      if (!matches) continue;
+
+      const toRemove = Math.min(remaining, stack.amount);
+      const removedr = await data.storageSystem.removeItemStack(
+        stackId,
+        toRemove,
+      );
+      if (removedr.isErr()) {
+        logWarn(
+          `Failed to remove ingredient during crafting: ${removedr.error.type === "unknownError" ? removedr.error.message : removedr.error.type}`,
+        );
+        return;
+      }
+      const removed = removedr.value;
+      remaining -= removed.amount;
+    }
+  }
+
+  const totalAmount = recipeAmount * crafts;
+  const location = data.playerInUi.location;
+  const dimension = data.playerInUi.dimension;
+
+  let spawned = 0;
+  while (spawned < totalAmount) {
+    const stackAmount = Math.min(totalAmount - spawned, itemStack.maxAmount);
+    dimension.spawnItem(new ItemStack(itemStack.typeId, stackAmount), location);
+    spawned += stackAmount;
+  }
 }
 
 /**
