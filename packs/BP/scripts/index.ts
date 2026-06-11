@@ -4,6 +4,7 @@ import "./script_events";
 import "./tutorial_book";
 import "./wireless_interface";
 
+//TODO: replace all new ItemStack with safeCreateItemStack function to prevent errors
 //TODO: enable useEnergy by default, but keep the rule if players want to disable it.
 //TODO: remove fluidStorage, showRequestItemDialog, and forceLoadNetworks rules. fluidStorage and forceLoadNetworks will be always enabled and cannot be disabled (the rule should be removed). showRequestItemDialog is legacy and should be removed entirely.
 //TODO: remove legacy drives and disks

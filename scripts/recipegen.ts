@@ -9,6 +9,7 @@ import * as path from "path";
 // Key syntax: <ID>:<DATA|*>
 // Value syntax: <ID|null>
 const OVERRIDES: Record<string, string | null> = {
+  "minecraft:sign": "minecraft:oak_sign",
   "minecraft:boat:4": "minecraft:acacia_boat",
   "minecraft:chest_boat:4": "minecraft:acacia_chest_boat",
   "minecraft:boat:7": "minecraft:bamboo_raft",
@@ -164,6 +165,10 @@ function parseItemRef(ref: VanillaItemRef): RecipeItem | null {
         console.warn(`No override found for '${override}'.`);
       }
     }
+  } else if (item in OVERRIDES) {
+    const v = OVERRIDES[item];
+    if (!v) return null;
+    item = v;
   }
 
   return [item, count];
