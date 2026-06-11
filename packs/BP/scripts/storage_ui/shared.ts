@@ -1,6 +1,22 @@
 import { Vector3Utils } from "@minecraft/math";
 import { Entity, ItemStack, system } from "@minecraft/server";
 
+/** Number of storage items shown on a single page. */
+export const ITEMS_PER_PAGE = 50;
+
+// Fixed slot indices in the storage viewer inventory. Slots 0..49 hold the
+// items on the current page; the slots below are the control buttons.
+export const INPUT_SLOT_INDEX = 50;
+export const BACK_BUTTON_INDEX = 51;
+export const NEXT_BUTTON_INDEX = 52;
+export const PAGE_NUM_DIGIT1_INDEX = 53;
+export const PAGE_NUM_DIGIT2_INDEX = 54;
+export const CRAFTING_VIEW_BUTTON_INDEX = 55;
+export const GROUP_VIEW_BUTTON_INDEX = 56;
+export const STACK_SIZE_BUTTON_INDEX = 57;
+export const SEARCH_BUTTON_INDEX = 58;
+
+// Button item IDs.
 export const BACK_BUTTON_ITEM_ID = "fluffyalien_asn:ui_back";
 export const NEXT_BUTTON_ITEM_ID = "fluffyalien_asn:ui_next";
 export const SEARCH_BUTTON_ITEM_ID = "fluffyalien_asn:ui_search";
