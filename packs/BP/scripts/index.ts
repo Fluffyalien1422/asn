@@ -13,5 +13,4 @@ import "./wireless_interface";
 //TODO: test everything: buses, fluid storage, wireless interfaces, relays, etc
 //TODO: autocrafting
 //TODO: remove all unused code and definitions
-//TODO: performance optimizations: don't save items to disk every time an item is added
-//TODO: fix: some items are lost when spam adding
+//TODO: fix: some items are lost when spam adding. this may be fixed already: test first.

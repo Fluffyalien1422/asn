@@ -33,12 +33,19 @@ export function getItemStackDamage(itemStack: ItemStack): number {
 }
 
 /**
- * Manually compares two {@link ItemStack}s for equality (ignoring amount).
+ * Manually compares two {@link ItemStack}s for equality (ignoring amount unless
+ * `compareAmount` is set).
  *
  * ItemStack#isStackableWith cannot be used to check if two item stacks
  * match because it always returns `false` for items that are not stackable
  * (eg. items with durability). This function compares the relevant item data
  * directly, mirroring the legacy `StorageSystemItemStack#isStackableWith`.
+ *
+ * NOTE: this is NOT a complete equality check. It can only compare the item
+ * data that the scripting API exposes; the game stores additional NBT (eg. when
+ * an item is saved into a structure) that the API does not surface. Two stacks
+ * this function considers equal may therefore still differ in non-exposed data.
+ * Do not rely on it to prove two stacks are byte-for-byte identical.
  */
 export function itemStacksMatch(
   a: ItemStack,
