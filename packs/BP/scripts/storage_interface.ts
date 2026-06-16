@@ -11,7 +11,7 @@ import {
   updateBlockConnectStates,
 } from "./utils/block_connect";
 import { logWarn } from "./log";
-import { refreshStorageViewer } from "./storage_ui";
+import { refreshStorageViewerOrLog } from "./storage_ui";
 import { useEnergyRule } from "./addon_rules/addon_rules";
 import {
   getNetworkOrShowError,
@@ -100,6 +100,6 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
       return;
     }
 
-    void refreshStorageViewer(e.target, e.player, network);
+    refreshStorageViewerOrLog(e.target, e.player, network);
   })();
 });

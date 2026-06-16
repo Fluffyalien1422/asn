@@ -8,7 +8,7 @@ import { DeepReadonly } from "ts-essentials";
 import { updateImportBus } from "./import_bus";
 import { Vector3Utils } from "@minecraft/math";
 import { updateExportBus } from "./export_bus";
-import { logWarn, makeErrorString } from "./log";
+import { logWarn, panic } from "./log";
 import { updateLevelEmitter } from "./level_emitter";
 import {
   getMachineStorage,
@@ -245,7 +245,7 @@ export class StorageNetwork extends StorageSystem {
    */
   private ensureValidity(): void {
     if (!this.internalIsValid) {
-      throw new Error(makeErrorString(`StorageNetwork: object destroyed`));
+      panic("The StorageNetwork object has been destroyed.");
     }
   }
 
@@ -327,19 +327,19 @@ export class StorageNetwork extends StorageSystem {
    * Writes the in-memory item data ({@link StorageNetwork.storedItems}) back to
    * the network's disks. Items are distributed across the disks that they were
    * loaded from, up to the capacity of each disk.
-   * @throws if the data area could not be loaded
+   * @returns a result containing an error if the data area could not be loaded
    */
-  private async saveStoredItemData(): Promise<void> {
+  private async saveStoredItemData(): Promise<Result<void, Error>> {
     // nothing to save if items were never loaded
     if (!this.storedItems || !this.storedItemDisks) {
-      return;
+      return ok();
     }
 
     const loadDataAreaResult = await loadDataArea();
     if (loadDataAreaResult.isErr()) {
-      throw new Error(
-        makeErrorString(
-          `could not save item data: ${loadDataAreaResult.error.message}`,
+      return err(
+        new Error(
+          `Failed to save item data: ${loadDataAreaResult.error.message}`,
         ),
       );
     }
@@ -358,11 +358,13 @@ export class StorageNetwork extends StorageSystem {
 
       const saveResult = saveItemsToDisk(disk, diskItems, capacity);
       if (saveResult.isErr()) {
-        logWarn(`could not save item data: ${saveResult.error.message}`);
+        logWarn(`Failed to save item data: ${saveResult.error.message}`);
       }
     }
 
     unloadDataArea();
+
+    return ok();
   }
 
   /**
@@ -683,7 +685,13 @@ export class StorageNetwork extends StorageSystem {
       amountRemaining -= amount;
     }
 
-    await this.saveStoredItemData();
+    const saveResult = await this.saveStoredItemData();
+    if (saveResult.isErr()) {
+      return err({
+        type: "unknownError",
+        message: `An unknown error occurred while saving stored item data: ${saveResult.error.message}`,
+      });
+    }
 
     return ok();
   };
@@ -775,7 +783,13 @@ export class StorageNetwork extends StorageSystem {
       itemStack.amount = newAmount;
     }
 
-    await this.saveStoredItemData();
+    const saveResult = await this.saveStoredItemData();
+    if (saveResult.isErr()) {
+      return err({
+        type: "unknownError",
+        message: `An unknown error occurred while saving stored item data: ${saveResult.error.message}`,
+      });
+    }
 
     return ok(removed);
   };

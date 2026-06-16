@@ -15,4 +15,3 @@ import "./wireless_interface";
 //TODO: remove all unused code and definitions
 //TODO: performance optimizations: don't save items to disk every time an item is added
 //TODO: fix: some items are lost when spam adding
-//TODO: update legacy code to use Results instead of logging or throwing

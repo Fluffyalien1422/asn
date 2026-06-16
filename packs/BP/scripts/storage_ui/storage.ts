@@ -1,5 +1,6 @@
 import { Entity, ItemStack, Player } from "@minecraft/server";
-import { logWarn, makeErrorString } from "../log";
+import { err, ok, Result } from "neverthrow";
+import { logWarn } from "../log";
 import { createErrorMessageForm } from "../utils/ui";
 import { StorageSystem } from "../storage_system";
 import { forceCloseStorageViewerInventory } from "./shared";
@@ -79,7 +80,7 @@ export function addItemToStorage(
         return;
       }
 
-      void refreshStorageViewer(
+      refreshStorageViewerOrLog(
         interfaceEntity,
         data.playerInUi,
         data.storageSystem,
@@ -91,23 +92,23 @@ export function addItemToStorage(
 
 /**
  * resets interface data and inventory
- * @returns the new ViewerData
- * @throws if the passed entity is not part of the "fluffyalien_asn:storage_viewer" type family
+ * @returns a result containing the new ViewerData, or an error if the passed
+ *   entity is not part of the "fluffyalien_asn:storage_viewer" type family
  */
 export async function refreshStorageViewer(
   interfaceEntity: Entity,
   player: Player,
   storageSystem: StorageSystem,
   preservePage = false,
-): Promise<ViewerData> {
+): Promise<Result<ViewerData, Error>> {
   if (
     !interfaceEntity.matches({
       families: ["fluffyalien_asn:storage_viewer"],
     })
   ) {
-    throw new Error(
-      makeErrorString(
-        "(in refreshStorageViewer) expected `interfaceEntity` to be part of family `fluffyalien_asn:storage_viewer`",
+    return err(
+      new Error(
+        "Expected entity to be member of family 'fluffyalien_asn:storage_viewer'.",
       ),
     );
   }
@@ -153,5 +154,27 @@ export async function refreshStorageViewer(
 
   fillViewerInventory(interfaceEntity, data);
 
-  return data;
+  return ok(data);
+}
+
+/**
+ * Calls {@link refreshStorageViewer} and logs a warning if it fails. Use this
+ * for fire-and-forget refreshes where the caller cannot handle the error.
+ */
+export function refreshStorageViewerOrLog(
+  interfaceEntity: Entity,
+  player: Player,
+  storageSystem: StorageSystem,
+  preservePage = false,
+): void {
+  void refreshStorageViewer(
+    interfaceEntity,
+    player,
+    storageSystem,
+    preservePage,
+  ).then((result) => {
+    if (result.isErr()) {
+      logWarn(`Failed to refresh storage viewer: ${result.error}`);
+    }
+  });
 }

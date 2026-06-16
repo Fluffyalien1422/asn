@@ -15,7 +15,7 @@ import {
 } from "./addon_rules/addon_rules";
 import { StorageNetwork } from "./storage_network";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
-import { refreshStorageViewer } from "./storage_ui";
+import { refreshStorageViewerOrLog } from "./storage_ui";
 import { ItemMachine, StandardStorageType } from "bedrock-energistics-core-api";
 import { STORAGE_VIEWER_FORCE_CLOSE_TAG } from "./storage_ui/shared";
 
@@ -255,6 +255,6 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
       );
     }
 
-    void refreshStorageViewer(e.target, e.player, network);
+    refreshStorageViewerOrLog(e.target, e.player, network);
   })();
 });

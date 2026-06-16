@@ -33,7 +33,7 @@ import {
 } from "./state";
 import { getDisplayItems, getItemsOnPage, searchFilter } from "./items";
 import { fillViewerInventory } from "./render";
-import { addItemToStorage, refreshStorageViewer } from "./storage";
+import { addItemToStorage, refreshStorageViewerOrLog } from "./storage";
 import {
   clearUiItemsFromPlayer,
   isStorageInventoryItemTaken,
@@ -43,7 +43,7 @@ import { logWarn } from "../log";
 import { createItemStack } from "../utils/item";
 
 // Re-export the public entry point used by storage_interface / wireless_interface.
-export { refreshStorageViewer } from "./storage";
+export { refreshStorageViewerOrLog } from "./storage";
 
 /**
  * Prompts the player for a search query and applies it to the viewer. The
@@ -227,7 +227,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
     data.page = 0;
     if (data.view === "crafting") {
       data.view = "default";
-      void refreshStorageViewer(entity, player, data.storageSystem);
+      refreshStorageViewerOrLog(entity, player, data.storageSystem);
     } else {
       data.view = "crafting";
       fillViewerInventory(entity, data);
@@ -261,7 +261,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
       // cancel the active query and reload the full storage contents
       data.hasQuery = false;
       data.craftingQuery = undefined;
-      void refreshStorageViewer(entity, player, data.storageSystem);
+      refreshStorageViewerOrLog(entity, player, data.storageSystem);
     } else {
       data.enabled = false;
       void search(entity, data);
@@ -284,7 +284,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
     data.page = 0;
     if (data.view === "group") {
       data.view = "default";
-      void refreshStorageViewer(entity, player, data.storageSystem);
+      refreshStorageViewerOrLog(entity, player, data.storageSystem);
     } else {
       data.view = "group";
       fillViewerInventory(entity, data);
@@ -352,7 +352,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
     void data.storageSystem
       .takeOutItemStack(data.playerInUi, storageId, data.stackSize)
       .finally(() => {
-        void refreshStorageViewer(
+        refreshStorageViewerOrLog(
           entity,
           data.playerInUi,
           data.storageSystem,
