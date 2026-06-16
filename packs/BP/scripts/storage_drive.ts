@@ -105,7 +105,7 @@ function showStorageDriveUi(
 }
 
 export const storageDriveComponent: BlockCustomComponent = {
-  onPlayerBreak(e) {
+  onBreak(e) {
     const data = getStorageDriveSerializedData(e.block);
     if (data) {
       const itemStack = new ItemStack("fluffyalien_asn:used_storage_disk");

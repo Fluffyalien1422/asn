@@ -1,0 +1,10 @@
+# Normalize all text files to LF in the repository and the working tree.
+# This overrides each contributor's core.autocrlf setting, so the working tree
+# stays LF on every platform and formatters (e.g. Prettier) no longer flip the
+# entire repo between LF and CRLF.
+* text=auto eol=lf
+
+# Known binary assets: never apply text/line-ending normalization to these.
+*.png binary
+*.pdn binary
+*.tgz binary

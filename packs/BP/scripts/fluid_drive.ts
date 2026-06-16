@@ -135,7 +135,7 @@ export const fluidDriveComponent: BlockCustomComponent = {
 
     void showFluidDriveUi(e.player, e.block);
   },
-  onPlayerBreak(e) {
+  onBreak(e) {
     const data = getBlockDynamicProperties(e.block);
 
     if (data.length) {

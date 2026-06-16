@@ -1,5 +1,5 @@
 {
-  "format_version": "1.26.0",
+  "format_version": "1.26.20",
   "minecraft:block": {
     "description": {
       "identifier": "fluffyalien_asn:fluid_interface",
@@ -24,8 +24,10 @@
       "fluffyalien_energisticscore:machine": {},
       "fluffyalien_asn:fluid_interface": {},
       "fluffyalien_asn:fluid_storage_block": {},
-      "tag:fluffyalien_asn:storage_network_connectable": {},
-      "tag:fluffyalien_energisticscore:machine": {},
+      "minecraft:tags": [
+        "fluffyalien_asn:storage_network_connectable",
+        "fluffyalien_energisticscore:machine"
+      ],
 
       "minecraft:geometry": {
         "identifier": "geometry.fluffyalien_asn.storage_interface",

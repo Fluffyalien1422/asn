@@ -1,5 +1,5 @@
 {
-  "format_version": "1.26.0",
+  "format_version": "1.26.20",
   "minecraft:block": {
     "description": {
       "identifier": "fluffyalien_asn:import_bus",
@@ -22,7 +22,7 @@
     "components": {
       "fluffyalien_asn:network_device": {},
       "fluffyalien_asn:import_bus": {},
-      "tag:fluffyalien_asn:storage_network_connectable": {},
+      "minecraft:tags": ["fluffyalien_asn:storage_network_connectable"],
 
       "minecraft:redstone_consumer": {
         "min_power": 0

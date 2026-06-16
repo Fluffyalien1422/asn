@@ -1,5 +1,5 @@
 {
-  "format_version": "1.26.0",
+  "format_version": "1.26.20",
   "minecraft:block": {
     "description": {
       "identifier": "fluffyalien_asn:fluid_drive",
@@ -17,7 +17,7 @@
       "fluffyalien_asn:network_device": {},
       "fluffyalien_asn:fluid_drive": {},
       "fluffyalien_asn:fluid_storage_block": {},
-      "tag:fluffyalien_asn:storage_network_connectable": {},
+      "minecraft:tags": ["fluffyalien_asn:storage_network_connectable"],
 
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {

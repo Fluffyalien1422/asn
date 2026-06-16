@@ -16,4 +16,3 @@ import "./wireless_interface";
 //TODO: performance optimizations: don't save items to disk every time an item is added
 //TODO: fix: some items are lost when spam adding
 //TODO: update legacy code to use Results instead of logging or throwing
-//TODO: use custom components v2 and onBreak instead of onPlayerBreak for block components

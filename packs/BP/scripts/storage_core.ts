@@ -166,7 +166,7 @@ export const storageCoreComponent: BlockCustomComponent = {
 
     StorageNetwork.updateConnectableNetworks(e.block);
   },
-  onPlayerBreak(e) {
+  onBreak(e) {
     getStorageCoreEntity(e.block)?.triggerEvent("fluffyalien_asn:despawn");
     StorageNetwork.getNetwork(
       e.block,

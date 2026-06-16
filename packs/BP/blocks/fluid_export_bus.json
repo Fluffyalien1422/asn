@@ -1,5 +1,5 @@
 {
-  "format_version": "1.26.0",
+  "format_version": "1.26.20",
   "minecraft:block": {
     "description": {
       "identifier": "fluffyalien_asn:fluid_export_bus",
@@ -20,9 +20,11 @@
       "fluffyalien_asn:network_device": {},
       "fluffyalien_asn:fluid_export_bus": {},
       "fluffyalien_asn:fluid_storage_block": {},
-      "tag:fluffyalien_asn:storage_network_connectable": {},
-      "tag:fluffyalien_energisticscore:machine": {},
-      "tag:fluffyalien_energisticscore:io.any": {},
+      "minecraft:tags": [
+        "fluffyalien_asn:storage_network_connectable",
+        "fluffyalien_energisticscore:machine",
+        "fluffyalien_energisticscore:io.any"
+      ],
 
       "minecraft:redstone_consumer": {
         "min_power": 0

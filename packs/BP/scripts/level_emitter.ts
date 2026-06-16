@@ -1,10 +1,5 @@
 import { StorageNetwork } from "./storage_network";
-import {
-  Block,
-  BlockCustomComponent,
-  Entity,
-  Player,
-} from "@minecraft/server";
+import { Block, BlockCustomComponent, Entity, Player } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
 import {
   DynamicPropertyAccessor,
@@ -72,7 +67,7 @@ const levelEmitterItemMaxDamage =
   );
 
 export const levelEmitterComponent: BlockCustomComponent = {
-  onPlayerBreak(e) {
+  onBreak(e) {
     removeAllDynamicPropertiesForBlock(e.block);
 
     // legacy support - remove the entity if it exists

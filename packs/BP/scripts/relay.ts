@@ -46,7 +46,7 @@ export const storageRelayComponent: BlockCustomComponent = {
       z: e.block.z + 0.5,
     });
   },
-  onPlayerBreak(e) {
+  onBreak(e) {
     getEntityAtBlockLocation(e.block, "fluffyalien_asn:relay_entity")?.remove();
   },
   onPlayerInteract(e) {

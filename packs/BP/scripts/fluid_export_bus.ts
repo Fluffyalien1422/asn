@@ -117,7 +117,7 @@ export const fluidExportBusComponent: BlockCustomComponent = {
       );
     });
   },
-  onPlayerBreak(e) {
+  onBreak(e) {
     removeAllDynamicPropertiesForBlock(e.block);
   },
   onTick(e) {

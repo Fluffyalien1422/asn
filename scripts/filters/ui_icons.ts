@@ -33,8 +33,7 @@ for (const fileName of fs.readdirSync(uiItemsDir, {
   ) as UiItem;
 
   for (const [state, texture] of Object.entries(content.states)) {
-    const fullId =
-      state === "_default" ? content.id : `${content.id}_${state}`;
+    const fullId = state === "_default" ? content.id : `${content.id}_${state}`;
 
     textureData[fullId] = { textures: texture };
 
