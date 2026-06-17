@@ -106,7 +106,7 @@ world.afterEvents.entityContainerOpened.subscribe(
       const network = await getNetworkOrShowError(block, target, player);
       if (!network) return;
 
-      if (useEnergyRule.get(world) && network.getStoredEnergy() <= 0) {
+      if (useEnergyRule.safeGet(world) && network.getStoredEnergy() <= 0) {
         await forceCloseStorageViewerInventory(target);
         void showForm(
           createErrorMessageForm({

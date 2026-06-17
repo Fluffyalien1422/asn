@@ -20,7 +20,7 @@ import {
 } from "./wireless_interface";
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { getPlayerMainhandSlot } from "./utils/item";
-import { fluidStorageRule, useEnergyRule } from "./addon_rules/addon_rules";
+import { useEnergyRule } from "./addon_rules/addon_rules";
 import { RegisteredStorageType } from "bedrock-energistics-core-api";
 
 async function showStorageCoreUi(
@@ -49,7 +49,7 @@ async function showStorageCoreUi(
     },
   ];
 
-  if (useEnergyRule.get(world)) {
+  if (useEnergyRule.safeGet(world)) {
     rawtext.push(
       {
         text: "\n\n",
@@ -86,53 +86,49 @@ async function showStorageCoreUi(
     );
   }
 
-  if (fluidStorageRule.get(world)) {
-    const storedFluids = await network.getStoredFluids();
+  const storedFluids = await network.getStoredFluids();
 
+  rawtext.push(
+    {
+      text: "\n\n",
+    },
+    {
+      translate: "fluffyalien_asn.ui.storageCore.body.storageUsedFluidTotal",
+      with: {
+        rawtext: [
+          {
+            text: storedFluids.total.toString(),
+          },
+          {
+            text: network.getFluidStorageCapacity().toString(),
+          },
+        ],
+      },
+    },
+  );
+
+  for (const [fluid, amount] of storedFluids.types) {
     rawtext.push(
       {
         text: "\n\n",
       },
       {
-        translate: "fluffyalien_asn.ui.storageCore.body.storageUsedFluidTotal",
+        translate: "fluffyalien_asn.ui.storageCore.body.storageUsedFluid",
         with: {
           rawtext: [
             {
-              text: storedFluids.total.toString(),
+              text: (await RegisteredStorageType.get(fluid))!.name,
             },
             {
-              text: network.getFluidStorageCapacity().toString(),
+              text: amount.toString(),
+            },
+            {
+              text: Math.floor((amount / storedFluids.total) * 100).toString(),
             },
           ],
         },
       },
     );
-
-    for (const [fluid, amount] of storedFluids.types) {
-      rawtext.push(
-        {
-          text: "\n\n",
-        },
-        {
-          translate: "fluffyalien_asn.ui.storageCore.body.storageUsedFluid",
-          with: {
-            rawtext: [
-              {
-                text: (await RegisteredStorageType.get(fluid))!.name,
-              },
-              {
-                text: amount.toString(),
-              },
-              {
-                text: Math.floor(
-                  (amount / storedFluids.total) * 100,
-                ).toString(),
-              },
-            ],
-          },
-        },
-      );
-    }
   }
 
   form.body({ rawtext });

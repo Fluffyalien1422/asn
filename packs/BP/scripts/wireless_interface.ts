@@ -8,7 +8,6 @@ import {
 } from "@minecraft/server";
 import { DynamicPropertyAccessor } from "./utils/dynamic_property";
 import {
-  forceLoadNetworksRule,
   useEnergyRule,
   wirelessInterfaceEnergyConsumptionRule,
   wirelessInterfaceRangeRule,
@@ -116,22 +115,6 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   // see [#32](https://github.com/Fluffyalien1422/asn/issues/32)
   mainHandSlot.lockMode = ItemLockMode.slot;
 
-  if (!forceLoadNetworksRule.get(world)) {
-    removeWirelessInterfaceEntity(e.player, e.target);
-    e.player.sendMessage({
-      rawtext: [
-        {
-          text: "§c",
-        },
-        {
-          translate:
-            "fluffyalien_asn.message.wirelessInterface.forceLoadNetworksDisabled",
-        },
-      ],
-    });
-    return;
-  }
-
   const linkLocation = wirelessInterfaceLinkLocationProperty.get(mainHandSlot);
   const linkDimension =
     wirelessInterfaceLinkDimensionProperty.get(mainHandSlot);
@@ -213,7 +196,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
 
     const network = networkResult.value;
 
-    const maxDistance = wirelessInterfaceRangeRule.get(world);
+    const maxDistance = wirelessInterfaceRangeRule.safeGet(world);
 
     const anyTransmittersInRange =
       maxDistance === -1
@@ -234,7 +217,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
       return;
     }
 
-    if (useEnergyRule.get(world)) {
+    if (useEnergyRule.safeGet(world)) {
       const itemMachine = new ItemMachine(playerInv, playerMainHandSlotIndex);
 
       const storedEnergy = await itemMachine.getStorage(
@@ -242,7 +225,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
       );
 
       const energyConsumption =
-        wirelessInterfaceEnergyConsumptionRule.get(world);
+        wirelessInterfaceEnergyConsumptionRule.safeGet(world);
 
       if (storedEnergy < energyConsumption) {
         errInsufficientEnergy();

@@ -13,7 +13,6 @@ import { networkDeviceComponent } from "./network_device_component";
 import { fluidDriveComponent } from "./fluid_drive";
 import { fluidInterfaceComponent } from "./fluid_interface";
 import { fluidExportBusComponent } from "./fluid_export_bus";
-import { fluidStorageBlockComponent } from "./fluid_storage_block_component";
 import { fluidImportBusComponent } from "./fluid_import_bus";
 import { storageDriveV3Component } from "./storage_drive_v3";
 
@@ -91,11 +90,6 @@ system.beforeEvents.startup.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(
     "fluffyalien_asn:fluid_import_bus",
     fluidImportBusComponent,
-  );
-
-  e.blockComponentRegistry.registerCustomComponent(
-    "fluffyalien_asn:fluid_storage_block",
-    fluidStorageBlockComponent,
   );
 
   e.blockComponentRegistry.registerCustomComponent(

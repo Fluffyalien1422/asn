@@ -19,7 +19,6 @@
       "fluffyalien_energisticscore:machine": {},
       "fluffyalien_asn:network_device": {},
       "fluffyalien_asn:fluid_export_bus": {},
-      "fluffyalien_asn:fluid_storage_block": {},
       "minecraft:tags": [
         "fluffyalien_asn:storage_network_connectable",
         "fluffyalien_energisticscore:machine",

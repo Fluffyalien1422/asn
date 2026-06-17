@@ -263,7 +263,7 @@ export class StorageNetwork extends StorageSystem {
         }
       }
 
-      if (useEnergyRule.get(world)) {
+      if (useEnergyRule.safeGet(world)) {
         let energyConsumptionRemaining = this.getEnergyConsumption();
         for (const block of this.connections.powerBanks) {
           const storedEnergy = getMachineStorage(block, "energy");
@@ -696,7 +696,7 @@ export class StorageNetwork extends StorageSystem {
     this.ensureValidity();
 
     return (
-      driveEnergyConsumptionRule.get(world) *
+      driveEnergyConsumptionRule.safeGet(world) *
       (this.connections.storageDrives.length +
         this.connections.fluidDrives.length)
     );

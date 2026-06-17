@@ -93,7 +93,7 @@ const TUTORIAL_ENTRIES: TutorialEntry[] = [
   {
     id: "fluidStorage",
     icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_drive_icon",
-    bullets: 4,
+    bullets: 3,
     hidden: !BUILD_DETAILS.isBecBuild,
   },
   {

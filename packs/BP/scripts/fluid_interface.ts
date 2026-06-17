@@ -214,7 +214,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     async (network) => {
       if (!network) return;
 
-      if (useEnergyRule.get(world) && network.getStoredEnergy() <= 0) {
+      if (useEnergyRule.safeGet(world) && network.getStoredEnergy() <= 0) {
         await forceCloseStorageViewerInventory(e.target);
         void showForm(
           createErrorMessageForm({

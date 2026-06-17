@@ -4,7 +4,6 @@ import {
   Direction,
   Player,
   Vector3,
-  world,
 } from "@minecraft/server";
 import { err, ok, Result } from "neverthrow";
 import { Vector3Utils } from "@minecraft/math";
@@ -14,7 +13,6 @@ import {
   addAnonymousTickingArea,
   removeAnonymousTickingArea,
 } from "./utils/tickingarea";
-import { forceLoadNetworksRule } from "./addon_rules/addon_rules";
 import { directionToVector3 } from "./utils/direction";
 import { createErrorMessageForm } from "./utils/ui";
 import { getEntityAtBlockLocation } from "./utils/location";
@@ -44,13 +42,6 @@ export async function tryForceGetBlock(
   let nextBlock = dimension.getBlock(location);
 
   if (!nextBlock) {
-    if (!forceLoadNetworksRule.get(world)) {
-      logWarn(
-        `storage network extends into unloaded chunks at ${Vector3Utils.toString(location)} in ${dimension.id} and forceLoadNetworks is disabled. some parts of the network may be unloaded`,
-      );
-      return;
-    }
-
     await addAnonymousTickingArea(dimension, location, 2);
 
     nextBlock = dimension.getBlock(location);

@@ -1,7 +1,8 @@
 import { Player, world } from "@minecraft/server";
 import { ADDON_RULE_COMMANDS } from "./addon_rules";
-import { DynamicPropertyAccessor } from "../utils/dynamic_property";
+import { DynamicPropertyAccessor } from "../utils/dynamic_property_v3";
 import { sendCurrentRuleValueMessage } from "./addon_rules_common";
+import { logWarn } from "../log";
 
 interface BaseAddonRuleCommand<T> {
   deprecated?: boolean;
@@ -27,18 +28,20 @@ function processBoolAddonRuleCommand(
   ruleCommand: BoolAddonRuleCommand,
 ): boolean {
   if (rawValue === "true") {
-    ruleCommand.property.set(
-      world,
-      ruleCommand.beforeSet?.(player, true) ?? true,
-    );
+    ruleCommand.property
+      .set(world, ruleCommand.beforeSet?.(player, true) ?? true)
+      .mapErr((e) => {
+        logWarn(`Failed to set addon rule: ${e}`);
+      });
     return true;
   }
 
   if (rawValue === "false") {
-    ruleCommand.property.set(
-      world,
-      ruleCommand.beforeSet?.(player, false) ?? false,
-    );
+    ruleCommand.property
+      .set(world, ruleCommand.beforeSet?.(player, false) ?? false)
+      .mapErr((e) => {
+        logWarn(`Failed to set addon rule: ${e}`);
+      });
     return true;
   }
 
@@ -96,10 +99,11 @@ function processNumberAddonRuleCommand(
     return false;
   }
 
-  ruleCommand.property.set(
-    world,
-    ruleCommand.beforeSet?.(player, numVal) ?? numVal,
-  );
+  ruleCommand.property
+    .set(world, ruleCommand.beforeSet?.(player, numVal) ?? numVal)
+    .mapErr((e) => {
+      logWarn(`Failed to set addon rule: ${e}`);
+    });
 
   return true;
 }
@@ -149,7 +153,10 @@ export function processAddonRuleCommand(
   const ruleCommand = ADDON_RULE_COMMANDS[rule];
 
   if (!value) {
-    if (value === null) ruleCommand.property.set(world);
+    if (value === null)
+      ruleCommand.property.set(world).mapErr((e) => {
+        logWarn(`Failed to set addon rule: ${e}`);
+      });
     if (player) sendCurrentRuleValueMessage(player, rule, ruleCommand);
     return true;
   }
@@ -203,6 +210,8 @@ export function processAddonRuleCommand(
 
 export function resetAllAddonRules(): void {
   for (const ruleCommand of Object.values(ADDON_RULE_COMMANDS)) {
-    ruleCommand.property.set(world);
+    ruleCommand.property.set(world).mapErr((e) => {
+      logWarn(`Failed to set addon rule: ${e}`);
+    });
   }
 }
