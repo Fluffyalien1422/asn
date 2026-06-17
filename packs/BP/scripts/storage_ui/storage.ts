@@ -157,6 +157,11 @@ export async function refreshStorageViewer(
   return ok(data);
 }
 
+export function disableStorageViewer(entity: Entity): void {
+  const data = viewerData.get(entity.id);
+  if (data) data.enabled = false;
+}
+
 /**
  * Calls {@link refreshStorageViewer} and logs a warning if it fails. Use this
  * for fire-and-forget refreshes where the caller cannot handle the error.

@@ -4,7 +4,6 @@ import "./script_events";
 import "./tutorial_book";
 import "./wireless_interface";
 
-//TODO: disallow multiple people opening the same interface at the same time. Use new container open events to track who is in the inventory.
 //TODO: enable useEnergy by default, but keep the rule if players want to disable it.
 //TODO: remove fluidStorage, showRequestItemDialog, and forceLoadNetworks rules. fluidStorage and forceLoadNetworks will be always enabled and cannot be disabled (the rule should be removed). showRequestItemDialog is legacy and should be removed entirely.
 //TODO: remove legacy drives and disks

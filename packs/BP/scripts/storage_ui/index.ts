@@ -388,9 +388,23 @@ system.runInterval(() => {
       !data?.enabled ||
       !entity.dimension.getPlayers({
         location: entity.location,
-        maxDistance: 10,
+        maxDistance: 15,
       }).length
     ) {
+      // Handle edge case where the inventory was closed or disabled but interactions
+      // were not re-allowed:
+      // ---
+      // Ensure enabled is false. This will trigger if data.enabled was true
+      // but there were no players in range.
+      if (data) data.enabled = false;
+      // If the viewer is disabled, then ensure interactions are allowed.
+      if (
+        entity.getProperty("fluffyalien_asn:interactions_allowed") === false
+      ) {
+        entity.triggerEvent("fluffyalien_asn:allow_interactions");
+      }
+      // ---
+
       continue;
     }
 

@@ -1,5 +1,5 @@
 {
-  "format_version": "1.26.20",
+  "format_version": "1.26.0",
   "minecraft:block": {
     "description": {
       "identifier": "fluffyalien_asn:level_emitter",
@@ -23,7 +23,7 @@
     "components": {
       "fluffyalien_asn:network_device": {},
       "fluffyalien_asn:level_emitter": {},
-      "minecraft:tags": ["fluffyalien_asn:storage_network_connectable"],
+      "tag:fluffyalien_asn:storage_network_connectable": {},
 
       "minecraft:geometry": {
         "identifier": "geometry.fluffyalien_asn.level_emitter",

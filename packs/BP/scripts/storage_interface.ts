@@ -19,6 +19,7 @@ import {
   showForm,
 } from "./utils/ui";
 import { forceCloseStorageViewerInventory } from "./storage_ui/shared";
+import { disableStorageViewer } from "./storage_ui/storage";
 
 export const storageInterfaceComponent: BlockCustomComponent = {
   onPlace(e) {
@@ -43,6 +44,19 @@ export const storageInterfaceComponent: BlockCustomComponent = {
       (other) => other.hasTag("fluffyalien_asn:storage_network_connectable"),
       busUpdateBlockConnectStatesTransformer(cardinalDirection),
     );
+  },
+  onPlayerInteract(e) {
+    if (!e.player) return;
+    e.player.sendMessage({
+      rawtext: [
+        {
+          text: "§c",
+        },
+        {
+          translate: "fluffyalien_asn.message.storageInterface.alreadyOpen",
+        },
+      ],
+    });
   },
 };
 
@@ -73,33 +87,52 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
   e.hitEntity.remove();
 });
 
-world.afterEvents.playerInteractWithEntity.subscribe((e) => {
-  if (e.target.typeId !== "fluffyalien_asn:storage_interface_entity") return;
+world.afterEvents.entityContainerOpened.subscribe(
+  (e) => {
+    const target = e.entity;
+    const player = e.openSource.entity as Player;
 
-  const block = e.target.dimension.getBlock(e.target.location);
-  if (!block) {
-    logWarn(
-      `expected a storage interface block at (${e.target.location.x.toString()},${e.target.location.y.toString()},${e.target.location.z.toString()}) in ${e.target.dimension.id}`,
-    );
-    return;
-  }
-
-  void (async (): Promise<void> => {
-    const network = await getNetworkOrShowError(block, e.target, e.player);
-    if (!network) return;
-
-    if (useEnergyRule.get(world) && network.getStoredEnergy() <= 0) {
-      await forceCloseStorageViewerInventory(e.target);
-      void showForm(
-        createErrorMessageForm({
-          translate:
-            "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
-        }),
-        e.player,
+    const block = target.dimension.getBlock(target.location);
+    if (!block) {
+      logWarn(
+        `Expected a storage interface block at (${target.location.x.toString()}, ${target.location.y.toString()}, ${target.location.z.toString()}) in ${target.dimension.id}.`,
       );
       return;
     }
 
-    refreshStorageViewerOrLog(e.target, e.player, network);
-  })();
-});
+    target.triggerEvent("fluffyalien_asn:block_interactions");
+
+    void (async (): Promise<void> => {
+      const network = await getNetworkOrShowError(block, target, player);
+      if (!network) return;
+
+      if (useEnergyRule.get(world) && network.getStoredEnergy() <= 0) {
+        await forceCloseStorageViewerInventory(target);
+        void showForm(
+          createErrorMessageForm({
+            translate:
+              "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
+          }),
+          player,
+        );
+        return;
+      }
+
+      refreshStorageViewerOrLog(target, player, network);
+    })();
+  },
+  {
+    accessSourceFilter: { entityFilter: { type: "minecraft:player" } },
+    entityFilter: { type: "fluffyalien_asn:storage_interface_entity" },
+  },
+);
+
+world.afterEvents.entityContainerClosed.subscribe(
+  (e) => {
+    disableStorageViewer(e.entity);
+    e.entity.triggerEvent("fluffyalien_asn:allow_interactions");
+  },
+  {
+    entityFilter: { type: "fluffyalien_asn:storage_interface_entity" },
+  },
+);

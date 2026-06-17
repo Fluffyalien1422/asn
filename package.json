@@ -10,9 +10,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@minecraft/server": "2.7.0",
-    "@minecraft/server-ui": "2.0.0",
-    "@minecraft/vanilla-data": "1.26.21",
+    "@minecraft/server": "2.8.0",
+    "@minecraft/server-ui": "2.1.0",
+    "@minecraft/vanilla-data": "1.26.30",
     "esbuild": "^0.28.0",
     "eslint": "^10.4.0",
     "prettier": "^3.8.3",

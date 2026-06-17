@@ -45,12 +45,12 @@
         }
       },
       "minecraft:collision_box": {
-        "origin": [-5, 3, -3],
-        "size": [10, 10, 11]
+        "origin": [-5, 3, -8],
+        "size": [10, 10, 12]
       },
       "minecraft:selection_box": {
-        "origin": [-5, 3, -3],
-        "size": [10, 10, 11]
+        "origin": [-5, 3, -8],
+        "size": [10, 10, 12]
       },
       "minecraft:light_dampening": 0,
       "minecraft:destructible_by_explosion": false,
