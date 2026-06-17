@@ -44,7 +44,9 @@ export class DynamicPropertyAccessor<
       target.setDynamicProperty(this.id, value);
       return ok();
     } catch (e) {
-      return err(new Error(`Failed to set dynamic property: ${String(e)}`));
+      return err(
+        new Error(`Failed to set dynamic property '${this.id}': ${String(e)}`),
+      );
     }
   }
 }
