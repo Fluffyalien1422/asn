@@ -2,23 +2,28 @@
   "format_version": "1.20.70",
   "minecraft:recipe_shaped": {
     "description": {
-      "identifier": "fluffyalien_asn:storage_drive"
+      "identifier": "fluffyalien_asn:storage_drive_v3"
     },
     "tags": ["crafting_table"],
-    "pattern": ["INI", "SSS", "INI"],
+    // prettier-ignore
+    "pattern": [
+      "INI",
+      "SSS",
+      "INI"
+    ],
     "key": {
       "I": {
         "item": "iron_block"
       },
       "S": {
-        "item": "fluffyalien_asn:storage_disk"
+        "item": "redstone"
       },
       "N": {
         "item": "smooth_stone"
       }
     },
     "result": {
-      "item": "fluffyalien_asn:storage_drive"
+      "item": "fluffyalien_asn:storage_drive_v3"
     },
     "unlock": [
       {

@@ -16,11 +16,9 @@ item.fluffyalien_asn:ui_stack_size_16=Stack Size: 16
 item.fluffyalien_asn:ui_stack_size_32=Stack Size: 32
 item.fluffyalien_asn:ui_stack_size_64=Stack Size: 64
 
-item.fluffyalien_asn:storage_disk=Storage Disk
 item.fluffyalien_asn:storage_disk_v3_64=High Capacity Storage Disk
 item.fluffyalien_asn:storage_disk_v3_32=Standard Storage Disk
 item.fluffyalien_asn:fluid_storage_disk=Fluid Storage Disk
-item.fluffyalien_asn:used_storage_disk=Storage Disk
 item.fluffyalien_asn:used_fluid_storage_disk=Fluid Storage Disk
 item.fluffyalien_asn:storage_disk_casing=Storage Disk Casing
 item.fluffyalien_asn:storage_disk_core=Storage Disk Core
@@ -29,7 +27,7 @@ item.fluffyalien_asn:tutorial_book=Advanced Storage Network Tutorial Book
 item.fluffyalien_asn:wireless_interface=Wireless Storage Interface
 item.fluffyalien_asn:wireless_interface_antenna=Storage Network Wireless Antenna
 
-tile.fluffyalien_asn:storage_drive.name=Storage Drive
+tile.fluffyalien_asn:storage_drive_v3.name=Storage Drive
 tile.fluffyalien_asn:storage_interface.name=Storage Interface
 tile.fluffyalien_asn:storage_core.name=Storage Core
 tile.fluffyalien_asn:storage_cable.name=Storage Cable

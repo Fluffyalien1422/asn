@@ -1,6 +1,5 @@
 import { system } from "@minecraft/server";
 import { storageInterfaceComponent } from "./storage_interface";
-import { storageDriveComponent } from "./storage_drive";
 import { storageCoreComponent } from "./storage_core";
 import { storageCableComponent } from "./cable";
 import { levelEmitterComponent } from "./level_emitter";
@@ -25,11 +24,6 @@ system.beforeEvents.startup.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(
     "fluffyalien_asn:storage_interface",
     storageInterfaceComponent,
-  );
-
-  e.blockComponentRegistry.registerCustomComponent(
-    "fluffyalien_asn:storage_drive",
-    storageDriveComponent,
   );
 
   e.blockComponentRegistry.registerCustomComponent(
