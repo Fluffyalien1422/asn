@@ -14,10 +14,6 @@
         "runWith": "shell",
         "command": "node --experimental-transform-types ../../scripts/filters/simple_manifest_bec.ts"
       },
-      "build_details_bec": {
-        "runWith": "shell",
-        "command": "Set-Content -Path BP/scripts/build_details.js -Value 'export const BUILD_DETAILS = { isBecBuild: true };' -Encoding UTF8"
-      },
       "build_scripts": {
         "runWith": "shell",
         "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --log-level=warning --external:@minecraft/server --external:@minecraft/server-ui --preserve-symlinks"
@@ -44,9 +40,6 @@
         "filters": [
           {
             "filter": "simple_manifest_bec"
-          },
-          {
-            "filter": "build_details_bec"
           },
           {
             "filter": "build_scripts"

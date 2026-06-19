@@ -3,13 +3,8 @@ import * as bec from "bedrock-energistics-core-api";
 import { fluidInterfaceMachine } from "./fluid_interface";
 import { fluidImportBusMachine } from "./fluid_import_bus";
 import { fluidExportBusMachine } from "./fluid_export_bus";
-import { BUILD_DETAILS } from "./build_details";
 
 world.afterEvents.worldLoad.subscribe(() => {
-  if (!BUILD_DETAILS.isBecBuild) {
-    return;
-  }
-
   bec.init("fluffyalien_asn");
 
   bec.registerMachine({

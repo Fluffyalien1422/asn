@@ -4,7 +4,6 @@ import "./energistics";
 import "./tutorial_book";
 import "./wireless_interface";
 
-//TODO: remove BUILD_DETAILS as there is now only one build, standalone is now legacy.
 //TODO: update legacy bus code and improve export bus and level emitter ui (use an inventory based ui?)
 //TODO: update buses to use block entity component and new block dynamic properties
 //TODO: test everything: buses, fluid storage, wireless interfaces, relays, etc
