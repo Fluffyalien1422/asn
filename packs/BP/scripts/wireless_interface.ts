@@ -6,7 +6,7 @@ import {
   system,
   world,
 } from "@minecraft/server";
-import { DynamicPropertyAccessor } from "./utils/dynamic_property";
+import { DynamicPropertyAccessorLegacy } from "./utils/dynamic_property";
 import {
   useEnergyRule,
   wirelessInterfaceEnergyConsumptionRule,
@@ -25,12 +25,12 @@ import { STORAGE_VIEWER_FORCE_CLOSE_TAG } from "./storage_ui/shared";
 const wirelessInterfaceEntities = new Map<string, Entity>();
 
 export const wirelessInterfaceLinkLocationProperty =
-  DynamicPropertyAccessor.withoutDefault<Vector3>(
+  DynamicPropertyAccessorLegacy.withoutDefault<Vector3>(
     "fluffyalien_asn:wireless_interface_link_location",
   );
 
 export const wirelessInterfaceLinkDimensionProperty =
-  DynamicPropertyAccessor.withoutDefault<string>(
+  DynamicPropertyAccessorLegacy.withoutDefault<string>(
     "fluffyalien_asn:wireless_interface_link_dimension",
   );
 

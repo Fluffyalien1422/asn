@@ -2,7 +2,7 @@ import { StorageNetwork } from "./storage_network";
 import { Block, BlockCustomComponent, Entity, Player } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
 import {
-  DynamicPropertyAccessor,
+  DynamicPropertyAccessorLegacy,
   removeAllDynamicPropertiesForBlock,
 } from "./utils/dynamic_property";
 import { STR_DIRECTIONS, StrCardinalDirection } from "./utils/direction";
@@ -39,30 +39,32 @@ enum TestItemEnchantableStatus {
   WithoutEnchantments,
 }
 
-const levelEmitterItem = DynamicPropertyAccessor.withoutDefault<string>(
+const levelEmitterItem = DynamicPropertyAccessorLegacy.withoutDefault<string>(
   "fluffyalien_asn:level_emitter_item",
 );
 
-const levelEmitterTestAmount = DynamicPropertyAccessor.withoutDefault<number>(
-  "fluffyalien_asn:level_emitter_test_amount",
-);
+const levelEmitterTestAmount =
+  DynamicPropertyAccessorLegacy.withoutDefault<number>(
+    "fluffyalien_asn:level_emitter_test_amount",
+  );
 
-const levelEmitterOperator = DynamicPropertyAccessor.withoutDefault<Operator>(
-  "fluffyalien_asn:level_emitter_operator",
-);
+const levelEmitterOperator =
+  DynamicPropertyAccessorLegacy.withoutDefault<Operator>(
+    "fluffyalien_asn:level_emitter_operator",
+  );
 
 const levelEmitterTestEnchantments =
-  DynamicPropertyAccessor.withoutDefault<TestItemEnchantableStatus>(
+  DynamicPropertyAccessorLegacy.withoutDefault<TestItemEnchantableStatus>(
     "fluffyalien_asn:level_emitter_test_enchantments",
   );
 
 const levelEmitterItemMinDamage =
-  DynamicPropertyAccessor.withoutDefault<number>(
+  DynamicPropertyAccessorLegacy.withoutDefault<number>(
     "fluffyalien_asn:level_emitter_item_min_damage",
   );
 
 const levelEmitterItemMaxDamage =
-  DynamicPropertyAccessor.withoutDefault<number>(
+  DynamicPropertyAccessorLegacy.withoutDefault<number>(
     "fluffyalien_asn:level_emitter_item_max_damage",
   );
 

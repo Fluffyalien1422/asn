@@ -7,7 +7,7 @@ interface HasDynamicProperties {
   setDynamicProperty(id: string, value?: DynamicPropertyValue): unknown;
 }
 
-export class DynamicPropertyAccessor<
+export class DynamicPropertyAccessorLegacy<
   TValue extends DynamicPropertyValue,
   TDefault extends TValue | undefined = undefined,
 > {
@@ -19,14 +19,14 @@ export class DynamicPropertyAccessor<
   static withDefault<TValue extends DynamicPropertyValue>(
     id: string,
     defaultValue: TValue,
-  ): DynamicPropertyAccessor<TValue, TValue> {
-    return new DynamicPropertyAccessor(id, defaultValue);
+  ): DynamicPropertyAccessorLegacy<TValue, TValue> {
+    return new DynamicPropertyAccessorLegacy(id, defaultValue);
   }
 
   static withoutDefault<TValue extends DynamicPropertyValue>(
     id: string,
-  ): DynamicPropertyAccessor<TValue> {
-    return new DynamicPropertyAccessor(id, undefined);
+  ): DynamicPropertyAccessorLegacy<TValue> {
+    return new DynamicPropertyAccessorLegacy(id, undefined);
   }
 
   get(target: HasDynamicProperties | Block): TValue | TDefault {

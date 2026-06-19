@@ -1,5 +1,9 @@
-import { Vector3 } from "@minecraft/server";
+import { Block, Vector3 } from "@minecraft/server";
 import { err, ok, Result } from "neverthrow";
+import {
+  getBlockDynamicProperty,
+  setBlockDynamicProperty,
+} from "./dynamic_property";
 
 type DynamicPropertyValue = boolean | number | string | Vector3;
 
@@ -22,26 +26,41 @@ export class DynamicPropertyAccessor<
     this.defaultValue = defaultValue as TDefault;
   }
 
-  get(target: HasDynamicProperties): Result<TValue | TDefault, Error> {
+  get(target: HasDynamicProperties | Block): Result<TValue | TDefault, Error> {
     let value: TValue | undefined;
     try {
-      value = target.getDynamicProperty(this.id) as TValue | undefined;
+      if (target instanceof Block) {
+        // Use getBlockDynamicProperty() until Mojang releases
+        // 'block.getComponent("dynamic_properties").get()' in stable.
+        value = getBlockDynamicProperty(target, this.id) as TValue | undefined;
+      } else {
+        value = target.getDynamicProperty(this.id) as TValue | undefined;
+      }
     } catch (e) {
       return err(new Error(`Failed to get dynamic property: ${String(e)}`));
     }
     return ok(value ?? this.defaultValue);
   }
 
-  safeGet(target: HasDynamicProperties): TValue | TDefault {
+  safeGet(target: HasDynamicProperties | Block): TValue | TDefault {
     return this.get(target).match(
       /* ok */ (v) => v,
       /* err */ () => this.defaultValue,
     );
   }
 
-  set(target: HasDynamicProperties, value?: TValue): Result<void, Error> {
+  set(
+    target: HasDynamicProperties | Block,
+    value?: TValue,
+  ): Result<void, Error> {
     try {
-      target.setDynamicProperty(this.id, value);
+      if (target instanceof Block) {
+        // Use setBlockDynamicProperty() until Mojang releases
+        // 'block.getComponent("dynamic_properties").set()' in stable.
+        setBlockDynamicProperty(target, this.id, value);
+      } else {
+        target.setDynamicProperty(this.id, value);
+      }
       return ok();
     } catch (e) {
       return err(

@@ -1,13 +1,13 @@
-import { Block, Entity, Player, RawMessage } from "@minecraft/server";
+import { Block, Player, RawMessage } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
 import {
   ExportBusExportItemEnchantments,
-  getExportBusExportItemDamageRange,
-  getExportBusExportItemEnchantments,
-  getExportBusExportItemId,
-  setExportBusExportItemDamageRange,
-  setExportBusExportItemEnchantments,
-} from ".";
+  exportItemEnchantmentsProperty,
+  exportItemProperty,
+  getExportItemDamageRange,
+  resetExportItemFilters,
+  setExportItemDamageRange,
+} from "./properties";
 import {
   createErrorMessageForm,
   createMessageForm,
@@ -17,9 +17,9 @@ import { createItemStack, getItemTranslationKey } from "../utils/item";
 
 export async function showExportBusUi(
   player: Player,
-  dynamicPropertyTarget: Entity | Block,
+  block: Block,
 ): Promise<void> {
-  const exportItemId = getExportBusExportItemId(dynamicPropertyTarget);
+  const exportItemId = exportItemProperty.safeGet(block);
 
   if (!exportItemId) {
     return void showForm(
@@ -65,8 +65,7 @@ export async function showExportBusUi(
 
   if (!enchantable && !breakable) {
     // set to default values
-    setExportBusExportItemEnchantments(dynamicPropertyTarget, "ignore");
-    setExportBusExportItemDamageRange(dynamicPropertyTarget, { min: 0 });
+    resetExportItemFilters(block);
 
     return void showForm(
       createMessageForm(
@@ -77,13 +76,10 @@ export async function showExportBusUi(
     );
   }
 
-  const exportItemEnchantmentsStatus = getExportBusExportItemEnchantments(
-    dynamicPropertyTarget,
-  );
+  const exportItemEnchantmentsStatus =
+    exportItemEnchantmentsProperty.safeGet(block);
 
-  const exportItemDamageRange = getExportBusExportItemDamageRange(
-    dynamicPropertyTarget,
-  );
+  const exportItemDamageRange = getExportItemDamageRange(block);
 
   const body: RawMessage[] = [
     exportItemRawMessage,
@@ -198,14 +194,14 @@ export async function showExportBusUi(
     );
   }
 
-  setExportBusExportItemEnchantments(
-    dynamicPropertyTarget,
+  exportItemEnchantmentsProperty.set(
+    block,
     (["ignore", "with", "without"] as ExportBusExportItemEnchantments[])[
       enchantmentsDropdownResponse
     ],
   );
 
-  setExportBusExportItemDamageRange(dynamicPropertyTarget, {
+  setExportItemDamageRange(block, {
     min: minDamageResponse,
     max: maxDamageResponse,
   });
