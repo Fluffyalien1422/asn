@@ -64,7 +64,7 @@ export async function discoverCableNetworkConnections(
 ): Promise<
   Result<CableNetworkConnections, DiscoverCableNetworkConnectionsError>
 > {
-  const visitedLocations: Vector3[] = [];
+  const visited = new Set<string>();
   const stack: Block[] = [];
 
   const cables: Block[] = [];
@@ -80,16 +80,20 @@ export async function discoverCableNetworkConnections(
   function handleBlock(
     block: Block,
   ): Result<void, DiscoverCableNetworkConnectionsError> {
-    if (
-      !block.hasTag("fluffyalien_asn:storage_network_connectable") ||
-      visitedLocations.some((vector) =>
-        Vector3Utils.equals(block.location, vector),
-      )
-    ) {
+    if (!block.hasTag("fluffyalien_asn:storage_network_connectable")) {
       return ok();
     }
 
-    visitedLocations.push(block.location);
+    // unique key per block. includes the dimension so blocks at identical
+    // coordinates in different dimensions (reachable via relays) aren't treated
+    // as the same block. a Set keeps discovery O(n) instead of O(n^2).
+    const loc = block.location;
+    const key = `${block.dimension.id} ${loc.x.toString()} ${loc.y.toString()} ${loc.z.toString()}`;
+    if (visited.has(key)) {
+      return ok();
+    }
+    visited.add(key);
+
     stack.push(block);
 
     switch (block.typeId) {

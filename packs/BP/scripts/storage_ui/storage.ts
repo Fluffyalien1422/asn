@@ -148,6 +148,8 @@ export async function refreshStorageViewer(
     groupTypeId: oldData?.groupTypeId ?? undefined,
     stackSize: oldData?.stackSize ?? 64,
     craftingQuery: oldData?.craftingQuery,
+    // populated immediately by the fillViewerInventory call below
+    itemsOnPage: [],
   };
 
   viewerData.set(interfaceEntity.id, data);

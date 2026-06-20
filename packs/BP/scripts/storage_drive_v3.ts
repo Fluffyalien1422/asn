@@ -12,16 +12,36 @@ import {
 } from "./utils/location";
 import { getBlockUid } from "./utils/block";
 import { logWarn } from "./log";
-import { itemStacksMatch } from "./utils/item";
 import { StorageNetwork } from "./storage_network";
-import { getDiskCapacity } from "./storage_disk_v3";
+import { getDiskCapacity, getDiskId } from "./storage_disk_v3";
 
 const ENTITY_ID = "fluffyalien_asn:storage_drive_entity_v3";
 
 interface DriveData {
-  disks: (ContainerSlot | null)[];
+  /**
+   * A stable signature per drive slot describing which disk it held last tick,
+   * so {@link storageDriveV3Component.onTick} can detect disks being inserted,
+   * removed, or swapped. `null` means the slot held no disk.
+   */
+  diskSignatures: (string | null)[];
 }
 const driveData = new Map<string, DriveData>();
+
+/**
+ * A signature that identifies the disk in a slot across ticks. A written disk
+ * has a stable unique id; a fresh disk has none yet, so its type is used as a
+ * fallback under a `fresh:` namespace (disk ids are numeric, so they can't
+ * collide). Two empty fresh disks of the same type are indistinguishable, but
+ * swapping them changes nothing.
+ */
+function getDiskSignature(disk: ContainerSlot): string {
+  return getDiskId(disk) ?? `fresh:${disk.typeId}`;
+}
+
+/** Builds the per-slot signatures for a drive's disks (see {@link getDiskSignature}). */
+function getDiskSignatures(disks: (ContainerSlot | null)[]): (string | null)[] {
+  return disks.map((disk) => (disk ? getDiskSignature(disk) : null));
+}
 
 function getStorageDriveEntity(
   location: DimensionLocation,
@@ -80,33 +100,28 @@ export const storageDriveV3Component: BlockCustomComponent = {
       );
       return;
     }
-    const disks = disksr.value;
+    const diskSignatures = getDiskSignatures(disksr.value);
 
     if (!driveData.has(uid)) {
-      driveData.set(uid, { disks });
+      driveData.set(uid, { diskSignatures });
       return;
     }
 
     const data = driveData.get(uid)!;
-    for (let i = 0; i < disks.length; i++) {
-      const oldDisk = data.disks[i];
-      const newDisk = disks[i];
 
-      if (
-        (oldDisk === null && newDisk === null) ||
-        (oldDisk !== null &&
-          newDisk !== null &&
-          itemStacksMatch(oldDisk.getItem()!, newDisk.getItem()!))
-      ) {
-        continue;
+    // a disk was inserted, removed, or swapped if any slot's signature changed
+    let changed = diskSignatures.length !== data.diskSignatures.length;
+    for (let i = 0; !changed && i < diskSignatures.length; i++) {
+      if (diskSignatures[i] !== data.diskSignatures[i]) {
+        changed = true;
       }
-
-      // disk was changed
-      StorageNetwork.getNetwork(e.block)?.clearStoredItemsCache();
-      break;
     }
 
-    data.disks = disks;
+    if (changed) {
+      StorageNetwork.getNetwork(e.block)?.clearStoredItemsCache();
+    }
+
+    data.diskSignatures = diskSignatures;
   },
 };
 

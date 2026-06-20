@@ -8,9 +8,6 @@ export const networkDeviceComponent: BlockCustomComponent = {
     StorageNetwork.updateConnectableNetworks(e.block);
   },
   onBreak(e) {
-    void StorageNetwork.getNetwork(
-      e.block,
-      e.brokenBlockPermutation.type.id,
-    )?.updateConnections();
+    void StorageNetwork.getNetwork(e.block)?.updateConnections();
   },
 };

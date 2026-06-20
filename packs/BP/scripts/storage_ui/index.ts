@@ -31,7 +31,7 @@ import {
   ViewerData,
   viewerData,
 } from "./state";
-import { getDisplayItems, getItemsOnPage, searchFilter } from "./items";
+import { searchFilter } from "./items";
 import { fillViewerInventory } from "./render";
 import { addItemToStorage, refreshStorageViewerOrLog } from "./storage";
 import {
@@ -293,7 +293,9 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
   }
 
   // No control button changed; check whether the player took an item slot.
-  const itemsOnPage = getItemsOnPage(getDisplayItems(data), data.page);
+  // Reuse the page items cached when the inventory was last (re)built rather
+  // than recomputing the (potentially expensive) display list every poll.
+  const itemsOnPage = data.itemsOnPage;
 
   for (let i = 0; i < ITEMS_PER_PAGE; i++) {
     const storageEntry = itemsOnPage[i] as StoredItem | undefined;

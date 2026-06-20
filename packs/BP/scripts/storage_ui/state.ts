@@ -26,6 +26,12 @@ export interface ViewerData {
   stackSize: StorageViewerStackSize;
   groupTypeId?: string;
   craftingQuery?: string;
+  /**
+   * The display items for the current page/view, cached whenever the inventory
+   * is (re)built in `fillViewerInventory`. The interaction poll reuses this
+   * instead of recomputing the (potentially expensive) display list every tick.
+   */
+  itemsOnPage: readonly StoredItem[];
 }
 
 /**

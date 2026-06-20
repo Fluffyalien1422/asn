@@ -2,7 +2,6 @@
  * Selection, filtering and sorting of the stored items shown in the viewer.
  */
 
-import { ItemStack } from "@minecraft/server";
 import { abbreviateNumber } from "../utils/string";
 import { createItemStack } from "../utils/item";
 import { RECIPES_ENTRIES } from "../recipes";
@@ -103,12 +102,14 @@ export function getDisplayItems(data: ViewerData): readonly StoredItem[] {
  * then sort within each group by amount ascending.
  */
 export function sortStoredItems(entries: readonly StoredItem[]): StoredItem[] {
-  const groups: ItemStack[] = [];
+  // assign each item type a group index in first-seen order so items of the
+  // same type stay grouped. a Map keeps this O(n) instead of O(n^2).
+  const groupIndexes = new Map<string, number>();
   const indexed = entries.map(([id, stack]) => {
-    let groupIdx = groups.findIndex((g) => g.typeId === stack.typeId);
-    if (groupIdx === -1) {
-      groupIdx = groups.length;
-      groups.push(stack);
+    let groupIdx = groupIndexes.get(stack.typeId);
+    if (groupIdx === undefined) {
+      groupIdx = groupIndexes.size;
+      groupIndexes.set(stack.typeId, groupIdx);
     }
     return { id, stack, groupIdx };
   });
@@ -130,26 +131,33 @@ export function searchFilter(
 ): StoredItem[] {
   const queryKeywords = query.toLowerCase().split(" ");
 
-  const reducer = (matchingCount: number, keyword: string): number =>
-    matchingCount +
-    (queryKeywords.some((queryKeyword) => keyword.includes(queryKeyword))
-      ? 1
-      : 0);
+  // relevancy is the fraction of an item id's keywords that match the query.
+  // compute it once per item id (cached, since storage holds many duplicates)
+  // instead of recomputing it for both operands of every sort comparison.
+  const relevancyCache = new Map<string, number>();
+  const getRelevancy = (typeId: string): number => {
+    let relevancy = relevancyCache.get(typeId);
+    if (relevancy === undefined) {
+      const keywords = typeId.split(/:|_/);
+      const matchingCount = keywords.reduce(
+        (count, keyword) =>
+          count +
+          (queryKeywords.some((queryKeyword) => keyword.includes(queryKeyword))
+            ? 1
+            : 0),
+        0,
+      );
+      relevancy = matchingCount / keywords.length;
+      relevancyCache.set(typeId, relevancy);
+    }
+    return relevancy;
+  };
 
   return items
     .filter(([, item]) =>
       queryKeywords.some((keyword) => item.typeId.includes(keyword)),
     )
-    .sort(([, a], [, b]) => {
-      const aKeywords = a.typeId.split(/:|_/);
-      const bKeywords = b.typeId.split(/:|_/);
-
-      const aMatchingKeywordsCount = aKeywords.reduce(reducer, 0);
-      const bMatchingKeywordsCount = bKeywords.reduce(reducer, 0);
-
-      const aRelevancy = aMatchingKeywordsCount / aKeywords.length;
-      const bRelevancy = bMatchingKeywordsCount / bKeywords.length;
-
-      return bRelevancy - aRelevancy;
-    });
+    .map((entry) => ({ entry, relevancy: getRelevancy(entry[1].typeId) }))
+    .sort((a, b) => b.relevancy - a.relevancy)
+    .map(({ entry }) => entry);
 }

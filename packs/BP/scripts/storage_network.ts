@@ -6,7 +6,6 @@ import {
 } from "./cable_network";
 import { DeepReadonly } from "ts-essentials";
 import { updateImportBus } from "./import_bus";
-import { Vector3Utils } from "@minecraft/math";
 import { updateExportBus } from "./export_bus";
 import { logWarn, panic } from "./log";
 import { updateLevelEmitter } from "./level_emitter";
@@ -39,6 +38,7 @@ import {
   unloadDataArea,
 } from "./storage_disk_v3";
 import { cloneItemStackWithAmount } from "./utils/item";
+import { getBlockUid } from "./utils/block";
 import { ContainerSlot } from "@minecraft/server";
 import { err, ok, Result } from "neverthrow";
 
@@ -97,8 +97,18 @@ function snapshotDiskContents(items: readonly ItemStack[]): DiskSlotSnapshot[] {
  * A {@link StorageSystem} that is comprised of many devices.
  */
 export class StorageNetwork extends StorageSystem {
-  private static readonly storageNetworks: StorageNetwork[] = [];
+  /**
+   * Index from block uid (see {@link getBlockUid}) to the network containing
+   * that block, so {@link StorageNetwork.getNetwork} is O(1). Kept in sync by
+   * {@link StorageNetwork.indexConnections} / {@link StorageNetwork.unindexConnections}.
+   */
+  private static readonly networkByBlockUid = new Map<string, StorageNetwork>();
   private internalIsValid = true;
+  /**
+   * The block uids this network currently has registered in
+   * {@link StorageNetwork.networkByBlockUid}.
+   */
+  private indexedUids: string[] = [];
 
   /**
    * Establish a network from any starting position inside of the network
@@ -119,17 +129,13 @@ export class StorageNetwork extends StorageSystem {
   }
 
   /**
-   * Get the {@link StorageNetwork} that the {@link Block} belongs to
-   * @param typeIdOverride forwarded to {@link StorageNetwork.isPartOfNetwork}
+   * Get the {@link StorageNetwork} that the {@link Block} belongs to. Resolved
+   * by the block's position, so this also works for a block that has since been
+   * broken (the location stays indexed until the network's connections update).
    * @returns the {@link StorageNetwork} if it was found or undefined
    */
-  static getNetwork(
-    block: Block,
-    typeIdOverride?: string,
-  ): StorageNetwork | undefined {
-    return StorageNetwork.storageNetworks.find((network) =>
-      network.isPartOfNetwork(block, typeIdOverride),
-    );
+  static getNetwork(block: Block): StorageNetwork | undefined {
+    return StorageNetwork.networkByBlockUid.get(getBlockUid(block));
   }
 
   /**
@@ -244,7 +250,7 @@ export class StorageNetwork extends StorageSystem {
   private constructor(private connections: CableNetworkConnections) {
     super();
 
-    StorageNetwork.storageNetworks.push(this);
+    this.indexConnections();
 
     this.updateIntervalRunId = system.runInterval(() => {
       for (const block of this.connections.buses) {
@@ -303,6 +309,46 @@ export class StorageNetwork extends StorageSystem {
 
   private getNextItemId(): string {
     return (this.nextItemIdNum++).toString();
+  }
+
+  /**
+   * (Re)indexes this network's blocks in {@link StorageNetwork.networkByBlockUid}
+   * so {@link StorageNetwork.getNetwork} can resolve a block to its network in
+   * O(1). Any stale entries this network previously owned are removed first.
+   */
+  private indexConnections(): void {
+    this.unindexConnections();
+
+    const index = (block: Block): void => {
+      const uid = getBlockUid(block);
+      StorageNetwork.networkByBlockUid.set(uid, this);
+      this.indexedUids.push(uid);
+    };
+
+    const c = this.connections;
+    index(c.storageCore);
+    for (const block of c.cables) index(block);
+    for (const block of c.storageDrives) index(block);
+    for (const block of c.interfaces) index(block);
+    for (const block of c.buses) index(block);
+    for (const block of c.levelEmitters) index(block);
+    for (const block of c.powerBanks) index(block);
+    for (const block of c.wirelessTransmitters) index(block);
+    for (const block of c.fluidDrives) index(block);
+  }
+
+  /**
+   * Removes this network's entries from {@link StorageNetwork.networkByBlockUid}.
+   * Only removes entries that still point to this network, so a block since
+   * claimed by another network is left untouched.
+   */
+  private unindexConnections(): void {
+    for (const uid of this.indexedUids) {
+      if (StorageNetwork.networkByBlockUid.get(uid) === this) {
+        StorageNetwork.networkByBlockUid.delete(uid);
+      }
+    }
+    this.indexedUids = [];
   }
 
   /**
@@ -523,53 +569,7 @@ export class StorageNetwork extends StorageSystem {
     system.clearRun(this.updateIntervalRunId);
     system.clearRun(this.levelEmitterUpdateIntervalRunId);
 
-    const i = StorageNetwork.storageNetworks.indexOf(this);
-    if (i === -1) return;
-
-    StorageNetwork.storageNetworks.splice(i, 1);
-  }
-
-  /**
-   * Check if a {@link Block} is part of this network
-   * @param typeIdOverride use this string instead of the block's actual type ID. Use this parameter to get the network of a block that has since been changed (eg. a broken block)
-   * @throws if this object is not valid
-   */
-  isPartOfNetwork(block: Block, typeIdOverride?: string): boolean {
-    this.ensureValidity();
-
-    const typeId = typeIdOverride ?? block.typeId;
-
-    const condition = (v: Block): boolean =>
-      v.dimension.id === block.dimension.id &&
-      Vector3Utils.equals(v, block.location);
-
-    switch (typeId) {
-      case "fluffyalien_asn:storage_relay":
-      case "fluffyalien_asn:storage_cable":
-        return this.connections.cables.some(condition);
-      case "fluffyalien_asn:storage_core":
-        return condition(this.connections.storageCore);
-      case "fluffyalien_asn:storage_drive_v3":
-        return this.connections.storageDrives.some(condition);
-      case "fluffyalien_asn:storage_interface":
-      case "fluffyalien_asn:fluid_interface":
-        return this.connections.interfaces.some(condition);
-      case "fluffyalien_asn:import_bus":
-      case "fluffyalien_asn:export_bus":
-      case "fluffyalien_asn:fluid_import_bus":
-      case "fluffyalien_asn:fluid_export_bus":
-        return this.connections.buses.some(condition);
-      case "fluffyalien_asn:level_emitter":
-        return this.connections.levelEmitters.some(condition);
-      case "fluffyalien_asn:storage_power_bank":
-        return this.connections.powerBanks.some(condition);
-      case "fluffyalien_asn:wireless_transmitter":
-        return this.connections.wirelessTransmitters.some(condition);
-      case "fluffyalien_asn:fluid_drive":
-        return this.connections.fluidDrives.some(condition);
-      default:
-        return false;
-    }
+    this.unindexConnections();
   }
 
   /**
@@ -593,6 +593,7 @@ export class StorageNetwork extends StorageSystem {
     }
 
     this.connections = result.value;
+    this.indexConnections();
 
     // we need to clear storage because a drive may have been removed
     // these will be updated the next time their get function is called

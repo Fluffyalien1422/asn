@@ -193,10 +193,7 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
       e.hitEntity.location,
     );
 
-    void StorageNetwork.getNetwork(
-      block,
-      "fluffyalien_asn:fluid_interface",
-    )?.updateConnections();
+    void StorageNetwork.getNetwork(block)?.updateConnections();
 
     e.hitEntity.remove();
   });

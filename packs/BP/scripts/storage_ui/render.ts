@@ -30,6 +30,8 @@ export function fillViewerInventory(entity: Entity, data: ViewerData): void {
   inventory.clearAll();
 
   const itemsOnPage = getItemsOnPage(getDisplayItems(data), data.page);
+  // cache for the interaction poll so it doesn't recompute the display list
+  data.itemsOnPage = itemsOnPage;
 
   for (let i = 0; i < itemsOnPage.length; i++) {
     // items are stored as real ItemStacks (each up to its max stack size) and

@@ -33,6 +33,16 @@ export function getDiskCapacity(typeId: string): number {
   return DISK_CAPACITIES[typeId] ?? 0;
 }
 
+/**
+ * Gets the unique id of a storage disk, or `undefined` if it has never been
+ * written to (a fresh disk only gets an id the first time items are saved to
+ * it, see {@link saveItemsToDisk}). The id is stable for the life of the disk,
+ * so it uniquely identifies which data a disk refers to.
+ */
+export function getDiskId(disk: ItemStack | ContainerSlot): string | undefined {
+  return diskIdProperty.safeGet(disk);
+}
+
 function setDiskLore<T extends ItemStack | ContainerSlot>(
   disk: T,
   itemStacks: readonly ItemStack[],
