@@ -821,7 +821,7 @@ export class StorageNetwork extends StorageSystem {
   /**
    * Adds multiple item stacks to storage, persisting to disk only once after
    * all of them have been added. Each stack is added all-or-nothing (see
-   * {@link StorageNetwork.addItemStacks}); adding stops at the first stack that
+   * {@link StorageNetwork.addItemStack}); adding stops at the first stack that
    * does not fit.
    * @param itemStacks the item stacks to add, in order
    * @returns a result containing the number of stacks that were fully added
