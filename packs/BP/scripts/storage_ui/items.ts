@@ -2,11 +2,18 @@
  * Selection, filtering and sorting of the stored items shown in the viewer.
  */
 
+import { RawMessage } from "@minecraft/server";
 import { abbreviateNumber } from "../utils/string";
-import { createItemStack } from "../utils/item";
-import { RECIPES_ENTRIES } from "../recipes";
+import { createItemStack, getItemTranslationKey } from "../utils/item";
+import { genrecipes, RECIPES, RECIPES_ENTRIES } from "../recipes";
 import { ITEMS_PER_PAGE } from "./shared";
 import { StoredItem, ViewerData } from "./state";
+
+/** A craftable recipe paired with the number of times to craft it. */
+export interface CraftItemOption {
+  recipe: genrecipes.RecipeData;
+  amount: number;
+}
 
 /** Returns the slice of items that belongs on the given (zero-based) page. */
 export function getItemsOnPage(
@@ -37,16 +44,14 @@ export function getGroupViewItems(items: readonly StoredItem[]): StoredItem[] {
 }
 
 /**
- * Returns one entry per recipe whose ingredients can all be satisfied by the
- * currently stored items (matching either by item id or by `#tag`), optionally
- * narrowed by a search query. Used by the "crafting" view.
+ * Total available count per ingredient id across the given items, keyed by
+ * `typeId` and by `#tag` for every tag the items carry.
  */
-export function getCraftingViewItems(
-  rawItems: readonly StoredItem[],
-  query?: string,
-): StoredItem[] {
+export function getAvailableIngredients(
+  items: readonly StoredItem[],
+): Map<string, number> {
   const available = new Map<string, number>();
-  for (const [, stack] of rawItems) {
+  for (const [, stack] of items) {
     available.set(
       stack.typeId,
       (available.get(stack.typeId) ?? 0) + stack.amount,
@@ -56,6 +61,19 @@ export function getCraftingViewItems(
       available.set(tagId, (available.get(tagId) ?? 0) + stack.amount);
     }
   }
+  return available;
+}
+
+/**
+ * Returns one entry per recipe whose ingredients can all be satisfied by the
+ * currently stored items (matching either by item id or by `#tag`), optionally
+ * narrowed by a search query. Used by the "crafting" view.
+ */
+export function getCraftingViewItems(
+  rawItems: readonly StoredItem[],
+  query?: string,
+): StoredItem[] {
+  const available = getAvailableIngredients(rawItems);
 
   const craftable: StoredItem[] = [];
   for (const [item, recipes] of RECIPES_ENTRIES) {
@@ -81,6 +99,83 @@ export function getCraftingViewItems(
   return searchFilter(query, craftable);
 }
 
+/**
+ * Returns the craftable options for `typeId`: every recipe whose ingredients
+ * are all currently available, each paired with `amount` (the number of times
+ * to craft it, taken from the viewer's stack size).
+ */
+export function getCraftItemOptions(
+  rawItems: readonly StoredItem[],
+  typeId: string | undefined,
+  amount: number,
+): CraftItemOption[] {
+  if (typeId === undefined || !(typeId in RECIPES)) return [];
+
+  const available = getAvailableIngredients(rawItems);
+  return RECIPES[typeId]
+    .filter(([, ingredients]) =>
+      ingredients.every(([id, count]) => (available.get(id) ?? 0) >= count),
+    )
+    .map((recipe) => ({ recipe, amount }));
+}
+
+/**
+ * The lore for a craft button, carried over from the old craft form button
+ * text: the resulting amount followed by one line per ingredient.
+ */
+function getCraftButtonLore(
+  recipe: genrecipes.RecipeData,
+  amount: number,
+): RawMessage {
+  const [recipeAmount, recipeIngredients] = recipe;
+  return {
+    rawtext: [
+      {
+        text: "§7",
+      },
+      {
+        translate: "fluffyalien_asn.ui.storageInterface.craft.button.recipe",
+        with: { rawtext: [{ text: (recipeAmount * amount).toString() }] },
+      },
+      ...recipeIngredients.flatMap(([id, count]): RawMessage[] => {
+        const itemName: RawMessage = id.startsWith("#")
+          ? {
+              translate:
+                "fluffyalien_asn.ui.storageInterface.craft.button.recipe.withTag",
+              with: { rawtext: [{ text: id.slice(1) }] },
+            }
+          : { translate: getItemTranslationKey(id) };
+        return [{ text: `\n${(count * amount).toString()} ` }, itemName];
+      }),
+    ],
+  };
+}
+
+/**
+ * Item buttons for the "craft_item" view: one entry per option from
+ * {@link getCraftItemOptions}, each an item of the crafted type carrying the
+ * recipe details in its lore. The order matches getCraftItemOptions so the
+ * interaction poll can map a clicked slot back to its option.
+ */
+export function getCraftItemDisplayItems(
+  rawItems: readonly StoredItem[],
+  typeId: string | undefined,
+  amount: number,
+): StoredItem[] {
+  if (typeId === undefined) return [];
+  const samplerr = createItemStack(typeId);
+  if (samplerr.isErr()) return [];
+  const sampler = samplerr.value;
+
+  return getCraftItemOptions(rawItems, typeId, amount).map(
+    (option): StoredItem => {
+      const itemStack = sampler.clone();
+      itemStack.setLore([getCraftButtonLore(option.recipe, option.amount)]);
+      return ["", itemStack];
+    },
+  );
+}
+
 /** Returns the items to display for the viewer's current view. */
 export function getDisplayItems(data: ViewerData): readonly StoredItem[] {
   switch (data.view) {
@@ -92,6 +187,12 @@ export function getDisplayItems(data: ViewerData): readonly StoredItem[] {
       );
     case "crafting":
       return getCraftingViewItems(data.rawItems, data.craftingQuery);
+    case "craft_item":
+      return getCraftItemDisplayItems(
+        data.rawItems,
+        data.craftItemTypeId,
+        data.stackSize,
+      );
     case "default":
       return data.filteredItems;
   }

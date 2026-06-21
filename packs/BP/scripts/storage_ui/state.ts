@@ -2,7 +2,12 @@ import { ItemStack, Player } from "@minecraft/server";
 import { StorageSystem } from "../storage_system";
 
 /** Which view the storage viewer is currently displaying. */
-export type StorageViewerView = "default" | "group" | "group_type" | "crafting";
+export type StorageViewerView =
+  | "default"
+  | "group"
+  | "group_type"
+  | "crafting"
+  | "craft_item";
 
 /** How many items are taken out per click in the storage view. */
 export type StorageViewerStackSize = 1 | 2 | 4 | 8 | 16 | 32 | 64;
@@ -25,6 +30,8 @@ export interface ViewerData {
   view: StorageViewerView;
   stackSize: StorageViewerStackSize;
   groupTypeId?: string;
+  /** The item type being crafted in the "craft_item" view. */
+  craftItemTypeId?: string;
   craftingQuery?: string;
   /**
    * The display items for the current page/view, cached whenever the inventory

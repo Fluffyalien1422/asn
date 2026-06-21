@@ -83,9 +83,7 @@ fluffyalien_asn.ui.fluidDrive.body.storageUsed=Storage Used (%s) (Drive): %s mL 
 fluffyalien_asn.ui.fluidDrive.body.storageUsedTotal=Storage Used (Total) (Drive): %s/6400 mL
 
 fluffyalien_asn.ui.storageInterface.title=Storage Interface
-fluffyalien_asn.ui.storageInterface.craft.title=Storage Interface
 fluffyalien_asn.ui.storageInterface.search.label=ID Search
-fluffyalien_asn.ui.storageInterface.craft.body=Crafting %s.
 fluffyalien_asn.ui.storageInterface.craft.button.recipe=Craft %s with
 fluffyalien_asn.ui.storageInterface.craft.button.recipe.withTag=any %s
 fluffyalien_asn.ui.storageInterface.error.insufficientStorage=Cannot add this item due to insufficient storage. Try adding more storage disks.

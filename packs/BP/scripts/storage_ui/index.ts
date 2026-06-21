@@ -1,12 +1,6 @@
 import { getEntitiesInAllDimensions } from "../utils/dimension";
-import { showCraftForm, showSearchForm } from "./form";
-import {
-  Entity,
-  EntityQueryOptions,
-  ItemStack,
-  system,
-  world,
-} from "@minecraft/server";
+import { showSearchForm } from "./form";
+import { Entity, EntityQueryOptions, system, world } from "@minecraft/server";
 import {
   BACK_BUTTON_ITEM_ID,
   CANCEL_SEARCH_BUTTON_ITEM_ID,
@@ -31,7 +25,11 @@ import {
   ViewerData,
   viewerData,
 } from "./state";
-import { searchFilter } from "./items";
+import {
+  getAvailableIngredients,
+  getCraftItemOptions,
+  searchFilter,
+} from "./items";
 import { fillViewerInventory } from "./render";
 import { addItemToStorage, refreshStorageViewerOrLog } from "./storage";
 import {
@@ -41,6 +39,7 @@ import {
 } from "./ui_item";
 import { logWarn } from "../log";
 import { createItemStack } from "../utils/item";
+import { genrecipes } from "../recipes";
 
 // Re-export the public entry point used by storage_interface / wireless_interface.
 export { refreshStorageViewerOrLog } from "./storage";
@@ -73,62 +72,70 @@ async function search(
   });
 }
 
+/**
+ * Crafts `recipe` (producing item `typeId`) up to `craftAmount` times, clamped
+ * to the ingredients currently in storage, then refreshes the viewer. This is
+ * the action the old craft form performed when a recipe button was pressed.
+ */
 async function craft(
   entity: Entity,
   data: ViewerData,
-  itemStack: ItemStack,
+  typeId: string,
+  recipe: genrecipes.RecipeData,
+  craftAmount: number,
 ): Promise<void> {
-  await forceCloseStorageViewerInventory(entity);
+  const refresh = (): void => {
+    refreshStorageViewerOrLog(
+      entity,
+      data.playerInUi,
+      data.storageSystem,
+      true,
+    );
+  };
+
+  const resultStackr = createItemStack(typeId);
+  if (resultStackr.isErr()) {
+    logWarn(`Failed to craft item: ${resultStackr.error.message}`);
+    refresh();
+    return;
+  }
+  const resultStack = resultStackr.value;
 
   const storedItemsr = await data.storageSystem.getStoredItemStacks();
   if (storedItemsr.isErr()) {
-    logWarn(`Failed to prepare crafting UI: ${storedItemsr.error}`);
+    logWarn(`Failed to prepare crafting: ${storedItemsr.error}`);
+    refresh();
     return;
   }
   const storedItems = storedItemsr.value;
-
-  const response = await showCraftForm(data.playerInUi, itemStack, storedItems);
-  if (!response) {
-    return;
-  }
-  const [recipe, craftAmount] = response;
   const [recipeAmount, recipeIngredients] = recipe;
 
-  // `storedItems` is a live reference to the storage system's cache, so it
-  // reflects any changes made while the form was open. We compute everything
-  // against it before removing anything, so the craft is non-destructive: if it
-  // can no longer be fully satisfied we craft the maximum the current contents
-  // allow and never remove unused ingredients.
-
-  // Total available count per ingredient id (typeId, or #tag for tag matches).
-  const available = new Map<string, number>();
-  for (const [, stack] of storedItems) {
-    available.set(
-      stack.typeId,
-      (available.get(stack.typeId) ?? 0) + stack.amount,
-    );
-    for (const tag of stack.getTags()) {
-      const tagId = "#" + tag;
-      available.set(tagId, (available.get(tagId) ?? 0) + stack.amount);
-    }
-  }
+  // `storedItems` is a live reference to the storage system's cache. We compute
+  // everything against it before removing anything, so the craft is
+  // non-destructive: if it can no longer be fully satisfied we craft the maximum
+  // the current contents allow and never remove unused ingredients.
+  const available = getAvailableIngredients([...storedItems]);
 
   // Clamp the requested craft count to what the available ingredients support.
   let crafts = craftAmount;
-  for (const [typeId, count] of recipeIngredients) {
-    crafts = Math.min(crafts, Math.floor((available.get(typeId) ?? 0) / count));
+  for (const [ingredientId, count] of recipeIngredients) {
+    crafts = Math.min(
+      crafts,
+      Math.floor((available.get(ingredientId) ?? 0) / count),
+    );
   }
   if (crafts <= 0) {
+    refresh();
     return;
   }
 
-  for (const [typeId, count] of recipeIngredients) {
+  for (const [ingredientId, count] of recipeIngredients) {
     let remaining = count * crafts;
     for (const [stackId, stack] of storedItems) {
       if (remaining <= 0) break;
-      const matches = typeId.startsWith("#")
-        ? stack.hasTag(typeId.slice(1))
-        : stack.typeId === typeId;
+      const matches = ingredientId.startsWith("#")
+        ? stack.hasTag(ingredientId.slice(1))
+        : stack.typeId === ingredientId;
       if (!matches) continue;
 
       const toRemove = Math.min(remaining, stack.amount);
@@ -140,10 +147,10 @@ async function craft(
         logWarn(
           `Failed to remove ingredient during crafting: ${removedr.error.type === "unknownError" ? removedr.error.message : removedr.error.type}`,
         );
+        refresh();
         return;
       }
-      const removed = removedr.value;
-      remaining -= removed.amount;
+      remaining -= removedr.value.amount;
     }
   }
 
@@ -153,15 +160,13 @@ async function craft(
 
   let spawned = 0;
   while (spawned < totalAmount) {
-    const stackAmount = Math.min(totalAmount - spawned, itemStack.maxAmount);
-    const spawnStackr = createItemStack(itemStack.typeId, stackAmount);
-    if (spawnStackr.isErr()) {
-      logWarn(`Failed to spawn crafted item: ${spawnStackr.error.message}`);
-      break;
-    }
-    dimension.spawnItem(spawnStackr.value, location);
-    spawned += stackAmount;
+    const spawnStack = resultStack.clone();
+    spawnStack.amount = Math.min(totalAmount - spawned, resultStack.maxAmount);
+    dimension.spawnItem(spawnStack, location);
+    spawned += spawnStack.amount;
   }
+
+  refresh();
 }
 
 /**
@@ -222,6 +227,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
     )
   ) {
     data.groupTypeId = undefined;
+    data.craftItemTypeId = undefined;
     data.craftingQuery = undefined;
     data.hasQuery = false;
     data.page = 0;
@@ -279,6 +285,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
     )
   ) {
     data.groupTypeId = undefined;
+    data.craftItemTypeId = undefined;
     data.craftingQuery = undefined;
     data.hasQuery = false;
     data.page = 0;
@@ -342,8 +349,27 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
     }
 
     if (data.view === "crafting") {
-      data.enabled = false;
-      void craft(entity, data, storageStack);
+      // Drill into the clicked item's craft options (replaces the craft form).
+      data.view = "craft_item";
+      data.craftItemTypeId = storageStack.typeId;
+      data.page = 0;
+      fillViewerInventory(entity, data);
+      break;
+    }
+
+    if (data.view === "craft_item") {
+      // Each item button maps to one recipe×amount option; perform that craft.
+      const options = getCraftItemOptions(
+        data.rawItems,
+        data.craftItemTypeId,
+        data.stackSize,
+      );
+      const optionIndex = data.page * ITEMS_PER_PAGE + i;
+      if (optionIndex < options.length) {
+        const { recipe, amount } = options[optionIndex];
+        data.enabled = false;
+        void craft(entity, data, storageStack.typeId, recipe, amount);
+      }
       break;
     }
 
