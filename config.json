@@ -16,11 +16,11 @@
       },
       "build_scripts": {
         "runWith": "shell",
-        "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --log-level=warning --external:@minecraft/server --external:@minecraft/server-ui --preserve-symlinks"
+        "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --log-level=warning --preserve-symlinks --external:./BP/scripts/generated/__recipes.js --external:@minecraft/server --external:@minecraft/server-ui"
       },
       "minify_and_clean_scripts": {
         "runWith": "shell",
-        "command": "npx terser ./BP/scripts/__bundle.js --module -cmo ./BP/scripts/__bundle.js; Remove-Item ./BP/scripts/* -Recurse -Exclude __bundle.js"
+        "command": "npx terser ./BP/scripts/__bundle.js --module -cmo ./BP/scripts/__bundle.js; Remove-Item ./BP/scripts/* -Recurse -Exclude __*.js"
       },
       "page_number_items": {
         "runWith": "nodejs",

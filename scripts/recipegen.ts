@@ -4,6 +4,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import jsonc from "jsonc-parser";
 
 //#region Overrides
 // Key syntax: <ID>:<DATA|*>
@@ -107,20 +108,28 @@ interface VanillaRecipeShaped extends VanillaRecipe {
 //#region Prepare
 console.log("Preparing...");
 
-if (process.argv.length < 3) {
-  throw new Error("Expected path to vanilla 'recipes' directory.");
-}
-const recipesPath = path.normalize(process.argv[2]);
-console.log(`Recipes path: ${recipesPath}`);
-if (!fs.existsSync(recipesPath) || !fs.statSync(recipesPath).isDirectory()) {
-  throw new Error(
-    "Provided recipes path does not exist or does not point to a directory.",
-  );
-}
+const readPathArg = (argIndex: number, name: string): string => {
+  const argvIndex = argIndex + 2;
+  if (process.argv.length <= argvIndex) {
+    throw new Error(
+      `Invalid argument ${argIndex.toString()} (${name}): Argument does not exist.`,
+    );
+  }
+  const p = path.normalize(process.argv[argvIndex]);
+  console.log(`${name}: ${p}`);
+  if (!fs.existsSync(p) || !fs.statSync(p).isDirectory()) {
+    throw new Error(
+      `Invalid argument ${argIndex.toString()} (${name}): Path does not exist or does not point to a directory.`,
+    );
+  }
+  return p;
+};
+const recipesPath = readPathArg(0, "Vanilla recipes path");
+const asnRecipesPath = readPathArg(1, "ASN recipes path");
 
 const scriptsGeneratedDirPath = "packs/BP/scripts/generated";
 if (!fs.existsSync(scriptsGeneratedDirPath)) {
-  fs.mkdirSync(scriptsGeneratedDirPath);
+  fs.mkdirSync(scriptsGeneratedDirPath, { recursive: true });
 }
 //#endregion Prepare
 
@@ -148,7 +157,7 @@ function parseItemRef(ref: VanillaItemRef): RecipeItem | null {
     return ["#" + ref.tag, count];
   }
 
-  if (!item.startsWith("minecraft:")) item = `minecraft:${item}`;
+  if (!item.includes(":")) item = `minecraft:${item}`;
   if (ref.data) {
     const override = `${item}:${ref.data.toString()}`;
     if (override in OVERRIDES) {
@@ -212,9 +221,9 @@ function parseShaped(content: VanillaRecipeShaped): void {
   setRecipeData(result[0], [result[1], Object.entries(ingredientsMap)]);
 }
 
-for (const fileName of fs.readdirSync(recipesPath)) {
-  const content = JSON.parse(
-    fs.readFileSync(path.join(recipesPath, fileName), "utf8"),
+function readAndParseFile(basePath: string, fileName: string): void {
+  const content = jsonc.parse(
+    fs.readFileSync(path.join(basePath, fileName), "utf8"),
   ) as object;
 
   if ("minecraft:recipe_shapeless" in content) {
@@ -226,13 +235,20 @@ for (const fileName of fs.readdirSync(recipesPath)) {
   }
 }
 
+for (const fileName of fs.readdirSync(recipesPath)) {
+  readAndParseFile(recipesPath, fileName);
+}
+for (const fileName of fs.readdirSync(asnRecipesPath)) {
+  readAndParseFile(asnRecipesPath, fileName);
+}
+
 //#endregion Generate
 
 //#region Finish up
 console.log("Finishing up...");
 
 fs.writeFileSync(
-  path.join(scriptsGeneratedDirPath, "recipes.js"),
+  path.join(scriptsGeneratedDirPath, "__recipes.js"),
   `export default ${JSON.stringify(output)};`,
 );
 //#endregion Finish up
