@@ -14,6 +14,10 @@
         "runWith": "shell",
         "command": "node --experimental-transform-types ../../scripts/filters/simple_manifest_bec.ts"
       },
+      "tutorial_entries": {
+        "runWith": "nodejs",
+        "script": "scripts/filters/tutorial_entries.ts"
+      },
       "build_scripts": {
         "runWith": "shell",
         "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --log-level=warning --preserve-symlinks --external:./BP/scripts/generated/__recipes.js --external:@minecraft/server --external:@minecraft/server-ui"
@@ -40,6 +44,9 @@
         "filters": [
           {
             "filter": "simple_manifest_bec"
+          },
+          {
+            "filter": "tutorial_entries"
           },
           {
             "filter": "build_scripts"

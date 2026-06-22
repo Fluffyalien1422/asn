@@ -120,8 +120,7 @@ export function getCraftItemOptions(
 }
 
 /**
- * The lore for a craft button, carried over from the old craft form button
- * text: the resulting amount followed by one line per ingredient.
+ * The lore for a craft button: the resulting amount followed by one line per ingredient.
  */
 function getCraftButtonLore(
   recipe: genrecipes.RecipeData,

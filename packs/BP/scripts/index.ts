@@ -5,7 +5,6 @@ import "./tutorial_book";
 import "./wireless_interface";
 
 //TODO: test everything: buses, fluid storage, wireless interfaces, relays, etc
-//TODO: advanced crafting: craft ingredients needed for a recipe.
 //TODO: remove all unused code and definitions
 //TODO: update tutorial book entries
 //TODO: rebalance energy consumption
