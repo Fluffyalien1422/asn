@@ -41,6 +41,7 @@ tile.fluffyalien_asn:fluid_interface.name=Fluid Storage Interface
 tile.fluffyalien_asn:fluid_drive.name=Fluid Storage Drive
 tile.fluffyalien_asn:fluid_import_bus.name=Fluid Storage Import Bus
 tile.fluffyalien_asn:fluid_export_bus.name=Fluid Storage Export Bus
+tile.fluffyalien_asn:autocrafter.name=Autocrafter
 
 fluffyalien_asn.message.wirelessInterface.linked=Wireless storage interface linked.
 fluffyalien_asn.message.wirelessInterface.notLinked=This wireless storage interface is not linked to a storage network.
@@ -93,7 +94,7 @@ fluffyalien_asn.ui.storageCore.body.storageUsedFluid=Storage Used (%s) (Network)
 fluffyalien_asn.ui.storageCore.body.storageUsedFluidTotal=Storage Used (Total Fluids) (Network): %s/%s mL
 
 fluffyalien_asn.ui.exportBus.title=Export Bus
-fluffyalien_asn.ui.exportBus.exportItem=Exporting %s
+fluffyalien_asn.ui.exportBus.exportItem=Exporting %s.
 fluffyalien_asn.ui.exportBus.noExportItem=Not exporting anything. Interact while holding an item to export that item.
 fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.label=Enchantments Filter
 fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.ignore=Ignore
@@ -103,6 +104,11 @@ fluffyalien_asn.ui.exportBus.exportItemMinDamage=Min Damage Filter (Inclusive)
 fluffyalien_asn.ui.exportBus.exportItemMaxDamage=Max Damage Filter (Inclusive)
 fluffyalien_asn.ui.exportBus.error.invalidMinDamage=Invalid min damage filter.
 fluffyalien_asn.ui.exportBus.error.invalidMaxDamage=Invalid max damage filter.
+
+fluffyalien_asn.ui.autocrafter.craftingItem=Crafting %s.
+fluffyalien_asn.ui.autocrafter.noRecipe=Not crafting anything. Interact while holding an item to set the recipe.
+fluffyalien_asn.ui.autocrafter.noRecipes=%s cannot be crafted.
+fluffyalien_asn.ui.autocrafter.chooseRecipe=Choose a recipe for %s.
 
 fluffyalien_asn.ui.levelEmitter.title=Level Emitter
 fluffyalien_asn.ui.levelEmitter.noItem=Not testing anything. Interact while holding an item to test that item.

@@ -118,10 +118,10 @@ async function craft(
 
   // Clamp the requested craft count to what the available ingredients support.
   let crafts = craftAmount;
-  for (const [ingredientId, count] of recipeIngredients) {
+  for (const [ingredientTypeId, count] of recipeIngredients) {
     crafts = Math.min(
       crafts,
-      Math.floor((available.get(ingredientId) ?? 0) / count),
+      Math.floor((available.get(ingredientTypeId) ?? 0) / count),
     );
   }
   if (crafts <= 0) {
@@ -129,13 +129,13 @@ async function craft(
     return;
   }
 
-  for (const [ingredientId, count] of recipeIngredients) {
+  for (const [ingredientTypeId, count] of recipeIngredients) {
     let remaining = count * crafts;
     for (const [stackId, stack] of storedItems) {
       if (remaining <= 0) break;
-      const matches = ingredientId.startsWith("#")
-        ? stack.hasTag(ingredientId.slice(1))
-        : stack.typeId === ingredientId;
+      const matches = ingredientTypeId.startsWith("#")
+        ? stack.hasTag(ingredientTypeId.slice(1))
+        : stack.typeId === ingredientTypeId;
       if (!matches) continue;
 
       const toRemove = Math.min(remaining, stack.amount);

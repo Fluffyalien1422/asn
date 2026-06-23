@@ -5,6 +5,7 @@ import { storageCableComponent } from "./cable";
 import { levelEmitterComponent } from "./level_emitter";
 import { importBusComponent } from "./import_bus";
 import { exportBusComponent } from "./export_bus";
+import { autocrafterComponent } from "./autocrafter";
 import { storageRelayComponent } from "./relay";
 import { storagePowerBankComponent } from "./power_bank";
 import { wirelessTransmitterComponent } from "./wireless_transmitter";
@@ -49,6 +50,11 @@ system.beforeEvents.startup.subscribe((e) => {
   e.blockComponentRegistry.registerCustomComponent(
     "fluffyalien_asn:export_bus",
     exportBusComponent,
+  );
+
+  e.blockComponentRegistry.registerCustomComponent(
+    "fluffyalien_asn:autocrafter",
+    autocrafterComponent,
   );
 
   e.blockComponentRegistry.registerCustomComponent(

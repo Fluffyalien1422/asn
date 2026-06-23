@@ -7,6 +7,7 @@ import {
 import { DeepReadonly } from "ts-essentials";
 import { updateImportBus } from "./import_bus";
 import { updateExportBus } from "./export_bus";
+import { updateAutocrafter } from "./autocrafter";
 import { logWarn, panic } from "./log";
 import { updateLevelEmitter } from "./level_emitter";
 import {
@@ -265,6 +266,9 @@ export class StorageNetwork extends StorageSystem {
             break;
           case "fluffyalien_asn:fluid_export_bus":
             void updateFluidExportBus(block, this);
+            break;
+          case "fluffyalien_asn:autocrafter":
+            void updateAutocrafter(block, this);
             break;
         }
       }

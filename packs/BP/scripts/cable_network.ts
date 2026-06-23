@@ -129,6 +129,7 @@ export async function discoverCableNetworkConnections(
       case "fluffyalien_asn:export_bus":
       case "fluffyalien_asn:fluid_import_bus":
       case "fluffyalien_asn:fluid_export_bus":
+      case "fluffyalien_asn:autocrafter":
         buses.push(block);
         return ok();
       case "fluffyalien_asn:storage_relay": {
