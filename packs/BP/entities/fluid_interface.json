@@ -1,5 +1,5 @@
 {
-  "format_version": "1.21.0",
+  "format_version": "1.26.20",
   "minecraft:entity": {
     "description": {
       "identifier": "fluffyalien_asn:fluid_interface",
@@ -7,7 +7,17 @@
       "is_spawnable": false
     },
     "components": {
+      "minecraft:inventory": {
+        "container_type": "container",
+        "inventory_size": 24
+      },
+      "minecraft:type_family": {
+        "family": ["fluffyalien_energisticscore:machine_entity"]
+      },
       "minecraft:persistent": {},
+      "minecraft:knockback_resistance": {
+        "value": 1
+      },
       "minecraft:breathable": {
         "breathes_water": true
       },
@@ -17,26 +27,12 @@
       },
       "minecraft:damage_sensor": {
         "triggers": {
-          "deals_damage": false
+          "deals_damage": "no"
         }
-      },
-      "minecraft:pushable": {
-        "is_pushable": false,
-        "is_pushable_by_piston": false
-      },
-      "minecraft:knockback_resistance": {
-        "value": 1
       },
       "minecraft:collision_box": {
         "width": 1,
         "height": 1
-      },
-      "minecraft:inventory": {
-        "container_type": "container",
-        "inventory_size": 24
-      },
-      "minecraft:type_family": {
-        "family": ["fluffyalien_energisticscore:machine_entity"]
       }
     }
   }

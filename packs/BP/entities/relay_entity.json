@@ -1,5 +1,5 @@
 {
-  "format_version": "1.20.70",
+  "format_version": "1.26.20",
   "minecraft:entity": {
     "description": {
       "identifier": "fluffyalien_asn:relay_entity",
@@ -7,10 +7,14 @@
       "is_spawnable": false
     },
     "components": {
+      "minecraft:tick_world": {
+        "never_despawn": true,
+        "radius": 2
+      },
+      "minecraft:persistent": {},
       "minecraft:knockback_resistance": {
         "value": 1
       },
-      "minecraft:persistent": {},
       "minecraft:breathable": {
         "breathes_water": true
       },
@@ -18,18 +22,10 @@
         "has_gravity": false,
         "has_collision": false
       },
-      "minecraft:tick_world": {
-        "never_despawn": true,
-        "radius": 2
-      },
       "minecraft:damage_sensor": {
         "triggers": {
-          "deals_damage": false
+          "deals_damage": "no"
         }
-      },
-      "minecraft:pushable": {
-        "is_pushable": false,
-        "is_pushable_by_piston": false
       },
       "minecraft:collision_box": {
         "width": 0,
