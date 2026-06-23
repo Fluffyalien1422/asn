@@ -1,13 +1,13 @@
 import { StorageNetwork } from "./storage_network";
 import { BlockCustomComponent, Entity, Player } from "@minecraft/server";
 import { getEntityAtBlockLocation } from "./utils/location";
-import { DynamicPropertyAccessorLegacy } from "./utils/dynamic_property";
 import { ModalFormData } from "@minecraft/server-ui";
 import { createErrorMessageForm, showForm } from "./utils/ui";
 import { logWarn } from "./log";
 import { Vector3Utils } from "@minecraft/math";
+import { DynamicPropertyAccessor } from "./utils/dynamic_property_v3";
 
-export const relayName = DynamicPropertyAccessorLegacy.withoutDefault<string>(
+export const relayName = new DynamicPropertyAccessor<string>(
   "fluffyalien_asn:relay_name",
 );
 
@@ -16,7 +16,7 @@ async function showRelayUi(player: Player, relayEntity: Entity): Promise<void> {
   form.title({ translate: "fluffyalien_asn.ui.relay.title" });
 
   form.textField({ translate: "fluffyalien_asn.ui.relay.name" }, "", {
-    defaultValue: relayName.get(relayEntity),
+    defaultValue: relayName.safeGet(relayEntity),
   });
 
   const response = await showForm(form, player);

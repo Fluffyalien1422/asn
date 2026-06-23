@@ -5,7 +5,7 @@ import {
   getBlockDynamicProperty,
   removeAllDynamicPropertiesForBlock,
   setBlockDynamicProperty,
-} from "./utils/dynamic_property";
+} from "./utils/block_dynamic_property";
 import {
   generate,
   getMachineStorage,

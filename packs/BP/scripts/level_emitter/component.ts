@@ -6,7 +6,7 @@ import {
   updateBlockConnectStates,
 } from "../utils/block_connect";
 import { STR_DIRECTIONS, StrCardinalDirection } from "../utils/direction";
-import { removeAllDynamicPropertiesForBlock } from "../utils/dynamic_property";
+import { removeAllDynamicPropertiesForBlock } from "../utils/block_dynamic_property";
 import { itemProperty, resetLevelEmitterFilters } from "./properties";
 
 export const levelEmitterComponent: BlockCustomComponent = {

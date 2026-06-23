@@ -23,9 +23,7 @@ export function getItemTranslationKey(itemId: string): string {
 }
 
 export function getEnchantmentTypeId(enchantment: Enchantment): string {
-  return typeof enchantment.type === "string"
-    ? enchantment.type
-    : enchantment.type.id;
+  return enchantment.type.id;
 }
 
 export function getItemStackDamage(itemStack: ItemStack): number {

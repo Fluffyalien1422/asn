@@ -6,7 +6,7 @@ import {
   updateBlockConnectStates,
 } from "../utils/block_connect";
 import { STR_DIRECTIONS, StrCardinalDirection } from "../utils/direction";
-import { removeAllDynamicPropertiesForBlock } from "../utils/dynamic_property";
+import { removeAllDynamicPropertiesForBlock } from "../utils/block_dynamic_property";
 import { exportItemProperty, resetExportItemFilters } from "./properties";
 
 export const exportBusComponent: BlockCustomComponent = {

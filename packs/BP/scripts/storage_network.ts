@@ -27,7 +27,7 @@ import { FLUID_DRIVE_CAPACITY } from "./fluid_drive";
 import {
   getBlockDynamicProperty,
   setBlockDynamicProperty,
-} from "./utils/dynamic_property";
+} from "./utils/block_dynamic_property";
 import { updateFluidExportBus } from "./fluid_export_bus";
 import { getDisksInDrive } from "./storage_drive_v3";
 import {

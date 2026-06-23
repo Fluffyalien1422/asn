@@ -145,7 +145,7 @@ export async function discoverCableNetworkConnections(
           return ok();
         }
 
-        const name = relayName.get(entity);
+        const name = relayName.safeGet(entity);
         if (!name) return ok();
 
         for (const otherEntity of getEntitiesInAllDimensions({
@@ -153,7 +153,7 @@ export async function discoverCableNetworkConnections(
           minDistance: 2,
           location: entity.location,
         })) {
-          const otherName = relayName.get(otherEntity);
+          const otherName = relayName.safeGet(otherEntity);
           if (name !== otherName) continue;
 
           const nextBlock = otherEntity.dimension.getBlock(

@@ -14,7 +14,7 @@ import {
   getBlockDynamicProperty,
   removeAllDynamicPropertiesForBlock,
   setBlockDynamicProperty,
-} from "./utils/dynamic_property";
+} from "./utils/block_dynamic_property";
 import { NetworkStoredFluids, StorageNetwork } from "./storage_network";
 import { getPlayerMainhandSlot } from "./utils/item";
 

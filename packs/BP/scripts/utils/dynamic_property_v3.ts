@@ -3,9 +3,9 @@ import { err, ok, Result } from "neverthrow";
 import {
   getBlockDynamicProperty,
   setBlockDynamicProperty,
-} from "./dynamic_property";
+} from "./block_dynamic_property";
 
-type DynamicPropertyValue = boolean | number | string | Vector3;
+export type DynamicPropertyValue = boolean | number | string | Vector3;
 
 interface HasDynamicProperties {
   getDynamicProperty(id: string): DynamicPropertyValue | undefined;

@@ -6,7 +6,6 @@ import {
   system,
   world,
 } from "@minecraft/server";
-import { DynamicPropertyAccessorLegacy } from "./utils/dynamic_property";
 import {
   useEnergyRule,
   wirelessInterfaceEnergyConsumptionRule,
@@ -17,6 +16,7 @@ import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
 import { refreshStorageViewerOrLog } from "./storage_ui";
 import { ItemMachine, StandardStorageType } from "bedrock-energistics-core-api";
 import { STORAGE_VIEWER_FORCE_CLOSE_TAG } from "./storage_ui/shared";
+import { DynamicPropertyAccessor } from "./utils/dynamic_property_v3";
 
 /**
  * key = player ID
@@ -25,12 +25,12 @@ import { STORAGE_VIEWER_FORCE_CLOSE_TAG } from "./storage_ui/shared";
 const wirelessInterfaceEntities = new Map<string, Entity>();
 
 export const wirelessInterfaceLinkLocationProperty =
-  DynamicPropertyAccessorLegacy.withoutDefault<Vector3>(
+  new DynamicPropertyAccessor<Vector3>(
     "fluffyalien_asn:wireless_interface_link_location",
   );
 
 export const wirelessInterfaceLinkDimensionProperty =
-  DynamicPropertyAccessorLegacy.withoutDefault<string>(
+  new DynamicPropertyAccessor<string>(
     "fluffyalien_asn:wireless_interface_link_dimension",
   );
 
@@ -115,9 +115,10 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   // see [#32](https://github.com/Fluffyalien1422/asn/issues/32)
   mainHandSlot.lockMode = ItemLockMode.slot;
 
-  const linkLocation = wirelessInterfaceLinkLocationProperty.get(mainHandSlot);
+  const linkLocation =
+    wirelessInterfaceLinkLocationProperty.safeGet(mainHandSlot);
   const linkDimension =
-    wirelessInterfaceLinkDimensionProperty.get(mainHandSlot);
+    wirelessInterfaceLinkDimensionProperty.safeGet(mainHandSlot);
 
   if (!linkLocation || !linkDimension) {
     removeWirelessInterfaceEntity(e.player, e.target);

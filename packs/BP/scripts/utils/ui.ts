@@ -33,10 +33,16 @@ export function createErrorMessageForm(body: RawMessage): ActionFormData {
   );
 }
 
+/**
+ * @deprecated
+ */
 export function showForm(
   form: ActionFormData,
   player: Player,
 ): Promise<ActionFormResponse>;
+/**
+ * @deprecated
+ */
 export function showForm(
   form: ModalFormData,
   player: Player,
