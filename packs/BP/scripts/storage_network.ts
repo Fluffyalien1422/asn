@@ -33,10 +33,8 @@ import { updateFluidExportBus } from "./fluid_export_bus";
 import { getDisksInDrive } from "./storage_drive_v3";
 import {
   getDiskCapacity,
-  loadDataArea,
   loadItemsFromDisk,
   saveItemsToDisk,
-  unloadDataArea,
 } from "./storage_disk_v3";
 import { cloneItemStackWithAmount } from "./utils/item";
 import { getBlockUid } from "./utils/block";
@@ -378,22 +376,13 @@ export class StorageNetwork extends StorageSystem {
       return ok(this.storedItems);
     }
 
-    const loadDataAreaResult = await loadDataArea();
-    if (loadDataAreaResult.isErr()) {
-      return err(
-        new Error(
-          `Failed to get stored item stacks: ${loadDataAreaResult.error}`,
-        ),
-      );
-    }
-
     const storedItems = new Map<string, ItemStack>();
     const disks = this.getDisks();
     // snapshot of what is currently on each disk, parallel to `disks`
     const savedDiskContents: (DiskSlotSnapshot[] | undefined)[] = [];
 
     for (const disk of disks) {
-      const itemsr = loadItemsFromDisk(disk);
+      const itemsr = await loadItemsFromDisk(disk);
       if (itemsr.isErr()) {
         logWarn(`Failed to load items from disk: ${itemsr.error}`);
         // contents unknown, force this disk to be rewritten on the next save
@@ -406,8 +395,6 @@ export class StorageNetwork extends StorageSystem {
       }
       savedDiskContents.push(snapshotDiskContents(items));
     }
-
-    unloadDataArea();
 
     this.storedItems = storedItems;
     this.storedItemDisks = disks;
@@ -480,21 +467,12 @@ export class StorageNetwork extends StorageSystem {
       return ok();
     }
 
-    const loadDataAreaResult = await loadDataArea();
-    if (loadDataAreaResult.isErr()) {
-      return err(
-        new Error(
-          `Failed to save item data: ${loadDataAreaResult.error.message}`,
-        ),
-      );
-    }
-
     for (const i of dirtyDiskIndexes) {
       const disk = disks[i];
       const diskItems = newDiskContents[i];
       const capacity = getDiskCapacity(disk.typeId);
 
-      const saveResult = saveItemsToDisk(disk, diskItems, capacity);
+      const saveResult = await saveItemsToDisk(disk, diskItems, capacity);
       if (saveResult.isErr()) {
         // leave this disk's snapshot unchanged so it is retried next save
         logWarn(`Failed to save item data: ${saveResult.error.message}`);
@@ -504,8 +482,6 @@ export class StorageNetwork extends StorageSystem {
       // record what we just persisted so future saves can skip this disk
       savedDiskContents[i] = snapshotDiskContents(diskItems);
     }
-
-    unloadDataArea();
 
     return ok();
   }
