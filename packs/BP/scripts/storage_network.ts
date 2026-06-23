@@ -606,6 +606,9 @@ export class StorageNetwork extends StorageSystem {
     this.savedDiskContents = undefined;
     this.storedFluids = undefined;
 
+    // the connected drives (and therefore the stored items) may have changed
+    this.markStoredItemsChanged();
+
     return ok();
   }
 
@@ -619,6 +622,7 @@ export class StorageNetwork extends StorageSystem {
     this.storedItems = undefined;
     this.storedItemDisks = undefined;
     this.savedDiskContents = undefined;
+    this.markStoredItemsChanged();
   }
 
   /**
@@ -820,6 +824,8 @@ export class StorageNetwork extends StorageSystem {
       });
     }
 
+    this.markStoredItemsChanged();
+
     return ok();
   };
 
@@ -873,6 +879,8 @@ export class StorageNetwork extends StorageSystem {
         message: `An unknown error occurred while saving stored item data: ${saveResult.error.message}`,
       });
     }
+
+    this.markStoredItemsChanged();
 
     return ok(addedCount);
   }
@@ -971,6 +979,8 @@ export class StorageNetwork extends StorageSystem {
         message: `An unknown error occurred while saving stored item data: ${saveResult.error.message}`,
       });
     }
+
+    this.markStoredItemsChanged();
 
     return ok(removed);
   };

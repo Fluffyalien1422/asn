@@ -176,8 +176,13 @@ async function craft(
  * control slot is compared against the item it should hold, and any mismatch
  * means the player clicked (took) that button. The first detected change is
  * handled and processing stops for this tick. Item slots are checked last.
+ *
+ * @returns whether an interaction was handled this tick. The caller uses this
+ *   to decide whether to perform a passive real-time refresh: a refresh must
+ *   never run on a tick the player interacted, or it would rebuild the
+ *   inventory before the (already-handled) interaction's own refresh.
  */
-function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
+function processStorageViewerEntity(entity: Entity, data: ViewerData): boolean {
   const inventory = entity.getComponent("inventory")!.container;
 
   // An item placed in the input slot is added to storage. UI items must never
@@ -188,11 +193,11 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
       inventory.setItem(INPUT_SLOT_INDEX);
       data.enabled = false;
       void forceCloseStorageViewerInventory(entity);
-      return;
+      return true;
     }
 
     addItemToStorage(entity, data, inputSlotItem);
-    return;
+    return true;
   }
 
   const player = data.playerInUi;
@@ -207,14 +212,14 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
   if (handleButton(BACK_BUTTON_INDEX, BACK_BUTTON_ITEM_ID)) {
     data.page = Math.max(data.page - 1, 0);
     fillViewerInventory(entity, data);
-    return;
+    return true;
   }
 
   // Next: go to the next page.
   if (handleButton(NEXT_BUTTON_INDEX, NEXT_BUTTON_ITEM_ID)) {
     data.page++;
     fillViewerInventory(entity, data);
-    return;
+    return true;
   }
 
   // Crafting view: toggle between the crafting view and the default view.
@@ -238,7 +243,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
       data.view = "crafting";
       fillViewerInventory(entity, data);
     }
-    return;
+    return true;
   }
 
   // Stack size: cycle 1 -> 2 -> 4 -> ... -> 64 -> 1.
@@ -252,7 +257,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
       data.stackSize >= 64 ? 1 : data.stackSize * 2
     ) as StorageViewerStackSize;
     fillViewerInventory(entity, data);
-    return;
+    return true;
   }
 
   // Search: this slot toggles between "search" and "cancel search" depending on
@@ -272,7 +277,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
       data.enabled = false;
       void search(entity, data);
     }
-    return;
+    return true;
   }
 
   // Group view: toggle between the grouped view and the default view.
@@ -296,7 +301,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
       data.view = "group";
       fillViewerInventory(entity, data);
     }
-    return;
+    return true;
   }
 
   // No control button changed; check whether the player took an item slot.
@@ -312,7 +317,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
       // Empty display slot: a real item here was deposited by the player.
       if (inventoryItem && !isUiItem(inventoryItem)) {
         addItemToStorage(entity, data, inventoryItem);
-        break;
+        return true;
       }
 
       continue;
@@ -345,7 +350,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
       data.groupTypeId = storageStack.typeId;
       data.page = 0;
       fillViewerInventory(entity, data);
-      break;
+      return true;
     }
 
     if (data.view === "crafting") {
@@ -354,7 +359,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
       data.craftItemTypeId = storageStack.typeId;
       data.page = 0;
       fillViewerInventory(entity, data);
-      break;
+      return true;
     }
 
     if (data.view === "craft_item") {
@@ -370,11 +375,11 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
         data.enabled = false;
         void craft(entity, data, storageStack.typeId, recipe, amount);
       }
-      break;
+      return true;
     }
 
     if (storageStack.amount <= 0) {
-      break;
+      return true;
     }
 
     void data.storageSystem
@@ -388,8 +393,11 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): void {
         );
       });
 
-    break;
+    return true;
   }
+
+  // No interaction this tick.
+  return false;
 }
 
 // Prevent UI items from escaping into the world (eg. if one is somehow dropped).
@@ -436,7 +444,27 @@ system.runInterval(() => {
       continue;
     }
 
-    processStorageViewerEntity(entity, data);
+    const handled = processStorageViewerEntity(entity, data);
+
+    // Real-time updates: if the player didn't interact this tick and the
+    // system's contents changed since the viewer was last (re)built, refresh
+    // it so external changes (eg. an import bus, autocrafter, or another player)
+    // are reflected live. Skipped while a search query is active, since those
+    // results are intentionally frozen until the viewer is reopened.
+    //
+    // The detection must run after processStorageViewerEntity so a refresh never
+    // clobbers an interaction handled this tick. The recorded revision is bumped
+    // optimistically here so an in-flight refresh isn't triggered again next tick.
+    const revision = data.storageSystem.getStoredItemsRevision();
+    if (!handled && !data.hasQuery && revision !== data.storedItemsRevision) {
+      data.storedItemsRevision = revision;
+      refreshStorageViewerOrLog(
+        entity,
+        data.playerInUi,
+        data.storageSystem,
+        true,
+      );
+    }
   }
 }, 4);
 

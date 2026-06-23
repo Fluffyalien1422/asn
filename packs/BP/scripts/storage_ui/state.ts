@@ -34,9 +34,20 @@ export interface ViewerData {
   craftItemTypeId?: string;
   craftingQuery?: string;
   /**
+   * The storage system's stored-items revision at the time this viewer was last
+   * (re)built. The interaction poll compares it against the system's current
+   * revision to refresh the viewer in real time when the contents change while
+   * it is open. See {@link StorageSystem.getStoredItemsRevision}.
+   */
+  storedItemsRevision: number;
+  /**
    * The display items for the current page/view, cached whenever the inventory
    * is (re)built in `fillViewerInventory`. The interaction poll reuses this
-   * instead of recomputing the (potentially expensive) display list every tick.
+   * instead of recomputing the (potentially expensive) display list every tick,
+   * and compares it against the inventory to detect taken items. The stacks are
+   * clones (a snapshot), not live references into the network's item cache, so an
+   * external change to a stored stack's amount while the viewer is open is not
+   * misread as the player taking the item.
    */
   itemsOnPage: readonly StoredItem[];
 }

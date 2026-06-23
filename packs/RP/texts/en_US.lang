@@ -109,6 +109,7 @@ fluffyalien_asn.ui.autocrafter.craftingItem=Crafting %s.
 fluffyalien_asn.ui.autocrafter.noRecipe=Not crafting anything. Interact while holding an item to set the recipe.
 fluffyalien_asn.ui.autocrafter.noRecipes=%s cannot be crafted.
 fluffyalien_asn.ui.autocrafter.chooseRecipe=Choose a recipe for %s.
+fluffyalien_asn.ui.autocrafter.changeRecipe=Change Recipe
 
 fluffyalien_asn.ui.levelEmitter.title=Level Emitter
 fluffyalien_asn.ui.levelEmitter.noItem=Not testing anything. Interact while holding an item to test that item.

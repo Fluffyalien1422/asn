@@ -8,7 +8,11 @@ import { craftItemProperty, setCraftRecipe } from "./properties";
 /** The item name in bold, for use as a `with` substitution in a RawMessage. */
 function boldItemName(itemId: string): RawMessage {
   return {
-    rawtext: [{ text: "§l" }, { translate: getItemTranslationKey(itemId) }],
+    rawtext: [
+      { text: "§l" },
+      { translate: getItemTranslationKey(itemId) },
+      { text: "§r" },
+    ],
   };
 }
 
@@ -113,7 +117,7 @@ export async function showAutocrafterUi(
     return;
   }
 
-  // Empty hand: show the current status.
+  // Empty hand: show what the autocrafter is currently crafting.
   const craftItemId = craftItemProperty.safeGet(block);
   if (!craftItemId) {
     await createMessageForm(
@@ -123,10 +127,21 @@ export async function showAutocrafterUi(
     return;
   }
 
-  // If the crafted item has multiple recipes, let the player re-pick which one.
   const recipes = RECIPES[craftItemId] as genrecipes.RecipeData[] | undefined;
+
+  // With multiple recipes, show the status alongside an option to switch which
+  // one is crafted. (Interacting with an item in hand also re-sets the recipe.)
   if (recipes && recipes.length > 1) {
-    await showRecipeChooser(player, block, craftItemId, recipes);
+    const form = new ActionFormData()
+      .title({ translate: "tile.fluffyalien_asn:autocrafter.name" })
+      .body(craftingItemBody(craftItemId))
+      .button({ translate: "fluffyalien_asn.ui.autocrafter.changeRecipe" })
+      .button({ translate: "fluffyalien_asn.ui.common.close" });
+
+    const response = await form.show(player);
+    if (response.selection === 0) {
+      await showRecipeChooser(player, block, craftItemId, recipes);
+    }
     return;
   }
 

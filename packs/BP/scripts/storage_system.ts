@@ -28,6 +28,27 @@ export type RemoveItemStackFromStorageError =
  * A system that can hold {@link StorageSystemItemStacks}.
  */
 export abstract class StorageSystem {
+  private storedItemsRevision = 0;
+
+  /**
+   * A counter that increases whenever this system's stored items change. The
+   * storage viewer records it and refreshes in real time when it advances, so
+   * external changes (eg. an import bus or another player adding items) are
+   * reflected while the viewer is open. Subclasses must call
+   * {@link StorageSystem.markStoredItemsChanged} whenever their stored items change.
+   */
+  getStoredItemsRevision(): number {
+    return this.storedItemsRevision;
+  }
+
+  /**
+   * Records that this system's stored items have changed.
+   * @see {@link StorageSystem.getStoredItemsRevision}
+   */
+  protected markStoredItemsChanged(): void {
+    this.storedItemsRevision++;
+  }
+
   // this must be a property so subclasses will be forced to take player as optional.
   // subclasses are allowed to take less specific argument types for methods.
   // same for removeItemStack.

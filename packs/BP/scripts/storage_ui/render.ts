@@ -19,7 +19,7 @@ import {
 } from "./shared";
 import { getDisplayItems, getItemsOnPage } from "./items";
 import { addDisplayItemLoreMarker } from "./ui_item";
-import { ViewerData } from "./state";
+import { StoredItem, ViewerData } from "./state";
 
 /**
  * Rebuilds the storage viewer entity's inventory from its current state:
@@ -29,8 +29,19 @@ export function fillViewerInventory(entity: Entity, data: ViewerData): void {
   const inventory = entity.getComponent("inventory")!.container;
   inventory.clearAll();
 
-  const itemsOnPage = getItemsOnPage(getDisplayItems(data), data.page);
-  // cache for the interaction poll so it doesn't recompute the display list
+  // Cache the items for this page so the interaction poll doesn't recompute the
+  // display list. The entries are cloned rather than cached as-is: getDisplayItems
+  // can return live references into the network's stored-item cache (eg. the
+  // default and group_type views), and the network mutates a stack's `amount` in
+  // place when items are added (an import bus, autocrafter, or another player
+  // depositing items while the viewer is open). The poll detects a "take" by
+  // comparing the inventory against these entries, so a live reference would make
+  // such an external change look like the player taking the item. Cloning freezes
+  // each entry until the inventory is next rebuilt.
+  const itemsOnPage: StoredItem[] = getItemsOnPage(
+    getDisplayItems(data),
+    data.page,
+  ).map(([id, stack]): StoredItem => [id, stack.clone()]);
   data.itemsOnPage = itemsOnPage;
 
   for (let i = 0; i < itemsOnPage.length; i++) {

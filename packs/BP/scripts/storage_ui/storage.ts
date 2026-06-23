@@ -149,6 +149,9 @@ export async function refreshStorageViewer(
     craftItemTypeId: oldData?.craftItemTypeId,
     stackSize: oldData?.stackSize ?? 64,
     craftingQuery: oldData?.craftingQuery,
+    // record the revision the displayed contents correspond to so the poll can
+    // detect later external changes and refresh in real time
+    storedItemsRevision: storageSystem.getStoredItemsRevision(),
     // populated immediately by the fillViewerInventory call below
     itemsOnPage: [],
   };
