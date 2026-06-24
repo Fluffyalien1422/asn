@@ -72,9 +72,6 @@ fluffyalien_asn.ui.common.close=Close
 fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores=Cannot establish a storage network: Multiple storage cores found.
 fluffyalien_asn.ui.cableNetwork.error.noStorageCores=Cannot establish a storage network: No storage cores found.
 
-fluffyalien_asn.ui.storageDrive.title=Storage Drive
-fluffyalien_asn.ui.storageDrive.body.storageUsed=Storage Used (Drive): %s/3000 bytes
-
 fluffyalien_asn.ui.fluidDrive.body.storageUsed=Storage Used (%s) (Drive): %s mL (%s%%)
 fluffyalien_asn.ui.fluidDrive.body.storageUsedTotal=Storage Used (Total) (Drive): %s/6400 mL
 
