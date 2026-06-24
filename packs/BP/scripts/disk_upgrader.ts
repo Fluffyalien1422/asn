@@ -74,15 +74,16 @@ const DISK_UPGRADE_RECIPES: DiskUpgradeRecipe[] = [
   {
     // prettier-ignore
     pattern: [
-      " C ",
-      "CDC",
-      " C "
+      "BQB",
+      "QDQ",
+      "BQB"
     ],
-    key: {
-      C: "fluffyalien_asn:storage_disk_core",
-      D: "fluffyalien_asn:storage_disk_v3_32",
-    },
     diskCell: "D",
+    key: {
+      D: "fluffyalien_asn:storage_disk_v3_32",
+      B: "minecraft:blaze_powder",
+      Q: "minecraft:quartz",
+    },
     result: "fluffyalien_asn:storage_disk_v3_64",
   },
 ];
@@ -251,6 +252,18 @@ world.afterEvents.entityHitEntity.subscribe((e) => {
     e.hitEntity.typeId !== MACHINE_ID
   ) {
     return;
+  }
+
+  const container = e.hitEntity.getComponent("inventory")!.container;
+  for (let i = GRID_START_INDEX; i < GRID_START_INDEX + GRID_SIZE; i++) {
+    const item = container.getItem(i);
+    if (item) {
+      e.hitEntity.dimension.spawnItem(item, e.hitEntity.location);
+    }
+  }
+  const output = container.getItem(OUTPUT_INDEX);
+  if (output) {
+    e.hitEntity.dimension.spawnItem(output, e.hitEntity.location);
   }
 
   e.hitEntity.runCommand("setblock ~~~ air destroy");

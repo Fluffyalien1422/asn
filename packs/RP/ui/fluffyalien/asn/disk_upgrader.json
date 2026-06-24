@@ -77,67 +77,67 @@
       {
         "grid_slot_0@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 4,
-          "offset": ["50%-54px", "50%-27px"]
+          "offset": ["50%-53px", "50%-22.5px"]
         }
       },
       {
         "grid_slot_1@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 5,
-          "offset": ["50%-36px", "50%-27px"]
+          "offset": ["50%-35px", "50%-22.5px"]
         }
       },
       {
         "grid_slot_2@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 6,
-          "offset": ["50%-18px", "50%-27px"]
+          "offset": ["50%-17px", "50%-22.5px"]
         }
       },
       {
         "grid_slot_3@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 7,
-          "offset": ["50%-54px", "50%-9px"]
+          "offset": ["50%-53px", "50%-4.5px"]
         }
       },
       {
         "grid_slot_4@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 8,
-          "offset": ["50%-36px", "50%-9px"]
+          "offset": ["50%-35px", "50%-4.5px"]
         }
       },
       {
         "grid_slot_5@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 9,
-          "offset": ["50%-18px", "50%-9px"]
+          "offset": ["50%-17px", "50%-4.5px"]
         }
       },
       {
         "grid_slot_6@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 10,
-          "offset": ["50%-54px", "50%+9px"]
+          "offset": ["50%-53px", "50%+13.5px"]
         }
       },
       {
         "grid_slot_7@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 11,
-          "offset": ["50%-36px", "50%+9px"]
+          "offset": ["50%-35px", "50%+13.5px"]
         }
       },
       {
         "grid_slot_8@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 12,
-          "offset": ["50%-18px", "50%+9px"]
+          "offset": ["50%-17px", "50%+13.5px"]
         }
       },
       {
-        "arrow_indicator@fluffyalien_energisticscore:common.container_slot_icon": {
+        "arrow@fluffyalien_energisticscore:common.container_slot_icon": {
           "$index": 13,
-          "offset": ["50%+6px", "50%-9px"]
+          "offset": ["50%+18px", "50%+4.5px"]
         }
       },
       {
         "output_slot@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 14,
-          "offset": ["50%+30px", "50%-9px"]
+          "offset": ["50%+35px", "50%-4.5px"]
         }
       }
     ]
