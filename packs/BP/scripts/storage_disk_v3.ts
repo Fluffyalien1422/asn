@@ -336,6 +336,39 @@ export async function saveItemsToDisk<T extends ItemStack | ContainerSlot>(
 }
 
 /**
+ * Creates a new disk of `resultTypeId` that shares the contents of `source` by
+ * copying its disk id (see {@link getDiskId}). Used to "upgrade" a disk to a
+ * larger capacity without moving or resetting its contents: both disks point at
+ * the same stored data, so the source must be consumed by the caller afterwards.
+ *
+ * If `source` has never been written to (it has no id), the result is a fresh,
+ * empty disk of the new type. The result's lore is refreshed for its capacity by
+ * re-reading the (shared) contents; this is a read, so it moves no items.
+ * @returns the new disk on success, or an error if the lore refresh failed
+ */
+export async function upgradeDisk(
+  source: ItemStack,
+  resultTypeId: string,
+): Promise<Result<ItemStack, Error>> {
+  const result = new ItemStack(resultTypeId);
+
+  const diskId = diskIdProperty.safeGet(source);
+  if (diskId === undefined) {
+    return ok(result);
+  }
+
+  diskIdProperty.set(result, diskId);
+
+  const itemsr = await loadItemsFromDisk(result);
+  if (itemsr.isErr()) {
+    return err(new Error(`Failed to upgrade disk: ${itemsr.error.message}`));
+  }
+  setDiskLore(result, itemsr.value);
+
+  return ok(result);
+}
+
+/**
  * Loads the items currently stored on a disk. Returns an empty array for a disk
  * that has never been written to (one with no id). Materializes the disk's
  * storage entity, reads its inventory, then removes the entity.

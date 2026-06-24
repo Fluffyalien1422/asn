@@ -1,10 +1,4 @@
-import {
-  BlockCustomComponent,
-  ItemStack,
-  Player,
-  world,
-} from "@minecraft/server";
-import { StorageNetwork } from "./storage_network";
+import { BlockCustomComponent, Player, world } from "@minecraft/server";
 import { STR_DIRECTIONS, StrCardinalDirection } from "./utils/direction";
 import {
   busUpdateBlockConnectStatesTransformer,
@@ -23,15 +17,12 @@ import { disableStorageViewer } from "./storage_ui/storage";
 
 export const storageInterfaceComponent: BlockCustomComponent = {
   onPlace(e) {
-    if (e.previousBlock.type.id === "fluffyalien_asn:storage_interface") return;
-
+    if (e.previousBlock.type.id === e.block.typeId) return;
     e.block.dimension.spawnEntity("fluffyalien_asn:storage_interface_entity", {
       x: e.block.x + 0.5,
       y: e.block.y,
       z: e.block.z + 0.5,
-    }).nameTag = "fluffyalien_asn:storage_interface";
-
-    StorageNetwork.updateConnectableNetworks(e.block);
+    }).nameTag = e.block.typeId;
   },
   onTick(e) {
     const cardinalDirection = e.block.permutation.getState(
@@ -62,25 +53,13 @@ export const storageInterfaceComponent: BlockCustomComponent = {
 
 world.afterEvents.entityHitEntity.subscribe((e) => {
   if (
-    e.hitEntity.typeId !== "fluffyalien_asn:storage_interface_entity" ||
-    !(e.damagingEntity instanceof Player)
+    e.damagingEntity.typeId !== "minecraft:player" ||
+    e.hitEntity.typeId !== "fluffyalien_asn:storage_interface_entity"
   ) {
     return;
   }
 
-  const block = e.hitEntity.dimension.getBlock(e.hitEntity.location);
-
-  if (block) {
-    block.setType("air");
-
-    e.hitEntity.dimension.spawnItem(
-      new ItemStack("fluffyalien_asn:storage_interface"),
-      e.hitEntity.location,
-    );
-
-    void StorageNetwork.getNetwork(block)?.updateConnections();
-  }
-
+  e.hitEntity.runCommand("setblock ~~~ air destroy");
   e.hitEntity.remove();
 });
 

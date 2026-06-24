@@ -22,6 +22,7 @@
     },
     "components": {
       "fluffyalien_energisticscore:machine": {},
+      "fluffyalien_asn:network_device": {},
       "fluffyalien_asn:fluid_interface": {},
       "minecraft:tags": [
         "fluffyalien_asn:storage_network_connectable",

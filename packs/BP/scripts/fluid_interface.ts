@@ -1,14 +1,8 @@
-import {
-  BlockCustomComponent,
-  Entity,
-  ItemStack,
-  world,
-} from "@minecraft/server";
+import { BlockCustomComponent, Entity, world } from "@minecraft/server";
 import {
   getMachineStorage,
   MachineDefinition,
   RegisteredStorageType,
-  removeMachineData,
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 import { StorageNetwork } from "./storage_network";
@@ -154,10 +148,6 @@ export const fluidInterfaceMachine: MachineDefinition = {
 };
 
 export const fluidInterfaceComponent: BlockCustomComponent = {
-  onPlace(e) {
-    if (e.previousBlock.type.id === e.block.typeId) return;
-    StorageNetwork.updateConnectableNetworks(e.block);
-  },
   onTick(e) {
     const cardinalDirection = e.block.permutation.getState(
       "minecraft:cardinal_direction",
@@ -174,29 +164,14 @@ export const fluidInterfaceComponent: BlockCustomComponent = {
 
 world.afterEvents.entityHitEntity.subscribe((e) => {
   if (
-    e.hitEntity.typeId !== "fluffyalien_asn:fluid_interface" ||
-    e.damagingEntity.typeId !== "minecraft:player"
+    e.damagingEntity.typeId !== "minecraft:player" ||
+    e.hitEntity.typeId !== "fluffyalien_asn:fluid_interface"
   ) {
     return;
   }
 
-  const block = e.hitEntity.dimension.getBlock(e.hitEntity.location);
-  if (!block) {
-    return;
-  }
-
-  void removeMachineData(block).then(() => {
-    block.setType("air");
-
-    e.hitEntity.dimension.spawnItem(
-      new ItemStack("fluffyalien_asn:fluid_interface"),
-      e.hitEntity.location,
-    );
-
-    void StorageNetwork.getNetwork(block)?.updateConnections();
-
-    e.hitEntity.remove();
-  });
+  e.hitEntity.runCommand("setblock ~~~ air destroy");
+  e.hitEntity.remove();
 });
 
 world.afterEvents.playerInteractWithEntity.subscribe((e) => {
