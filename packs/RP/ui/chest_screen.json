@@ -25,6 +25,11 @@
             "requires": "($new_container_title = 'fluffyalien_asn:storage_power_bank')",
             "$screen_content": "fluffyalien_asn:storage_power_bank.root",
             "$screen_bg_content": "common.screen_background"
+          },
+          {
+            "requires": "($new_container_title = 'fluffyalien_asn:disk_upgrader')",
+            "$screen_content": "fluffyalien_asn:disk_upgrader.root",
+            "$screen_bg_content": "common.screen_background"
           }
         ]
       }

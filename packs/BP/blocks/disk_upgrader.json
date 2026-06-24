@@ -1,0 +1,37 @@
+{
+  "format_version": "1.26.20",
+  "minecraft:block": {
+    "description": {
+      "identifier": "fluffyalien_asn:disk_upgrader",
+      "menu_category": {
+        "category": "items"
+      }
+    },
+    "components": {
+      "fluffyalien_energisticscore:machine": {},
+      "fluffyalien_asn:disk_upgrader": {},
+      "minecraft:tags": [
+        "fluffyalien_energisticscore:machine",
+        "fluffyalien_energisticscore:io.type.energy",
+        "fluffyalien_energisticscore:consumer.type.energy"
+      ],
+
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "missing"
+        }
+      },
+      "minecraft:destructible_by_explosion": false,
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 1
+      },
+      "minecraft:movable": {
+        "movement_type": "immovable"
+      },
+      "minecraft:tick": {
+        "interval_range": [10, 10]
+      }
+    }
+  }
+}

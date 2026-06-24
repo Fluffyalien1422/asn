@@ -3,6 +3,7 @@ import * as bec from "bedrock-energistics-core-api";
 import { fluidInterfaceMachine } from "./fluid_interface";
 import { fluidImportBusMachine } from "./fluid_import_bus";
 import { fluidExportBusMachine } from "./fluid_export_bus";
+import { diskUpgraderMachine } from "./disk_upgrader";
 
 world.afterEvents.worldLoad.subscribe(() => {
   bec.init("fluffyalien_asn");
@@ -44,4 +45,5 @@ world.afterEvents.worldLoad.subscribe(() => {
   bec.registerMachine(fluidInterfaceMachine);
   bec.registerMachine(fluidImportBusMachine);
   bec.registerMachine(fluidExportBusMachine);
+  bec.registerMachine(diskUpgraderMachine);
 });

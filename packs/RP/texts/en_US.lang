@@ -42,6 +42,7 @@ tile.fluffyalien_asn:fluid_drive.name=Fluid Storage Drive
 tile.fluffyalien_asn:fluid_import_bus.name=Fluid Storage Import Bus
 tile.fluffyalien_asn:fluid_export_bus.name=Fluid Storage Export Bus
 tile.fluffyalien_asn:autocrafter.name=Autocrafter
+tile.fluffyalien_asn:disk_upgrader.name=Disk Upgrader
 
 fluffyalien_asn.message.wirelessInterface.linked=Wireless storage interface linked.
 fluffyalien_asn.message.wirelessInterface.notLinked=This wireless storage interface is not linked to a storage network.
