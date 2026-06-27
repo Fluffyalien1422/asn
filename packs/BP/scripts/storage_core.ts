@@ -1,6 +1,6 @@
 import { Vector3Utils } from "@minecraft/math";
 import {
-  STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL,
+  STORAGE_NETWORK_STANDARD_TICK_INTERVAL,
   StorageNetwork,
 } from "./storage_network";
 import {
@@ -77,7 +77,7 @@ async function showStorageCoreUi(
             {
               text: Math.floor(
                 network.getEnergyConsumption() /
-                  STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL,
+                  STORAGE_NETWORK_STANDARD_TICK_INTERVAL,
               ).toString(),
             },
           ],

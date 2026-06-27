@@ -2,20 +2,20 @@ import { Player, world } from "@minecraft/server";
 import { AddonRuleCommand } from "./set_addon_rule";
 import { DynamicPropertyAccessor } from "../utils/dynamic_property_v3";
 
-export const useEnergyRule = new DynamicPropertyAccessor<boolean, boolean>(
-  "fluffyalien_asn:rule_use_energy",
-  true,
-);
-
 export const wirelessInterfaceRangeRule = new DynamicPropertyAccessor<
   number,
   number
 >("fluffyalien_asn:rule_wireless_intf_range", 500);
 
-export const driveEnergyConsumptionRule = new DynamicPropertyAccessor<
+export const useEnergyRule = new DynamicPropertyAccessor<boolean, boolean>(
+  "fluffyalien_asn:rule_use_energy",
+  true,
+);
+
+export const deviceEnergyConsumptionRule = new DynamicPropertyAccessor<
   number,
   number
->("fluffyalien_asn:rule_drive_energy", 10);
+>("fluffyalien_asn:rule_device_energy", 10);
 
 export const wirelessInterfaceEnergyConsumptionRule =
   new DynamicPropertyAccessor<number, number>(
@@ -32,11 +32,11 @@ export const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
     type: "bool",
     property: useEnergyRule,
   },
-  driveEnergyConsumption: {
+  deviceEnergyConsumption: {
     type: "int",
-    property: driveEnergyConsumptionRule,
+    property: deviceEnergyConsumptionRule,
     beforeSet: (player, value) =>
-      requireUseEnergy(driveEnergyConsumptionRule.defaultValue, player, value),
+      requireUseEnergy(deviceEnergyConsumptionRule.defaultValue, player, value),
   },
   wirelessInterfaceEnergyConsumption: {
     type: "int",

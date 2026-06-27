@@ -11,7 +11,6 @@ import {
   createErrorMessageForm,
   showForm,
 } from "./utils/ui";
-import { useEnergyRule } from "./addon_rules/addon_rules";
 import { forceCloseStorageViewerInventory } from "./storage_ui/shared";
 import {
   BACK_BUTTON_ITEM_ID,
@@ -186,7 +185,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     async (network) => {
       if (!network) return;
 
-      if (useEnergyRule.safeGet(world) && network.getStoredEnergy() <= 0) {
+      if (network.getUnmetEnergyDemand() > 0) {
         await forceCloseStorageViewerInventory(e.target);
         void showForm(
           createErrorMessageForm({

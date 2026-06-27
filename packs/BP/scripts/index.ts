@@ -8,4 +8,6 @@ import "./wireless_interface";
 
 //TODO: autocrafter tutorial book entry
 //TODO: disk upgrader tutorial book entry
+//TODO: note that wireless interface needs to be charged in tutorial book
+//TODO: improve all tutorial book entries and update stale info
 //TODO: update disk textures

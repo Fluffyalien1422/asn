@@ -16,7 +16,7 @@ import {
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 import {
-  driveEnergyConsumptionRule,
+  deviceEnergyConsumptionRule,
   useEnergyRule,
 } from "./addon_rules/addon_rules";
 import {
@@ -41,7 +41,7 @@ import { getBlockUid } from "./utils/block";
 import { ContainerSlot } from "@minecraft/server";
 import { err, ok, Result } from "neverthrow";
 
-export const STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL = 10;
+export const STORAGE_NETWORK_STANDARD_TICK_INTERVAL = 10;
 
 export interface NetworkStoredFluids {
   total: number;
@@ -102,12 +102,6 @@ export class StorageNetwork extends StorageSystem {
    * {@link StorageNetwork.indexConnections} / {@link StorageNetwork.unindexConnections}.
    */
   private static readonly networkByBlockUid = new Map<string, StorageNetwork>();
-  private internalIsValid = true;
-  /**
-   * The block uids this network currently has registered in
-   * {@link StorageNetwork.networkByBlockUid}.
-   */
-  private indexedUids: string[] = [];
 
   /**
    * Establish a network from any starting position inside of the network
@@ -225,6 +219,12 @@ export class StorageNetwork extends StorageSystem {
     return StorageNetwork.establishNetwork(block);
   }
 
+  private internalIsValid = true;
+  /**
+   * The block uids this network currently has registered in
+   * {@link StorageNetwork.networkByBlockUid}.
+   */
+  private indexedUids: string[] = [];
   private storedItems?: Map<string, ItemStack>;
   private nextItemIdNum = 0;
   /**
@@ -241,63 +241,98 @@ export class StorageNetwork extends StorageSystem {
    * are unknown (eg. it failed to load), forcing it to be rewritten.
    */
   private savedDiskContents?: (DiskSlotSnapshot[] | undefined)[];
-  private readonly updateIntervalRunId: number;
-  private readonly levelEmitterUpdateIntervalRunId: number;
-
+  private readonly standardTickRunId: number;
+  private readonly fastTickRunId: number;
   private storedFluids?: NetworkStoredFluids;
+  /**
+   * The total amount of energy stored across the network's power banks.
+   * Recalcualated every `standardTick` if `useEnergy` is enabled.
+   * Resets to `0` if `useEnergy` is disabled.
+   */
+  private storedEnergy = 0;
+  /**
+   * The energy demand that is currently being unmet by the network.
+   * Recalcualated every `standardTick` if `useEnergy` is enabled.
+   * Resets to `0` if `useEnergy` is disabled.
+   */
+  private unmetEnergyDemand = 0;
 
   private constructor(private connections: CableNetworkConnections) {
     super();
 
     this.indexConnections();
 
-    this.updateIntervalRunId = system.runInterval(() => {
-      for (const block of this.connections.buses) {
-        if (!block.isValid) continue;
-
-        switch (block.typeId) {
-          case "fluffyalien_asn:import_bus":
-            void updateImportBus(block, this);
-            break;
-          case "fluffyalien_asn:export_bus":
-            void updateExportBus(block, this);
-            break;
-          case "fluffyalien_asn:fluid_export_bus":
-            void updateFluidExportBus(block, this);
-            break;
-          case "fluffyalien_asn:autocrafter":
-            void updateAutocrafter(block, this);
-            break;
-        }
-      }
-
-      if (useEnergyRule.safeGet(world)) {
-        let energyConsumptionRemaining = this.getEnergyConsumption();
-        for (const block of this.connections.powerBanks) {
-          const storedEnergy = getMachineStorage(block, "energy");
-
-          const consumption = Math.min(
-            storedEnergy,
-            energyConsumptionRemaining,
-          );
-          energyConsumptionRemaining -= consumption;
-          void setMachineStorage(block, "energy", storedEnergy - consumption);
-
-          if (energyConsumptionRemaining <= 0) {
-            break;
-          }
-        }
-      }
-    }, 10);
-
-    this.levelEmitterUpdateIntervalRunId = system.runInterval(() => {
-      for (const block of this.connections.levelEmitters) {
-        if (!block.isValid) continue;
-
-        void updateLevelEmitter(block, this);
-      }
-    });
+    this.standardTickRunId = system.runInterval(
+      this.standardTick,
+      STORAGE_NETWORK_STANDARD_TICK_INTERVAL,
+    );
+    this.fastTickRunId = system.runInterval(this.fastTick);
   }
+
+  private readonly standardTick = (): void => {
+    if (useEnergyRule.safeGet(world)) {
+      let totalStoredEnergy = 0;
+      let energyConsumptionRemaining = this.getEnergyConsumption();
+      for (const block of this.connections.powerBanks) {
+        const storedEnergy = getMachineStorage(block, "energy");
+
+        const consumption = Math.max(
+          Math.min(storedEnergy, energyConsumptionRemaining),
+          0,
+        );
+        const newStoredEnergy = storedEnergy - consumption;
+        if (storedEnergy !== newStoredEnergy) {
+          void setMachineStorage(block, "energy", newStoredEnergy);
+        }
+
+        totalStoredEnergy += newStoredEnergy;
+        energyConsumptionRemaining -= consumption;
+      }
+      this.storedEnergy = totalStoredEnergy;
+      this.unmetEnergyDemand = energyConsumptionRemaining;
+
+      if (energyConsumptionRemaining > 0) {
+        // There is insufficient energy. Cancel this tick.
+        return;
+      }
+    } else {
+      // Reset energy values to 0 if useEnergy is disabled.
+      this.storedEnergy = 0;
+      this.unmetEnergyDemand = 0;
+    }
+
+    for (const block of this.connections.buses) {
+      if (!block.isValid) continue;
+
+      switch (block.typeId) {
+        case "fluffyalien_asn:import_bus":
+          void updateImportBus(block, this);
+          break;
+        case "fluffyalien_asn:export_bus":
+          void updateExportBus(block, this);
+          break;
+        case "fluffyalien_asn:fluid_export_bus":
+          void updateFluidExportBus(block, this);
+          break;
+        case "fluffyalien_asn:autocrafter":
+          void updateAutocrafter(block, this);
+          break;
+      }
+    }
+  };
+
+  private readonly fastTick = (): void => {
+    if (this.unmetEnergyDemand > 0) {
+      // There is insufficient energy. Cancel this tick.
+      return;
+    }
+
+    for (const block of this.connections.levelEmitters) {
+      if (!block.isValid) continue;
+
+      void updateLevelEmitter(block, this);
+    }
+  };
 
   /**
    * @throws if this object is not valid (if it has been destroyed)
@@ -546,8 +581,8 @@ export class StorageNetwork extends StorageSystem {
   destroy(): void {
     this.internalIsValid = false;
 
-    system.clearRun(this.updateIntervalRunId);
-    system.clearRun(this.levelEmitterUpdateIntervalRunId);
+    system.clearRun(this.standardTickRunId);
+    system.clearRun(this.fastTickRunId);
 
     this.unindexConnections();
   }
@@ -645,54 +680,36 @@ export class StorageNetwork extends StorageSystem {
     return this.storedFluids;
   }
 
-  /**
-   * @throws if this object is not valid
-   */
   getFluidStorageCapacity(): number {
-    this.ensureValidity();
-
     return FLUID_DRIVE_CAPACITY * this.connections.fluidDrives.length;
   }
 
   getStoredEnergy(): number {
-    let energy = 0;
-
-    for (const powerBank of this.connections.powerBanks) {
-      energy += getMachineStorage(powerBank, "energy");
-    }
-
-    return energy;
+    return this.storedEnergy;
   }
 
-  /**
-   * @throws if this object is not valid
-   */
-  getMaxStoredEnergy(): number {
-    this.ensureValidity();
+  getUnmetEnergyDemand(): number {
+    return this.unmetEnergyDemand;
+  }
 
+  getMaxStoredEnergy(): number {
     return 6400 * this.connections.powerBanks.length;
   }
 
   /**
-   * @throws if this object is not valid
-   * @returns energy consumption per {@link STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL}
+   * @returns energy consumption per {@link STORAGE_NETWORK_STANDARD_TICK_INTERVAL}
    */
   getEnergyConsumption(): number {
-    this.ensureValidity();
-
     return (
-      driveEnergyConsumptionRule.safeGet(world) *
-      (this.connections.storageDrives.length +
-        this.connections.fluidDrives.length)
+      deviceEnergyConsumptionRule.safeGet(world) *
+      (this.connections.buses.length +
+        this.connections.fluidDrives.length +
+        this.connections.levelEmitters.length +
+        this.connections.storageDrives.length)
     );
   }
 
-  /**
-   * @throws if this object is not valid
-   */
   getConnections(): DeepReadonly<CableNetworkConnections> {
-    this.ensureValidity();
-
     return this.connections;
   }
 

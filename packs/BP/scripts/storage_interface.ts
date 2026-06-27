@@ -6,7 +6,6 @@ import {
 } from "./utils/block_connect";
 import { logWarn } from "./log";
 import { refreshStorageViewerOrLog } from "./storage_ui";
-import { useEnergyRule } from "./addon_rules/addon_rules";
 import {
   getNetworkOrShowError,
   createErrorMessageForm,
@@ -82,7 +81,7 @@ world.afterEvents.entityContainerOpened.subscribe(
       const network = await getNetworkOrShowError(block, target, player);
       if (!network) return;
 
-      if (useEnergyRule.safeGet(world) && network.getStoredEnergy() <= 0) {
+      if (network.getUnmetEnergyDemand() > 0) {
         await forceCloseStorageViewerInventory(target);
         void showForm(
           createErrorMessageForm({

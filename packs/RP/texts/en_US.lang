@@ -62,7 +62,7 @@ fluffyalien_asn.message.scriptEvent.addonRule.experimentalWarning=WARNING: This 
 
 fluffyalien_asn.message.scriptEvent.addonRule.help.wirelessInterfaceRange=The max range a wireless transmitter must be from a player for them to use a wireless interface. Set this to -1 to disable range and dimension checking.
 fluffyalien_asn.message.scriptEvent.addonRule.help.useEnergy=Make storage networks require energy to operate.
-fluffyalien_asn.message.scriptEvent.addonRule.help.driveEnergyConsumption=The amount of energy each storage drive consumes (every 10t). Ignored if 'useEnergy' is false.
+fluffyalien_asn.message.scriptEvent.addonRule.help.deviceEnergyConsumption=The amount of energy each device in the network consumes (every 10t). Ignored if 'useEnergy' is false.
 fluffyalien_asn.message.scriptEvent.addonRule.help.wirelessInterfaceEnergyConsumption=The amount of energy a wireless interface consumes on use. Ignored if 'useEnergy' is false.
 
 fluffyalien_asn.actionbar.storageInterface.openToViewQueryResults=Open the storage interface again to view search results
@@ -73,8 +73,8 @@ fluffyalien_asn.ui.common.close=Close
 fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores=Cannot establish a storage network: Multiple storage cores found.
 fluffyalien_asn.ui.cableNetwork.error.noStorageCores=Cannot establish a storage network: No storage cores found.
 
-fluffyalien_asn.ui.fluidDrive.body.storageUsed=Storage Used (%s) (Drive): %s mL (%s%%)
-fluffyalien_asn.ui.fluidDrive.body.storageUsedTotal=Storage Used (Total) (Drive): %s/6400 mL
+fluffyalien_asn.ui.fluidDrive.body.storageUsed=Stored %s (drive): %s mL (%s%%)
+fluffyalien_asn.ui.fluidDrive.body.storageUsedTotal=Total stored fluids (drive): %s/6400 mL
 
 fluffyalien_asn.ui.storageInterface.title=Storage Interface
 fluffyalien_asn.ui.storageInterface.search.label=ID Search
@@ -85,11 +85,11 @@ fluffyalien_asn.ui.storageInterface.error.insufficientEnergy=The storage network
 fluffyalien_asn.ui.storageInterface.error.unknownError=An unknown error occurred: %s
 
 fluffyalien_asn.ui.storageCore.title=Storage Core
-fluffyalien_asn.ui.storageCore.body.storageUsed=Storage Used (Items) (Network): %s/%s stacks
-fluffyalien_asn.ui.storageCore.body.storedEnergy=Stored Energy: %s/%s
-fluffyalien_asn.ui.storageCore.body.energyConsumption=Energy Consumption: %s/t
-fluffyalien_asn.ui.storageCore.body.storageUsedFluid=Storage Used (%s) (Network): %s mL (%s%%)
-fluffyalien_asn.ui.storageCore.body.storageUsedFluidTotal=Storage Used (Total Fluids) (Network): %s/%s mL
+fluffyalien_asn.ui.storageCore.body.storageUsed=Stored items: %s/%s stacks
+fluffyalien_asn.ui.storageCore.body.storedEnergy=Stored energy: %s/%s
+fluffyalien_asn.ui.storageCore.body.energyConsumption=Energy demand: %s/t
+fluffyalien_asn.ui.storageCore.body.storageUsedFluid=Stored %s: %s mL (%s%%)
+fluffyalien_asn.ui.storageCore.body.storageUsedFluidTotal=Total stored fluids: %s/%s mL
 
 fluffyalien_asn.ui.exportBus.title=Export Bus
 fluffyalien_asn.ui.exportBus.exportItem=Exporting %s.
@@ -206,7 +206,7 @@ fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet3=Note that numbers must 
 fluffyalien_asn.ui.tutorialBook.entry.energy.title=Energy
 fluffyalien_asn.ui.tutorialBook.entry.energy.bullet0=Energy usage is enabled by default, but can be disabled with the 'useEnergy' rule. See Add-On Configuration for more information.
 fluffyalien_asn.ui.tutorialBook.entry.energy.bullet1=Energy is stored in Storage Power Bank blocks.
-fluffyalien_asn.ui.tutorialBook.entry.energy.bullet2=Network energy consumption is determined by the amount of storage drives. Drive energy consumption can be changed using the 'driveEnergyConsumption' rule. See Add-On Configuration for more information.
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet2=Network energy consumption is determined by the amount of devices connected to the network. Device energy consumption can be changed using the 'deviceEnergyConsumption' rule. See Add-On Configuration for more information.
 fluffyalien_asn.ui.tutorialBook.entry.energy.bullet3=Uses Bedrock Energistics Core energy.
 fluffyalien_asn.ui.tutorialBook.entry.energy.bullet4=This add-on does not add any power generators, you must include another Bedrock Energistics Core powered add-on to generate energy for your system.
 
