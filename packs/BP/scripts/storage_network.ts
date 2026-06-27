@@ -41,10 +41,18 @@ import { getBlockUid } from "./utils/block";
 import { ContainerSlot } from "@minecraft/server";
 import { err, ok, Result } from "neverthrow";
 
+/**
+ * How often (in ticks) {@link StorageNetwork.standardTick} runs. Energy
+ * accounting and bus/autocrafter updates happen at this cadence. The "fast"
+ * tick (level emitters) runs every tick instead.
+ */
 export const STORAGE_NETWORK_STANDARD_TICK_INTERVAL = 10;
 
+/** The fluids stored across a network, aggregated over all of its fluid drives. */
 export interface NetworkStoredFluids {
+  /** The combined amount of every fluid type. */
   total: number;
+  /** The amount stored per fluid type id. Types with zero are omitted. */
   types: Map<string, number>;
 }
 
@@ -219,13 +227,25 @@ export class StorageNetwork extends StorageSystem {
     return StorageNetwork.establishNetwork(block);
   }
 
+  /**
+   * Backing flag for {@link StorageNetwork.isValid}. Set to `false` by
+   * {@link StorageNetwork.destroy}, after which most methods throw.
+   */
   private internalIsValid = true;
   /**
    * The block uids this network currently has registered in
    * {@link StorageNetwork.networkByBlockUid}.
    */
   private indexedUids: string[] = [];
+  /**
+   * In-memory cache of every item stack on the network, keyed by a unique id
+   * (see {@link StorageNetwork.getNextItemId}). Lazily loaded from the disks by
+   * {@link StorageNetwork.getStoredItemStacks} and `undefined` until then.
+   * Mutated in place by the add/remove methods and flushed to disk by
+   * {@link StorageNetwork.saveStoredItemData}.
+   */
   private storedItems?: Map<string, ItemStack>;
+  /** Monotonic counter backing {@link StorageNetwork.getNextItemId}. */
   private nextItemIdNum = 0;
   /**
    * The disk slots that {@link StorageNetwork.storedItems} were loaded from,
@@ -241,8 +261,15 @@ export class StorageNetwork extends StorageSystem {
    * are unknown (eg. it failed to load), forcing it to be rewritten.
    */
   private savedDiskContents?: (DiskSlotSnapshot[] | undefined)[];
+  /** Run id for the {@link STORAGE_NETWORK_STANDARD_TICK_INTERVAL} interval, cleared on {@link StorageNetwork.destroy}. */
   private readonly standardTickRunId: number;
+  /** Run id for the per-tick {@link StorageNetwork.fastTick} interval, cleared on {@link StorageNetwork.destroy}. */
   private readonly fastTickRunId: number;
+  /**
+   * In-memory cache of the network's stored fluids. Lazily populated from the
+   * fluid drives by {@link StorageNetwork.getStoredFluids} and `undefined`
+   * until then.
+   */
   private storedFluids?: NetworkStoredFluids;
   /**
    * The total amount of energy stored across the network's power banks.
@@ -257,6 +284,12 @@ export class StorageNetwork extends StorageSystem {
    */
   private unmetEnergyDemand = 0;
 
+  /**
+   * Use {@link StorageNetwork.establishNetwork} or
+   * {@link StorageNetwork.getOrEstablishNetwork} to create a network. Indexes
+   * the connections and starts the standard and fast tick intervals.
+   * @param connections the discovered connections that make up this network
+   */
   private constructor(private connections: CableNetworkConnections) {
     super();
 
@@ -269,8 +302,18 @@ export class StorageNetwork extends StorageSystem {
     this.fastTickRunId = system.runInterval(this.fastTick);
   }
 
+  /**
+   * Runs every {@link STORAGE_NETWORK_STANDARD_TICK_INTERVAL} ticks. Settles
+   * energy accounting (draining power banks to cover the network's consumption
+   * and recording stored/unmet energy) then updates every bus and autocrafter.
+   * If energy is enabled and demand cannot be met, the tick is cancelled before
+   * any devices update.
+   */
   private readonly standardTick = (): void => {
     if (useEnergyRule.safeGet(world)) {
+      // drain the power banks one at a time to cover this tick's consumption,
+      // tallying what remains in each so storedEnergy reflects the post-drain
+      // total and unmetEnergyDemand reflects any shortfall.
       let totalStoredEnergy = 0;
       let energyConsumptionRemaining = this.getEnergyConsumption();
       for (const block of this.connections.powerBanks) {
@@ -321,6 +364,10 @@ export class StorageNetwork extends StorageSystem {
     }
   };
 
+  /**
+   * Runs every tick. Updates the network's level emitters. Skipped while there
+   * is unmet energy demand (as last computed by {@link StorageNetwork.standardTick}).
+   */
   private readonly fastTick = (): void => {
     if (this.unmetEnergyDemand > 0) {
       // There is insufficient energy. Cancel this tick.
@@ -344,6 +391,10 @@ export class StorageNetwork extends StorageSystem {
     }
   }
 
+  /**
+   * Allocates a fresh unique id for a stored item stack. Ids are only unique
+   * within this network's lifetime; they are not persisted.
+   */
   private getNextItemId(): string {
     return (this.nextItemIdNum++).toString();
   }
@@ -406,6 +457,14 @@ export class StorageNetwork extends StorageSystem {
     return disks;
   }
 
+  /**
+   * Gets all item stacks stored on the network, keyed by unique id. On the
+   * first call the items are loaded from every disk and cached, along with the
+   * disks they came from ({@link StorageNetwork.storedItemDisks}) and a snapshot
+   * of each disk's contents ({@link StorageNetwork.savedDiskContents}) for
+   * change detection. Subsequent calls return the cache until it is cleared.
+   * @returns a result containing the stored items map, or an error
+   */
   async getStoredItemStacks(): Promise<Result<Map<string, ItemStack>, Error>> {
     if (this.storedItems) {
       return ok(this.storedItems);
@@ -437,6 +496,10 @@ export class StorageNetwork extends StorageSystem {
     return ok(storedItems);
   }
 
+  /**
+   * Gets the number of distinct item stacks (slots) currently stored. Returns
+   * `0` if the stored items could not be loaded.
+   */
   async getStoredItemStacksCount(): Promise<number> {
     return (await this.getStoredItemStacks()).unwrapOr({ size: 0 }).size;
   }
@@ -646,6 +709,10 @@ export class StorageNetwork extends StorageSystem {
   }
 
   /**
+   * Gets the fluids stored across the network, aggregated over every fluid
+   * drive. The result is cached until {@link StorageNetwork.clearStoredFluidsCache}
+   * (or a connections update) clears it.
+   * @returns the network's stored fluids
    * @throws if this object is not valid
    */
   async getStoredFluids(): Promise<NetworkStoredFluids> {
@@ -680,18 +747,33 @@ export class StorageNetwork extends StorageSystem {
     return this.storedFluids;
   }
 
+  /**
+   * @returns the total fluid capacity across all of the network's fluid drives
+   */
   getFluidStorageCapacity(): number {
     return FLUID_DRIVE_CAPACITY * this.connections.fluidDrives.length;
   }
 
+  /**
+   * @returns the energy currently stored across the network's power banks, as
+   *   of the last {@link StorageNetwork.standardTick}
+   */
   getStoredEnergy(): number {
     return this.storedEnergy;
   }
 
+  /**
+   * @returns the energy demand the network could not meet on the last
+   *   {@link StorageNetwork.standardTick}; `0` when fully powered or when energy
+   *   use is disabled
+   */
   getUnmetEnergyDemand(): number {
     return this.unmetEnergyDemand;
   }
 
+  /**
+   * @returns the maximum energy the network can store across all of its power banks
+   */
   getMaxStoredEnergy(): number {
     return 6400 * this.connections.powerBanks.length;
   }
@@ -709,6 +791,10 @@ export class StorageNetwork extends StorageSystem {
     );
   }
 
+  /**
+   * @returns a read-only view of this network's discovered connections (cables,
+   *   drives, buses, etc.)
+   */
   getConnections(): DeepReadonly<CableNetworkConnections> {
     return this.connections;
   }
