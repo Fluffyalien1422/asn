@@ -625,7 +625,9 @@ export class StorageNetwork extends StorageSystem {
       setBlockDynamicProperty(
         drive,
         dynamicPropId,
-        (getBlockDynamicProperty(drive, dynamicPropId) as number) + amount,
+        ((getBlockDynamicProperty(drive, dynamicPropId) as
+          | number
+          | undefined) ?? 0) + amount,
       );
     }
   }

@@ -6,11 +6,7 @@ import {
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 import { StorageNetwork } from "./storage_network";
-import {
-  getNetworkOrShowError,
-  createErrorMessageForm,
-  showForm,
-} from "./utils/ui";
+import { getNetworkOrShowError, createErrorMessageForm } from "./utils/ui";
 import { forceCloseStorageViewerInventory } from "./storage_ui/shared";
 import {
   BACK_BUTTON_ITEM_ID,
@@ -187,13 +183,10 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
 
       if (network.getUnmetEnergyDemand() > 0) {
         await forceCloseStorageViewerInventory(e.target);
-        void showForm(
-          createErrorMessageForm({
-            translate:
-              "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
-          }),
-          e.player,
-        );
+        void createErrorMessageForm({
+          translate:
+            "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
+        }).show(e.player);
         return;
       }
 

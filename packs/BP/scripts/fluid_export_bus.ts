@@ -1,11 +1,6 @@
 import { Block, BlockCustomComponent, Player } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
-import { showForm } from "./utils/ui";
-import {
-  getBlockDynamicProperty,
-  removeAllDynamicPropertiesForBlock,
-  setBlockDynamicProperty,
-} from "./utils/block_dynamic_property";
+import { removeAllDynamicPropertiesForBlock } from "./utils/block_dynamic_property";
 import {
   generate,
   getMachineStorage,
@@ -16,8 +11,13 @@ import {
 import { StorageNetwork } from "./storage_network";
 import { updateBlockConnectStates } from "./utils/block_connect";
 import { STR_DIRECTIONS } from "./utils/direction";
+import { DynamicPropertyAccessor } from "./utils/dynamic_property_v3";
 
 const MAX_EXTRACTION_AMOUNT = 10; // Max amount to extract per storage network update
+
+const exportStorageTypeProperty = new DynamicPropertyAccessor<string>(
+  "fluffyalien_asn:export_storage_type",
+);
 
 async function showFluidExportBusUi(
   player: Player,
@@ -36,10 +36,7 @@ async function showFluidExportBusUi(
     if (storageType) storageTypes.push(storageType);
   }
 
-  const existingStorageType = getBlockDynamicProperty(
-    block,
-    "fluidExportBusStorageType",
-  ) as string | undefined;
+  const existingStorageType = exportStorageTypeProperty.safeGet(block);
 
   form.dropdown(
     {
@@ -55,7 +52,7 @@ async function showFluidExportBusUi(
     },
   );
 
-  const response = await showForm(form, player);
+  const response = await form.show(player);
   if (!response.formValues) {
     return;
   }
@@ -74,10 +71,7 @@ export async function updateFluidExportBus(
 ): Promise<void> {
   if (block.getRedstonePower()) return;
 
-  const storageType = getBlockDynamicProperty(
-    block,
-    "fluidExportBusStorageType",
-  ) as string | undefined;
+  const storageType = exportStorageTypeProperty.safeGet(block);
   if (!storageType) return;
   if (getMachineStorage(block, storageType)) {
     return;
@@ -106,15 +100,11 @@ export const fluidExportBusComponent: BlockCustomComponent = {
       if (selectedStorageType === undefined) return;
 
       if (selectedStorageType === "none") {
-        setBlockDynamicProperty(block, "fluidExportBusStorageType");
+        exportStorageTypeProperty.set(block);
         return;
       }
 
-      setBlockDynamicProperty(
-        block,
-        "fluidExportBusStorageType",
-        selectedStorageType.id,
-      );
+      exportStorageTypeProperty.set(block, selectedStorageType.id);
     });
   },
   onBreak(e) {
@@ -130,10 +120,7 @@ export const fluidExportBusComponent: BlockCustomComponent = {
           : "none",
     );
 
-    const storageType = getBlockDynamicProperty(
-      e.block,
-      "fluidExportBusStorageType",
-    ) as string | undefined;
+    const storageType = exportStorageTypeProperty.safeGet(e.block);
     if (!storageType) return;
 
     generate(e.block, storageType, 0);
