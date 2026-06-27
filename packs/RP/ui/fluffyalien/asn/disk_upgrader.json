@@ -57,6 +57,15 @@
       }
     ]
   },
+  "blaze_powder_placeholder@fluffyalien_asn:common.slot_placeholder": {
+    "texture": "textures/fluffyalien/asn/ui/common/blaze_powder_placeholder"
+  },
+  "quartz_placeholder@fluffyalien_asn:common.slot_placeholder": {
+    "texture": "textures/fluffyalien/asn/ui/common/quartz_placeholder"
+  },
+  "disk_placeholder@fluffyalien_asn:common.slot_placeholder": {
+    "texture": "textures/fluffyalien/asn/ui/common/disk_placeholder"
+  },
   "top_half": {
     "type": "panel",
     "size": ["100%", "50% - 12px"],
@@ -77,55 +86,64 @@
       {
         "grid_slot_0@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 4,
-          "offset": ["50%-53px", "50%-22.5px"]
+          "offset": ["50%-53px", "50%-22.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.blaze_powder_placeholder"
         }
       },
       {
         "grid_slot_1@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 5,
-          "offset": ["50%-35px", "50%-22.5px"]
+          "offset": ["50%-35px", "50%-22.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.quartz_placeholder"
         }
       },
       {
         "grid_slot_2@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 6,
-          "offset": ["50%-17px", "50%-22.5px"]
+          "offset": ["50%-17px", "50%-22.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.blaze_powder_placeholder"
         }
       },
       {
         "grid_slot_3@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 7,
-          "offset": ["50%-53px", "50%-4.5px"]
+          "offset": ["50%-53px", "50%-4.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.quartz_placeholder"
         }
       },
       {
         "grid_slot_4@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 8,
-          "offset": ["50%-35px", "50%-4.5px"]
+          "offset": ["50%-35px", "50%-4.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.disk_placeholder"
         }
       },
       {
         "grid_slot_5@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 9,
-          "offset": ["50%-17px", "50%-4.5px"]
+          "offset": ["50%-17px", "50%-4.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.quartz_placeholder"
         }
       },
       {
         "grid_slot_6@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 10,
-          "offset": ["50%-53px", "50%+13.5px"]
+          "offset": ["50%-53px", "50%+13.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.blaze_powder_placeholder"
         }
       },
       {
         "grid_slot_7@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 11,
-          "offset": ["50%-35px", "50%+13.5px"]
+          "offset": ["50%-35px", "50%+13.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.quartz_placeholder"
         }
       },
       {
         "grid_slot_8@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 12,
-          "offset": ["50%-17px", "50%+13.5px"]
+          "offset": ["50%-17px", "50%+13.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.blaze_powder_placeholder"
         }
       },
       {
@@ -137,7 +155,8 @@
       {
         "output_slot@fluffyalien_energisticscore:common.container_item_slot": {
           "$index": 14,
-          "offset": ["50%+35px", "50%-4.5px"]
+          "offset": ["50%+35px", "50%-4.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.disk_placeholder"
         }
       }
     ]

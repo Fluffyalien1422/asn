@@ -6,5 +6,23 @@
     "anchor_to": "top_left",
     "grid_item_template": "chest.chest_grid_item",
     "collection_name": "container_items"
+  },
+  "slot_placeholder": {
+    "type": "image",
+    "anchor_from": "center",
+    "anchor_to": "center",
+    "size": [16, 16],
+    "bindings": [
+      {
+        "binding_name": "#item_id_aux",
+        "binding_type": "collection",
+        "binding_collection_name": "container_items"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#item_id_aux = -1)",
+        "target_property_name": "#visible"
+      }
+    ]
   }
 }

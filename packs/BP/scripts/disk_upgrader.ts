@@ -31,6 +31,7 @@ import { getEntityAtBlockLocation } from "./utils/location";
 import { getBlockUid } from "./utils/block";
 import { logWarn } from "./log";
 import { upgradeDisk } from "./storage_disk_v3";
+import { useEnergyRule } from "./addon_rules/addon_rules";
 
 const MACHINE_ID = "fluffyalien_asn:disk_upgrader";
 
@@ -201,11 +202,12 @@ function tick(block: Block): void {
     return;
   }
 
-  const storedEnergy = getMachineStorage(block, "energy");
-  if (storedEnergy < ENERGY_PER_STEP * (MAX_PROGRESS - progress)) return;
-
+  if (useEnergyRule.safeGet(world)) {
+    const storedEnergy = getMachineStorage(block, "energy");
+    if (storedEnergy < ENERGY_PER_STEP * (MAX_PROGRESS - progress)) return;
+    void setMachineStorage(block, "energy", storedEnergy - ENERGY_PER_STEP);
+  }
   progressMap.set(uid, progress + 1);
-  void setMachineStorage(block, "energy", storedEnergy - ENERGY_PER_STEP);
 }
 
 export const diskUpgraderComponent: BlockCustomComponent = {
@@ -223,9 +225,6 @@ export const diskUpgraderMachine: MachineDefinition = {
         energyBar: {
           type: "storageBar",
           startIndex: 0,
-          defaults: {
-            type: "energy",
-          },
         },
         arrow: {
           type: "progressIndicator",
@@ -237,9 +236,16 @@ export const diskUpgraderMachine: MachineDefinition = {
   },
   handlers: {
     updateUi({ blockLocation }) {
+      const useEnergy = useEnergyRule.safeGet(world);
       return {
         progressIndicators: {
           arrow: progressMap.get(getBlockUid(blockLocation)) ?? 0,
+        },
+        storageBars: {
+          energyBar: {
+            type: useEnergy ? "energy" : "_disabled",
+            label: useEnergy ? undefined : "Energy usage disabled.",
+          },
         },
       };
     },
