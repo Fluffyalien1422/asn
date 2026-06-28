@@ -31,7 +31,7 @@ async function showRelayForm(
   relayEntity: Entity,
 ): Promise<string | undefined> {
   const form = new ModalFormData();
-  form.title({ translate: "tile.fluffyalien_asn:relay.name" });
+  form.title({ translate: "tile.fluffyalien_asn:storage_relay.name" });
 
   form.textField({ translate: "fluffyalien_asn.ui.relay.name" }, "", {
     defaultValue: relayName.safeGet(relayEntity),
@@ -61,7 +61,7 @@ function getNetworksForRelayName(name: string): StorageNetwork[] {
   const networks: StorageNetwork[] = [];
 
   for (const entity of getEntitiesInAllDimensions({
-    type: "fluffyalien_asn:relay_entity",
+    type: ENTITY_ID,
   })) {
     if (relayName.safeGet(entity) !== name) continue;
 
@@ -149,10 +149,7 @@ export const storageRelayComponent: BlockCustomComponent = {
     const player = e.player;
     const block = e.block;
 
-    const entity = getEntityAtBlockLocation(
-      block,
-      "fluffyalien_asn:relay_entity",
-    );
+    const entity = getEntityAtBlockLocation(block, ENTITY_ID);
     if (!entity) {
       logWarn(
         `could not get relay entity at ${Vector3Utils.toString(block.location)} in ${block.dimension.id} to process interaction`,
