@@ -1,10 +1,16 @@
 import { StorageNetwork } from "./storage_network";
-import { Block, BlockCustomComponent, Entity, Player } from "@minecraft/server";
+import {
+  Block,
+  BlockCustomComponent,
+  Entity,
+  Player,
+  world,
+} from "@minecraft/server";
 import {
   getEntitiesAtBlockLocation,
   getEntityAtBlockLocation,
 } from "./utils/location";
-import { ModalFormData } from "@minecraft/server-ui";
+import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { createErrorMessageForm } from "./utils/ui";
 import { logWarn } from "./log";
 import { Vector3Utils } from "@minecraft/math";
@@ -14,56 +20,43 @@ import {
   DiscoverCableNetworkConnectionsError,
   showEstablishNetworkError,
 } from "./cable_network";
+import {
+  canAccessRelayNamespace,
+  createRelayNamespace,
+  deleteRelayNamespace,
+  getAccessibleRelayNamespaces,
+  getRelayNamespacesByOwner,
+  RelayNamespace,
+  updateRelayNamespace,
+} from "./relay_namespace";
 
+const BLOCK_ID = "fluffyalien_asn:storage_relay";
 const ENTITY_ID = "fluffyalien_asn:relay_entity";
 
-export const relayName = new DynamicPropertyAccessor<string>(
-  "fluffyalien_asn:relay_name",
+/**
+ * The id of the {@link RelayNamespace} a relay is assigned to. Stored on the
+ * relay entity so it can be read globally during network discovery. Relays
+ * bridge to every other relay sharing this id.
+ */
+export const relayNamespaceId = new DynamicPropertyAccessor<string>(
+  "fluffyalien_asn:relay_namespace",
+);
+
+/** The id of the player who placed a relay. Stored on the relay entity. */
+export const relayOwner = new DynamicPropertyAccessor<string>(
+  "fluffyalien_asn:relay_owner",
 );
 
 /**
- * Shows the relay naming UI. If the player submits a valid name it is saved to
- * the relay entity and returned. Returns `undefined` if the form was cancelled
- * or the submitted name was invalid, in which case nothing is changed.
+ * Finds every established network that currently contains a relay assigned to
+ * the given namespace. Relays bridge networks globally by namespace, so all of
+ * these may be affected when a relay is assigned to or away from it.
  */
-async function showRelayForm(
-  player: Player,
-  relayEntity: Entity,
-): Promise<string | undefined> {
-  const form = new ModalFormData();
-  form.title({ translate: "tile.fluffyalien_asn:storage_relay.name" });
-
-  form.textField({ translate: "fluffyalien_asn.ui.relay.name" }, "", {
-    defaultValue: relayName.safeGet(relayEntity),
-  });
-
-  const response = await form.show(player);
-  if (!response.formValues) return undefined;
-
-  const name = response.formValues[0] as string;
-  if (!name) {
-    void createErrorMessageForm({
-      translate: "fluffyalien_asn.ui.relay.error.invalidName",
-    }).show(player);
-    return undefined;
-  }
-
-  relayName.set(relayEntity, name);
-  return name;
-}
-
-/**
- * Finds every established network that currently contains a relay with the
- * given name. Relays bridge networks globally by name, so all of these may be
- * affected when a relay is renamed to or from `name`.
- */
-function getNetworksForRelayName(name: string): StorageNetwork[] {
+function getNetworksForRelayNamespace(namespaceId: string): StorageNetwork[] {
   const networks: StorageNetwork[] = [];
 
-  for (const entity of getEntitiesInAllDimensions({
-    type: ENTITY_ID,
-  })) {
-    if (relayName.safeGet(entity) !== name) continue;
+  for (const entity of getEntitiesInAllDimensions({ type: ENTITY_ID })) {
+    if (relayNamespaceId.safeGet(entity) !== namespaceId) continue;
 
     const block = entity.dimension.getBlock(entity.location);
     if (!block) continue;
@@ -76,34 +69,45 @@ function getNetworksForRelayName(name: string): StorageNetwork[] {
 }
 
 /**
- * Re-discovers every network affected by renaming a relay from `oldName` to
- * `newName`: the network that contains the relay, plus every network containing
- * a relay that shares the old or new name. Because relays bridge by name across
- * the whole world, a single rename can connect or disconnect cable segments far
- * from the relay itself, and each affected network must update independently
- * (updating only the relay's own network would leave the other side stale, and
- * would do nothing at all when the relay sits in a not-yet-established coreless
- * segment). Any error - eg. the rename links two storage cores, destroying the
- * network - is surfaced to the player.
+ * Re-discovers every network affected by reassigning a relay from
+ * `oldNamespaceId` to `newNamespaceId`: the network that contains the relay,
+ * plus every network containing a relay in the old or new namespace. Because
+ * relays bridge by namespace across the whole world, a single reassignment can
+ * connect or disconnect cable segments far from the relay itself, and each
+ * affected network must update independently (updating only the relay's own
+ * network would leave the other side stale, and would do nothing at all when the
+ * relay sits in a not-yet-established coreless segment). Any error - eg. the
+ * change links two storage cores, destroying the network - is surfaced to the
+ * player.
  */
 async function updateRelayNetworks(
   player: Player,
   relayBlock: Block,
-  oldName: string | undefined,
-  newName: string,
+  oldNamespaceId: string | undefined,
+  newNamespaceId: string,
 ): Promise<void> {
   const networks = new Set<StorageNetwork>();
 
   const ownNetwork = StorageNetwork.getNetwork(relayBlock);
   if (ownNetwork) networks.add(ownNetwork);
 
-  for (const name of [oldName, newName]) {
-    if (!name) continue;
-    for (const network of getNetworksForRelayName(name)) {
+  for (const namespaceId of [oldNamespaceId, newNamespaceId]) {
+    if (!namespaceId) continue;
+    for (const network of getNetworksForRelayNamespace(namespaceId)) {
       networks.add(network);
     }
   }
 
+  await rediscoverNetworks(player, networks);
+}
+
+/**
+ * Re-discovers the given networks, surfacing the first error to the player.
+ */
+async function rediscoverNetworks(
+  player: Player,
+  networks: Iterable<StorageNetwork>,
+): Promise<void> {
   let firstError: DiscoverCableNetworkConnectionsError | undefined;
   for (const network of networks) {
     // updating one network can destroy another (eg. it claimed the same blocks
@@ -119,6 +123,308 @@ async function updateRelayNetworks(
   if (firstError !== undefined) {
     void showEstablishNetworkError(player, firstError);
   }
+}
+
+/**
+ * Deletes the namespace and unassigns every relay using it, then re-discovers
+ * the affected networks so the relays stop bridging. The networks are captured
+ * before clearing the relays, since clearing changes what each relay belongs to.
+ */
+async function deleteNamespaceAndUnassignRelays(
+  player: Player,
+  namespaceId: string,
+): Promise<void> {
+  deleteRelayNamespace(namespaceId);
+
+  const networks = new Set<StorageNetwork>(
+    getNetworksForRelayNamespace(namespaceId),
+  );
+
+  for (const entity of getEntitiesInAllDimensions({ type: ENTITY_ID })) {
+    if (relayNamespaceId.safeGet(entity) !== namespaceId) continue;
+    relayNamespaceId.set(entity);
+  }
+
+  await rediscoverNetworks(player, networks);
+}
+
+/**
+ * Assigns the relay to the namespace and re-discovers the affected networks. A
+ * no-op if the relay is already assigned to that namespace.
+ */
+async function setRelayNamespace(
+  player: Player,
+  relayBlock: Block,
+  relayEntity: Entity,
+  namespaceId: string,
+): Promise<void> {
+  const oldNamespaceId = relayNamespaceId.safeGet(relayEntity);
+  if (oldNamespaceId === namespaceId) return;
+
+  relayNamespaceId.set(relayEntity, namespaceId);
+
+  await updateRelayNetworks(player, relayBlock, oldNamespaceId, namespaceId);
+}
+
+/** Parses a comma/newline separated list of player names. */
+function parsePlayerNameList(text: string): string[] {
+  return text
+    .split(/[\n,]/)
+    .map((name) => name.trim())
+    .filter((name) => name.length > 0);
+}
+
+/**
+ * Shows the namespace configuration form. With no `existing` namespace it
+ * creates a new one (owned by the player) and assigns the relay to it; with an
+ * `existing` namespace it edits that namespace's settings in place (its id and
+ * owner are preserved, and the relay's assignment is left unchanged).
+ */
+async function showNamespaceConfigForm(
+  player: Player,
+  relayBlock: Block,
+  relayEntity: Entity,
+  existing?: RelayNamespace,
+): Promise<void> {
+  const form = new ModalFormData();
+  form.title({
+    translate: existing
+      ? "fluffyalien_asn.ui.relay.config.optionsTitle"
+      : "fluffyalien_asn.ui.relay.config.newTitle",
+  });
+
+  form.textField(
+    { translate: "fluffyalien_asn.ui.relay.config.label.name" },
+    "",
+    {
+      defaultValue: existing?.name,
+    },
+  );
+  form.toggle(
+    { translate: "fluffyalien_asn.ui.relay.config.label.open" },
+    { defaultValue: existing?.open ?? false },
+  );
+  form.textField(
+    { translate: "fluffyalien_asn.ui.relay.config.label.allowlist" },
+    "",
+    {
+      defaultValue: existing?.allowlist.join(", "),
+      tooltip: { translate: "fluffyalien_asn.ui.relay.config.tip.playerList" },
+    },
+  );
+  form.textField(
+    { translate: "fluffyalien_asn.ui.relay.config.label.denylist" },
+    "",
+    {
+      defaultValue: existing?.denylist.join(", "),
+      tooltip: { translate: "fluffyalien_asn.ui.relay.config.tip.playerList" },
+    },
+  );
+
+  const response = await form.show(player);
+  if (!response.formValues) return;
+
+  const name = (response.formValues[0] as string).trim();
+  const open = response.formValues[1] as boolean;
+  const allowlist = parsePlayerNameList(response.formValues[2] as string);
+  const denylist = parsePlayerNameList(response.formValues[3] as string);
+
+  if (!name) {
+    void createErrorMessageForm({
+      translate: "fluffyalien_asn.ui.relay.error.invalidNamespaceName",
+    }).show(player);
+    return;
+  }
+
+  if (existing) {
+    updateRelayNamespace(existing.id, { name, open, allowlist, denylist });
+    return;
+  }
+
+  const namespace = createRelayNamespace(player, {
+    name,
+    open,
+    allowlist,
+    denylist,
+  });
+
+  await setRelayNamespace(player, relayBlock, relayEntity, namespace.id);
+}
+
+/**
+ * Shows the per-namespace actions form. The owner gets Delete, Configure, and
+ * Select; everyone else gets only Select (they may not configure or delete a
+ * namespace they don't own).
+ */
+async function showNamespaceActionsForm(
+  player: Player,
+  relayBlock: Block,
+  relayEntity: Entity,
+  namespace: RelayNamespace,
+): Promise<void> {
+  const isOwner = namespace.owner === player.id;
+
+  const form = new ActionFormData()
+    .title(namespace.name)
+    .body("fluffyalien_asn.ui.relay.actions.body");
+
+  form.button({ translate: "fluffyalien_asn.ui.relay.actions.button.select" });
+  if (isOwner) {
+    form.button({
+      translate: "fluffyalien_asn.ui.relay.actions.button.configure",
+    });
+    form.button({
+      translate: "fluffyalien_asn.ui.relay.actions.button.delete",
+    });
+  }
+
+  const response = await form.show(player);
+  if (response.canceled || response.selection === undefined) return;
+
+  if (!isOwner) {
+    // the only button is Select
+    await setRelayNamespace(player, relayBlock, relayEntity, namespace.id);
+    return;
+  }
+
+  switch (response.selection) {
+    case 0:
+      await setRelayNamespace(player, relayBlock, relayEntity, namespace.id);
+      break;
+    case 1:
+      await showNamespaceConfigForm(player, relayBlock, relayEntity, namespace);
+      break;
+    case 2:
+      await showDeleteNamespaceConfirmForm(player, namespace);
+      break;
+  }
+}
+
+/**
+ * Shows a confirmation before deleting a namespace, since deletion disconnects
+ * every relay that uses it.
+ */
+async function showDeleteNamespaceConfirmForm(
+  player: Player,
+  namespace: RelayNamespace,
+): Promise<void> {
+  const form = new ActionFormData()
+    .title({ translate: "fluffyalien_asn.ui.relay.deleteConfirm.title" })
+    .body({
+      translate: "fluffyalien_asn.ui.relay.deleteConfirm.body",
+      with: [namespace.name],
+    })
+    .button({
+      translate: "fluffyalien_asn.ui.relay.deleteConfirm.button.confirm",
+    })
+    .button({
+      translate: "fluffyalien_asn.ui.relay.deleteConfirm.button.cancel",
+    });
+
+  const response = await form.show(player);
+  if (response.selection !== 0) return;
+
+  await deleteNamespaceAndUnassignRelays(player, namespace.id);
+}
+
+/**
+ * Shows the namespaces owned by `ownerId` that the player can access. Selecting
+ * one assigns the relay to it. When the player is viewing their own relays, a
+ * "New namespace" button is shown first.
+ */
+async function showNamespaceListForm(
+  player: Player,
+  relayBlock: Block,
+  relayEntity: Entity,
+  ownerId: string,
+  isOwn: boolean,
+): Promise<void> {
+  const namespaces = getRelayNamespacesByOwner(ownerId).filter((ns) =>
+    canAccessRelayNamespace(player, ns),
+  );
+
+  const form = new ActionFormData()
+    .title({
+      translate: "fluffyalien_asn.ui.relay.namespaceList.title",
+    })
+    .body({ translate: "fluffyalien_asn.ui.relay.body" });
+
+  // when present, the "New namespace" button occupies index 0, shifting the
+  // namespace buttons by one.
+  const offset = isOwn ? 1 : 0;
+  if (isOwn) {
+    form.button({
+      translate: "fluffyalien_asn.ui.relay.namespaceList.button.new",
+    });
+  }
+
+  for (const ns of namespaces) {
+    form.button(ns.name);
+  }
+
+  const response = await form.show(player);
+  if (response.canceled || response.selection === undefined) return;
+
+  if (isOwn && response.selection === 0) {
+    await showNamespaceConfigForm(player, relayBlock, relayEntity);
+    return;
+  }
+
+  // the selection maps directly to a button we added, so the namespace at this
+  // index always exists.
+  const namespace = namespaces[response.selection - offset];
+
+  await showNamespaceActionsForm(player, relayBlock, relayEntity, namespace);
+}
+
+/**
+ * Shows the relay's top-level form: a "Your namespaces" button plus a button for
+ * every other player that owns a namespace the current player can access.
+ */
+async function showRelayForm(
+  player: Player,
+  relayBlock: Block,
+  relayEntity: Entity,
+): Promise<void> {
+  // distinct other owners (excluding the current player) among the namespaces
+  // this player can access, mapped to their display names, in insertion order.
+  const otherOwnerNames = new Map<string, string>();
+  for (const ns of getAccessibleRelayNamespaces(player)) {
+    if (ns.owner === player.id) continue;
+    if (!otherOwnerNames.has(ns.owner)) {
+      otherOwnerNames.set(ns.owner, ns.ownerName);
+    }
+  }
+
+  const form = new ActionFormData()
+    .title({ translate: "tile.fluffyalien_asn:storage_relay.name" })
+    .body({ translate: "fluffyalien_asn.ui.relay.body" })
+    .button({ translate: "fluffyalien_asn.ui.relay.button.yourNamespaces" });
+
+  const ownerIds = [...otherOwnerNames.keys()];
+  for (const ownerId of ownerIds) {
+    form.button(otherOwnerNames.get(ownerId)!);
+  }
+
+  const response = await form.show(player);
+  if (response.canceled || response.selection === undefined) return;
+
+  if (response.selection === 0) {
+    await showNamespaceListForm(
+      player,
+      relayBlock,
+      relayEntity,
+      player.id,
+      true,
+    );
+    return;
+  }
+
+  // selection 0 is "Your namespaces" (handled above); every other index maps to an
+  // owner button we added, so the owner id at this index always exists.
+  const ownerId = ownerIds[response.selection - 1];
+
+  await showNamespaceListForm(player, relayBlock, relayEntity, ownerId, false);
 }
 
 /**
@@ -152,16 +458,31 @@ export const storageRelayComponent: BlockCustomComponent = {
     const entity = getEntityAtBlockLocation(block, ENTITY_ID);
     if (!entity) {
       logWarn(
-        `could not get relay entity at ${Vector3Utils.toString(block.location)} in ${block.dimension.id} to process interaction`,
+        `Failed to get relay entity at ${Vector3Utils.toString(block.location)} in ${block.dimension.id} to process interaction.`,
       );
       return;
     }
 
-    const oldName = relayName.safeGet(entity);
+    const owner = relayOwner.safeGet(entity);
+    if (owner !== player.id) {
+      void createErrorMessageForm({
+        translate: "fluffyalien_asn.ui.relay.error.notOwner",
+      }).show(player);
+      return;
+    }
 
-    void showRelayForm(player, entity).then((newName) => {
-      if (newName === undefined || newName === oldName) return;
-      void updateRelayNetworks(player, block, oldName, newName);
-    });
+    void showRelayForm(player, block, entity);
   },
 };
+
+// Record the placing player as the relay's owner. onPlace (a block component)
+// has no access to the player, so the owner is set from this player event,
+// which fires after the entity has been spawned in onPlace.
+world.afterEvents.playerPlaceBlock.subscribe((e) => {
+  if (e.block.typeId !== BLOCK_ID) return;
+
+  const entity = getEntityAtBlockLocation(e.block, ENTITY_ID);
+  if (!entity) return;
+
+  relayOwner.set(entity, e.player.id);
+});

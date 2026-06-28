@@ -116,8 +116,27 @@ fluffyalien_asn.ui.levelEmitter.operator=Operator
 fluffyalien_asn.ui.levelEmitter.amount=Amount
 fluffyalien_asn.ui.levelEmitter.error.invalidAmount=Invalid value for amount field. Amount must be a valid number and greater than zero.
 
-fluffyalien_asn.ui.relay.name=Relay Name
-fluffyalien_asn.ui.relay.error.invalidName=Relay name must be at least one character.
+fluffyalien_asn.ui.relay.body=Select a namespace.
+fluffyalien_asn.ui.relay.button.yourNamespaces=Your namespaces
+fluffyalien_asn.ui.relay.namespaceList.title=Select a Namespace
+fluffyalien_asn.ui.relay.namespaceList.button.new=New namespace
+fluffyalien_asn.ui.relay.config.newTitle=New Namespace
+fluffyalien_asn.ui.relay.config.optionsTitle=Configure Namespace
+fluffyalien_asn.ui.relay.config.label.name=Display name
+fluffyalien_asn.ui.relay.config.label.open=Open (allow all players except the denylist)
+fluffyalien_asn.ui.relay.config.label.allowlist=Allowlist
+fluffyalien_asn.ui.relay.config.label.denylist=Denylist
+fluffyalien_asn.ui.relay.config.tip.playerList=Separate player names with commas or new lines.
+fluffyalien_asn.ui.relay.actions.body=Select an action for this namespace.
+fluffyalien_asn.ui.relay.actions.button.select=Select
+fluffyalien_asn.ui.relay.actions.button.configure=Configure
+fluffyalien_asn.ui.relay.actions.button.delete=Delete
+fluffyalien_asn.ui.relay.deleteConfirm.title=Delete Namespace
+fluffyalien_asn.ui.relay.deleteConfirm.body=Delete the namespace "%s"? All relays using it will be disconnected.
+fluffyalien_asn.ui.relay.deleteConfirm.button.confirm=Delete
+fluffyalien_asn.ui.relay.deleteConfirm.button.cancel=Cancel
+fluffyalien_asn.ui.relay.error.notOwner=You do not own this relay.
+fluffyalien_asn.ui.relay.error.invalidNamespaceName=Namespace display name must be at least one character.
 
 fluffyalien_asn.ui.fluidExportBus.storageType=Storage Type
 
@@ -170,8 +189,8 @@ fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet3=Interact with an empt
 ## fluffyalien_asn.ui.tutorialBook.entry.relay.icon=textures/fluffyalien/asn/ui/tutorial_book/storage_relay_icon
 fluffyalien_asn.ui.tutorialBook.entry.relay.title=Storage Relay
 fluffyalien_asn.ui.tutorialBook.entry.relay.bullet0=Connects storage network devices over long distances.
-fluffyalien_asn.ui.tutorialBook.entry.relay.bullet1=Interact to change the relay name.
-fluffyalien_asn.ui.tutorialBook.entry.relay.bullet2=Connects to all other relays with the same name.
+fluffyalien_asn.ui.tutorialBook.entry.relay.bullet1=Interact to assign the relay to a namespace.
+fluffyalien_asn.ui.tutorialBook.entry.relay.bullet2=Connects to all other relays in the same namespace.
 fluffyalien_asn.ui.tutorialBook.entry.relay.bullet3=Has infinite range and works interdimensionally.
 
 ## fluffyalien_asn.ui.tutorialBook.entry.powerBank.icon=textures/fluffyalien/asn/ui/tutorial_book/energy_icon

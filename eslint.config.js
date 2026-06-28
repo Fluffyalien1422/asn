@@ -32,6 +32,7 @@ export default defineConfig(
       "@typescript-eslint/no-confusing-non-null-assertion": "off",
       // older APIs use deprecated features
       "@typescript-eslint/no-deprecated": "off",
+      "@typescript-eslint/no-dynamic-delete": "off",
 
       "@typescript-eslint/explicit-function-return-type": "error",
       "@typescript-eslint/prefer-readonly": "error",

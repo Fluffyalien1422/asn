@@ -17,7 +17,7 @@ import {
 import { directionToVector3 } from "./utils/direction";
 import { createErrorMessageForm } from "./utils/ui";
 import { getEntityAtBlockLocation } from "./utils/location";
-import { relayName } from "./relay";
+import { relayNamespaceId } from "./relay";
 import { getEntitiesInAllDimensions } from "./utils/dimension";
 
 export interface CableNetworkConnections {
@@ -79,29 +79,29 @@ export async function discoverCableNetworkConnections(
   let storageCore: Block | undefined;
 
   // relay entities indexed by name, built once on first use and reused for the
-  // rest of this discovery. relays bridge globally by name, so without this
-  // index we would rescan every entity in every dimension once per relay
+  // rest of this discovery. relays bridge globally by namespace, so without
+  // this index we would rescan every entity in every dimension once per relay
   // encountered (3 cross-dimension queries each).
-  let relayEntitiesByName: Map<string, Entity[]> | undefined;
-  function getRelayEntitiesByName(): Map<string, Entity[]> {
-    if (relayEntitiesByName) return relayEntitiesByName;
+  let relayEntitiesByNamespace: Map<string, Entity[]> | undefined;
+  function getRelayEntitiesByNamespace(): Map<string, Entity[]> {
+    if (relayEntitiesByNamespace) return relayEntitiesByNamespace;
 
-    relayEntitiesByName = new Map<string, Entity[]>();
+    relayEntitiesByNamespace = new Map<string, Entity[]>();
     for (const relayEntity of getEntitiesInAllDimensions({
       type: "fluffyalien_asn:relay_entity",
     })) {
-      const relayEntityName = relayName.safeGet(relayEntity);
-      if (!relayEntityName) continue;
+      const namespaceId = relayNamespaceId.safeGet(relayEntity);
+      if (!namespaceId) continue;
 
-      const existing = relayEntitiesByName.get(relayEntityName);
+      const existing = relayEntitiesByNamespace.get(namespaceId);
       if (existing) {
         existing.push(relayEntity);
       } else {
-        relayEntitiesByName.set(relayEntityName, [relayEntity]);
+        relayEntitiesByNamespace.set(namespaceId, [relayEntity]);
       }
     }
 
-    return relayEntitiesByName;
+    return relayEntitiesByNamespace;
   }
 
   function handleBlock(
@@ -173,10 +173,12 @@ export async function discoverCableNetworkConnections(
           return ok();
         }
 
-        const name = relayName.safeGet(entity);
-        if (!name) return ok();
+        const namespaceId = relayNamespaceId.safeGet(entity);
+        if (!namespaceId) return ok();
 
-        for (const otherEntity of getRelayEntitiesByName().get(name) ?? []) {
+        for (const otherEntity of getRelayEntitiesByNamespace().get(
+          namespaceId,
+        ) ?? []) {
           // skip this relay's own entity.
           if (otherEntity.id === entity.id) continue;
 
