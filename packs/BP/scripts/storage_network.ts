@@ -112,11 +112,55 @@ export class StorageNetwork extends StorageSystem {
   private static readonly networkByBlockUid = new Map<string, StorageNetwork>();
 
   /**
+   * In-flight {@link StorageNetwork.establishNetwork} calls keyed by origin
+   * block uid. Concurrent establishments from the same origin share a single
+   * discovery instead of each running their own and constructing duplicate
+   * networks. The cross-origin race (two different origins in the same network)
+   * is additionally guarded by a post-discovery re-check inside
+   * {@link StorageNetwork.discoverAndConstruct}.
+   */
+  private static readonly establishmentsInFlight = new Map<
+    string,
+    Promise<Result<StorageNetwork, DiscoverCableNetworkConnectionsError>>
+  >();
+
+  /**
    * Establish a network from any starting position inside of the network
    * @param origin any block inside the network
    * @returns a result containing the new {@link StorageNetwork} or an error
    */
   static async establishNetwork(
+    origin: Block,
+  ): Promise<Result<StorageNetwork, DiscoverCableNetworkConnectionsError>> {
+    // Discovery is slow (it can force-load chunks and scan entities across all
+    // dimensions when following relays). Without deduplication, two triggers
+    // firing in that window - eg. the storage core load timeout running while a
+    // player opens the core - would each run a full discovery and construct a
+    // separate StorageNetwork ticking the same blocks, leaking the first.
+    const originUid = getBlockUid(origin);
+
+    const inFlight = StorageNetwork.establishmentsInFlight.get(originUid);
+    if (inFlight) return inFlight;
+
+    const promise = StorageNetwork.discoverAndConstruct(origin);
+    StorageNetwork.establishmentsInFlight.set(originUid, promise);
+    try {
+      return await promise;
+    } finally {
+      StorageNetwork.establishmentsInFlight.delete(originUid);
+    }
+  }
+
+  /**
+   * Runs discovery and constructs the network, guarding against a concurrent
+   * establishment from a *different* origin in the same network (which the
+   * per-origin in-flight map cannot catch). Discovery is async but construction
+   * and indexing are synchronous, so re-checking the index here - after the
+   * await, with nothing awaited before the construct - guarantees that whichever
+   * call finishes discovery first builds the network and any later call returns
+   * that same network instead of leaking a duplicate.
+   */
+  private static async discoverAndConstruct(
     origin: Block,
   ): Promise<Result<StorageNetwork, DiscoverCableNetworkConnectionsError>> {
     const result = await discoverCableNetworkConnections(origin);
@@ -125,6 +169,11 @@ export class StorageNetwork extends StorageSystem {
     }
 
     const connections = result.value;
+
+    const existing = StorageNetwork.getNetwork(connections.storageCore);
+    if (existing) {
+      return ok(existing);
+    }
 
     return ok(new StorageNetwork(connections));
   }

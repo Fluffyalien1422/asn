@@ -116,7 +116,6 @@ fluffyalien_asn.ui.levelEmitter.operator=Operator
 fluffyalien_asn.ui.levelEmitter.amount=Amount
 fluffyalien_asn.ui.levelEmitter.error.invalidAmount=Invalid value for amount field. Amount must be a valid number and greater than zero.
 
-fluffyalien_asn.ui.relay.title=Storage Relay
 fluffyalien_asn.ui.relay.name=Relay Name
 fluffyalien_asn.ui.relay.error.invalidName=Relay name must be at least one character.
 
