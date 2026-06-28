@@ -4,9 +4,8 @@ import {
   StorageNetwork,
 } from "./storage_network";
 import {
+  Block,
   BlockCustomComponent,
-  DimensionLocation,
-  Entity,
   Player,
   RawMessage,
   system,
@@ -22,6 +21,9 @@ import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { useEnergyRule } from "./addon_rules/addon_rules";
 import { RegisteredStorageType } from "bedrock-energistics-core-api";
+import { getEntitiesAtBlockLocation } from "./utils/location";
+
+const ENTITY_ID = "fluffyalien_asn:storage_core_entity";
 
 async function showStorageCoreUi(
   player: Player,
@@ -140,30 +142,28 @@ async function showStorageCoreUi(
 }
 
 /**
- * Gets the storage core dummy entity at a {@link DimensionLocation}
- * @param location the block location of the storage core
- * @returns the {@link Entity} or undefined if it could not be found
+ * Removes every storage core entity at the given block's location. A storage core should only
+ * ever have one, but removing all of them defends against duplicates/orphans
+ * (eg. a prior entity whose removal failed).
  */
-function getStorageCoreEntity(location: DimensionLocation): Entity | undefined {
-  return location.dimension
-    .getEntitiesAtBlockLocation(location)
-    .find((v) => v.typeId === "fluffyalien_asn:storage_core_entity");
+function removeStorageCoreEntities(block: Block): void {
+  for (const entity of getEntitiesAtBlockLocation(block, ENTITY_ID)) {
+    entity.remove();
+  }
 }
 
 export const storageCoreComponent: BlockCustomComponent = {
   onPlace(e) {
-    if (e.previousBlock.type.id === "fluffyalien_asn:storage_core") return;
+    if (e.previousBlock.type.id === e.block.typeId) return;
 
-    e.block.dimension.spawnEntity("fluffyalien_asn:storage_core_entity", {
-      x: e.block.x + 0.5,
-      y: e.block.y,
-      z: e.block.z + 0.5,
-    });
+    // clear any stray entities first so the new storage core starts with exactly one
+    removeStorageCoreEntities(e.block);
 
+    e.block.dimension.spawnEntity(ENTITY_ID, e.block.bottomCenter());
     StorageNetwork.updateConnectableNetworks(e.block);
   },
   onBreak(e) {
-    getStorageCoreEntity(e.block)?.remove();
+    removeStorageCoreEntities(e.block);
     StorageNetwork.getNetwork(e.block)?.destroy();
   },
   onPlayerInteract(e) {
@@ -209,7 +209,7 @@ export const storageCoreComponent: BlockCustomComponent = {
 };
 
 world.afterEvents.entityLoad.subscribe((e) => {
-  if (e.entity.typeId !== "fluffyalien_asn:storage_core_entity") return;
+  if (e.entity.typeId !== ENTITY_ID) return;
 
   const entity = e.entity;
 

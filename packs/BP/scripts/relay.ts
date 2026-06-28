@@ -1,6 +1,9 @@
 import { StorageNetwork } from "./storage_network";
 import { Block, BlockCustomComponent, Entity, Player } from "@minecraft/server";
-import { getEntityAtBlockLocation } from "./utils/location";
+import {
+  getEntitiesAtBlockLocation,
+  getEntityAtBlockLocation,
+} from "./utils/location";
 import { ModalFormData } from "@minecraft/server-ui";
 import { createErrorMessageForm } from "./utils/ui";
 import { logWarn } from "./log";
@@ -11,6 +14,8 @@ import {
   DiscoverCableNetworkConnectionsError,
   showEstablishNetworkError,
 } from "./cable_network";
+
+const ENTITY_ID = "fluffyalien_asn:relay_entity";
 
 export const relayName = new DynamicPropertyAccessor<string>(
   "fluffyalien_asn:relay_name",
@@ -116,18 +121,28 @@ async function updateRelayNetworks(
   }
 }
 
+/**
+ * Removes every relay entity at the given block's location. A relay should only
+ * ever have one, but removing all of them defends against duplicates/orphans
+ * (eg. a prior entity whose removal failed).
+ */
+function removeRelayEntities(block: Block): void {
+  for (const entity of getEntitiesAtBlockLocation(block, ENTITY_ID)) {
+    entity.remove();
+  }
+}
+
 export const storageRelayComponent: BlockCustomComponent = {
   onPlace(e) {
     if (e.previousBlock.type.id === e.block.typeId) return;
 
-    e.block.dimension.spawnEntity("fluffyalien_asn:relay_entity", {
-      x: e.block.x + 0.5,
-      y: e.block.y,
-      z: e.block.z + 0.5,
-    });
+    // clear any stray entities first so the new relay starts with exactly one
+    removeRelayEntities(e.block);
+
+    e.block.dimension.spawnEntity(ENTITY_ID, e.block.bottomCenter());
   },
   onBreak(e) {
-    getEntityAtBlockLocation(e.block, "fluffyalien_asn:relay_entity")?.remove();
+    removeRelayEntities(e.block);
   },
   onPlayerInteract(e) {
     if (!e.player) return;

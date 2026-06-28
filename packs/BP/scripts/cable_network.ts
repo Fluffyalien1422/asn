@@ -2,6 +2,7 @@ import {
   Block,
   Dimension,
   Direction,
+  Entity,
   Player,
   Vector3,
 } from "@minecraft/server";
@@ -77,6 +78,32 @@ export async function discoverCableNetworkConnections(
   const fluidDrives: Block[] = [];
   let storageCore: Block | undefined;
 
+  // relay entities indexed by name, built once on first use and reused for the
+  // rest of this discovery. relays bridge globally by name, so without this
+  // index we would rescan every entity in every dimension once per relay
+  // encountered (3 cross-dimension queries each).
+  let relayEntitiesByName: Map<string, Entity[]> | undefined;
+  function getRelayEntitiesByName(): Map<string, Entity[]> {
+    if (relayEntitiesByName) return relayEntitiesByName;
+
+    relayEntitiesByName = new Map<string, Entity[]>();
+    for (const relayEntity of getEntitiesInAllDimensions({
+      type: "fluffyalien_asn:relay_entity",
+    })) {
+      const relayEntityName = relayName.safeGet(relayEntity);
+      if (!relayEntityName) continue;
+
+      const existing = relayEntitiesByName.get(relayEntityName);
+      if (existing) {
+        existing.push(relayEntity);
+      } else {
+        relayEntitiesByName.set(relayEntityName, [relayEntity]);
+      }
+    }
+
+    return relayEntitiesByName;
+  }
+
   function handleBlock(
     block: Block,
   ): Result<void, DiscoverCableNetworkConnectionsError> {
@@ -149,18 +176,13 @@ export async function discoverCableNetworkConnections(
         const name = relayName.safeGet(entity);
         if (!name) return ok();
 
-        for (const otherEntity of getEntitiesInAllDimensions({
-          type: "fluffyalien_asn:relay_entity",
-          minDistance: 2,
-          location: entity.location,
-        })) {
-          const otherName = relayName.safeGet(otherEntity);
-          if (name !== otherName) continue;
+        for (const otherEntity of getRelayEntitiesByName().get(name) ?? []) {
+          // skip this relay's own entity.
+          if (otherEntity.id === entity.id) continue;
 
           const nextBlock = otherEntity.dimension.getBlock(
             otherEntity.location,
           );
-
           if (nextBlock) {
             stack.push(nextBlock);
           }

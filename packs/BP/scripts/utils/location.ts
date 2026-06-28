@@ -14,6 +14,15 @@ export function getEntityAtBlockLocation(
     .find((v) => v.typeId === entityId);
 }
 
+export function getEntitiesAtBlockLocation(
+  location: DimensionLocation,
+  entityId: string,
+): Entity[] {
+  return location.dimension
+    .getEntitiesAtBlockLocation(location)
+    .filter((v) => v.typeId === entityId);
+}
+
 export function vector3AsDimensionLocation(
   vec: Vector3,
   dimension: Dimension,
