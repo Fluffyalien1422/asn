@@ -23,6 +23,26 @@ export const wirelessInterfaceEnergyConsumptionRule =
     10,
   );
 
+export const relayMaxGlobalNamespacesRule = new DynamicPropertyAccessor<
+  number,
+  number
+>("fluffyalien_asn:rule_relay_max_global_ns", 128);
+
+export const relayMaxPlayerNamespacesRule = new DynamicPropertyAccessor<
+  number,
+  number
+>("fluffyalien_asn:rule_relay_max_player_ns", 16);
+
+export const relayMaxNamespaceNameCharsRule = new DynamicPropertyAccessor<
+  number,
+  number
+>("fluffyalien_asn:rule_relay_max_ns_name_chars", 32);
+
+export const relayMaxNamespacePlayerListCountRule = new DynamicPropertyAccessor<
+  number,
+  number
+>("fluffyalien_asn:rule_relay_max_ns_player_list_count", 8);
+
 export const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
   wirelessInterfaceRange: {
     type: "int",
@@ -47,6 +67,22 @@ export const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
         player,
         value,
       ),
+  },
+  relayMaxGlobalNamespaces: {
+    type: "int",
+    property: relayMaxGlobalNamespacesRule,
+  },
+  relayMaxPlayerNamespaces: {
+    type: "int",
+    property: relayMaxPlayerNamespacesRule,
+  },
+  relayMaxNamespaceNameChars: {
+    type: "int",
+    property: relayMaxNamespaceNameCharsRule,
+  },
+  relayMaxNamespacePlayerListCount: {
+    type: "int",
+    property: relayMaxNamespacePlayerListCountRule,
   },
 };
 

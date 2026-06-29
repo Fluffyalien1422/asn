@@ -28,8 +28,13 @@ import {
   getRelayNamespace,
   getRelayNamespacesByOwner,
   RelayNamespace,
+  RelayNamespaceWriteError,
   updateRelayNamespace,
 } from "./relay_namespace";
+import {
+  relayMaxNamespaceNameCharsRule,
+  relayMaxNamespacePlayerListCountRule,
+} from "./addon_rules/addon_rules";
 
 const BLOCK_ID = "fluffyalien_asn:storage_relay";
 const ENTITY_ID = "fluffyalien_asn:relay_entity";
@@ -175,6 +180,16 @@ function parsePlayerNameList(text: string): string[] {
     .filter((name) => name.length > 0);
 }
 
+/** Shows the player an error explaining why a namespace write failed. */
+function showRelayNamespaceWriteError(
+  player: Player,
+  error: RelayNamespaceWriteError,
+): void {
+  void createErrorMessageForm({
+    translate: `fluffyalien_asn.ui.relay.error.ns.${error}`,
+  }).show(player);
+}
+
 /**
  * Shows the namespace configuration form. With no `existing` namespace it
  * creates a new one (owned by the player) and assigns the relay to it; with an
@@ -233,26 +248,49 @@ async function showNamespaceConfigForm(
   const allowlist = parsePlayerNameList(response.formValues[2] as string);
   const denylist = parsePlayerNameList(response.formValues[3] as string);
 
-  if (!name) {
+  const maxNameChars = relayMaxNamespaceNameCharsRule.safeGet(world);
+  if (!name || name.length > maxNameChars) {
     void createErrorMessageForm({
       translate: "fluffyalien_asn.ui.relay.error.invalidNamespaceName",
+      with: [maxNameChars.toString()],
+    }).show(player);
+    return;
+  }
+
+  const maxListCount = relayMaxNamespacePlayerListCountRule.safeGet(world);
+  if (allowlist.length > maxListCount || denylist.length > maxListCount) {
+    void createErrorMessageForm({
+      translate: "fluffyalien_asn.ui.relay.error.tooManyPlayerListEntries",
+      with: [maxListCount.toString()],
     }).show(player);
     return;
   }
 
   if (existing) {
-    updateRelayNamespace(existing.id, { name, open, allowlist, denylist });
+    const result = updateRelayNamespace(existing.id, {
+      name,
+      open,
+      allowlist,
+      denylist,
+    });
+    if (result.isErr()) {
+      showRelayNamespaceWriteError(player, result.error);
+    }
     return;
   }
 
-  const namespace = createRelayNamespace(player, {
+  const result = createRelayNamespace(player, {
     name,
     open,
     allowlist,
     denylist,
   });
+  if (result.isErr()) {
+    showRelayNamespaceWriteError(player, result.error);
+    return;
+  }
 
-  return setRelayNamespace(player, relayBlock, relayEntity, namespace.id);
+  return setRelayNamespace(player, relayBlock, relayEntity, result.value.id);
 }
 
 /**

@@ -64,6 +64,10 @@ fluffyalien_asn.message.scriptEvent.addonRule.help.wirelessInterfaceRange=The ma
 fluffyalien_asn.message.scriptEvent.addonRule.help.useEnergy=Make storage networks require energy to operate.
 fluffyalien_asn.message.scriptEvent.addonRule.help.deviceEnergyConsumption=The amount of energy each device in the network consumes (every 10t). Ignored if 'useEnergy' is false.
 fluffyalien_asn.message.scriptEvent.addonRule.help.wirelessInterfaceEnergyConsumption=The amount of energy a wireless interface consumes on use. Ignored if 'useEnergy' is false.
+fluffyalien_asn.message.scriptEvent.addonRule.help.relayMaxGlobalNamespaces=The maximum number of relay namespaces that can exist across the whole world. Note that there is a hard 32,000 char data cap that applies no matter how the maximum limits are configured.
+fluffyalien_asn.message.scriptEvent.addonRule.help.relayMaxPlayerNamespaces=The maximum number of relay namespaces a single player can own. Note that there is a hard 32,000 char data cap that applies no matter how the maximum limits are configured.
+fluffyalien_asn.message.scriptEvent.addonRule.help.relayMaxNamespaceNameChars=The maximum number of characters in a relay namespace's display name. Note that there is a hard 32,000 char data cap that applies no matter how the maximum limits are configured.
+fluffyalien_asn.message.scriptEvent.addonRule.help.relayMaxNamespacePlayerListCount=The maximum number of players in a relay namespace's allowlist or denylist. Note that there is a hard 32,000 char data cap that applies no matter how the maximum limits are configured.
 
 fluffyalien_asn.actionbar.storageInterface.openToViewQueryResults=Open the storage interface again to view search results
 
@@ -138,7 +142,12 @@ fluffyalien_asn.ui.relay.deleteConfirm.body=Delete the namespace "%s"? All relay
 fluffyalien_asn.ui.relay.deleteConfirm.button.confirm=Delete
 fluffyalien_asn.ui.relay.deleteConfirm.button.cancel=Cancel
 fluffyalien_asn.ui.relay.error.notOwner=You do not own this relay.
-fluffyalien_asn.ui.relay.error.invalidNamespaceName=Namespace display name must be at least one character.
+fluffyalien_asn.ui.relay.error.invalidNamespaceName=Namespace display name must be between 1 and %s characters.
+fluffyalien_asn.ui.relay.error.tooManyPlayerListEntries=The allowlist and denylist can each have at most %s players.
+fluffyalien_asn.ui.relay.error.ns.globalLimitReached=The maximum number of namespaces has been reached.
+fluffyalien_asn.ui.relay.error.ns.playerLimitReached=You have reached your maximum number of namespaces.
+fluffyalien_asn.ui.relay.error.ns.storageFull=Namespace storage is full.
+fluffyalien_asn.ui.relay.error.ns.notFound=That namespace no longer exists.
 
 fluffyalien_asn.ui.fluidExportBus.storageType=Storage Type
 

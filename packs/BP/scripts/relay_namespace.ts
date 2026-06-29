@@ -1,4 +1,9 @@
 import { Player, world } from "@minecraft/server";
+import { err, ok, Result } from "neverthrow";
+import {
+  relayMaxGlobalNamespacesRule,
+  relayMaxPlayerNamespacesRule,
+} from "./addon_rules/addon_rules";
 
 /**
  * A named group that relays can be assigned to. Relays bridge to every other
@@ -34,8 +39,24 @@ export interface CreateRelayNamespaceConfig {
   denylist: string[];
 }
 
+/** An error from a namespace write (create or update). */
+export type RelayNamespaceWriteError =
+  | "globalLimitReached"
+  | "playerLimitReached"
+  | "storageFull"
+  | "notFound";
+
 /** World dynamic property the {@link RegistryData} is serialized to. */
 const REGISTRY_PROPERTY = "fluffyalien_asn:relay_namespaces";
+
+/**
+ * Maximum serialized length of the registry. This is a hard, non-configurable
+ * limit kept safely below the 32,767 character dynamic property cap; a write
+ * that would exceed it is rejected rather than throwing on the dynamic property
+ * write. The configurable namespace count limits (see addon rules) are normally
+ * hit first, but this also guards against large allow/deny lists.
+ */
+const MAX_REGISTRY_LENGTH = 32000;
 
 interface RegistryData {
   /** Monotonic counter backing namespace id allocation. */
@@ -59,6 +80,20 @@ function loadRegistry(): RegistryData {
 
 function saveRegistry(data: RegistryData): void {
   world.setDynamicProperty(REGISTRY_PROPERTY, JSON.stringify(data));
+}
+
+/**
+ * Serializes and saves the registry, returning `false` without writing if the
+ * result would exceed {@link MAX_REGISTRY_LENGTH}. Use this for writes that grow
+ * the registry; deletions can use {@link saveRegistry} directly since they only
+ * shrink it (and must always succeed so storage can be freed).
+ */
+function trySaveRegistry(data: RegistryData): boolean {
+  const serialized = JSON.stringify(data);
+  if (serialized.length > MAX_REGISTRY_LENGTH) return false;
+
+  world.setDynamicProperty(REGISTRY_PROPERTY, serialized);
+  return true;
 }
 
 /** @returns the namespace with the given id, or `undefined` if none exists. */
@@ -97,13 +132,24 @@ export function getAccessibleRelayNamespaces(player: Player): RelayNamespace[] {
 
 /**
  * Creates a new namespace owned by `owner` and persists it.
- * @returns the created namespace
+ * @returns the created namespace, or an error if the global or per-player
+ *   namespace limit has been reached, or the registry is full
  */
 export function createRelayNamespace(
   owner: Player,
   config: CreateRelayNamespaceConfig,
-): RelayNamespace {
+): Result<RelayNamespace, RelayNamespaceWriteError> {
   const registry = loadRegistry();
+  const all = Object.values(registry.namespaces);
+
+  if (all.length >= relayMaxGlobalNamespacesRule.safeGet(world)) {
+    return err("globalLimitReached");
+  }
+
+  const ownedCount = all.filter((ns) => ns.owner === owner.id).length;
+  if (ownedCount >= relayMaxPlayerNamespacesRule.safeGet(world)) {
+    return err("playerLimitReached");
+  }
 
   const id = (registry.nextId++).toString();
 
@@ -118,23 +164,27 @@ export function createRelayNamespace(
   };
 
   registry.namespaces[id] = namespace;
-  saveRegistry(registry);
 
-  return namespace;
+  if (!trySaveRegistry(registry)) {
+    return err("storageFull");
+  }
+
+  return ok(namespace);
 }
 
 /**
  * Updates the configurable fields of an existing namespace, leaving its id and
  * owner untouched.
- * @returns the updated namespace, or `undefined` if no namespace has that id
+ * @returns the updated namespace, or an error if no namespace has that id or the
+ *   registry would no longer fit
  */
 export function updateRelayNamespace(
   id: string,
   config: CreateRelayNamespaceConfig,
-): RelayNamespace | undefined {
+): Result<RelayNamespace, RelayNamespaceWriteError> {
   const registry = loadRegistry();
 
-  if (!(id in registry.namespaces)) return undefined;
+  if (!(id in registry.namespaces)) return err("notFound");
 
   const namespace = registry.namespaces[id];
   namespace.name = config.name;
@@ -142,9 +192,11 @@ export function updateRelayNamespace(
   namespace.allowlist = config.allowlist;
   namespace.denylist = config.denylist;
 
-  saveRegistry(registry);
+  if (!trySaveRegistry(registry)) {
+    return err("storageFull");
+  }
 
-  return namespace;
+  return ok(namespace);
 }
 
 /** Removes the namespace with the given id from the registry, if it exists. */
