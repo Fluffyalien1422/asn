@@ -116,9 +116,11 @@ fluffyalien_asn.ui.levelEmitter.operator=Operator
 fluffyalien_asn.ui.levelEmitter.amount=Amount
 fluffyalien_asn.ui.levelEmitter.error.invalidAmount=Invalid value for amount field. Amount must be a valid number and greater than zero.
 
-fluffyalien_asn.ui.relay.body=Select a namespace.
+fluffyalien_asn.ui.relay.currentNamespace=Current namespace: %s
+fluffyalien_asn.ui.relay.noNamespace=None
 fluffyalien_asn.ui.relay.button.yourNamespaces=Your namespaces
-fluffyalien_asn.ui.relay.namespaceList.title=Select a Namespace
+fluffyalien_asn.ui.relay.namespaceList.title=Select Namespace
+fluffyalien_asn.ui.relay.namespaceList.body=Select a namespace.
 fluffyalien_asn.ui.relay.namespaceList.button.new=New namespace
 fluffyalien_asn.ui.relay.config.newTitle=New Namespace
 fluffyalien_asn.ui.relay.config.optionsTitle=Configure Namespace

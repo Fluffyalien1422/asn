@@ -25,6 +25,7 @@ import {
   createRelayNamespace,
   deleteRelayNamespace,
   getAccessibleRelayNamespaces,
+  getRelayNamespace,
   getRelayNamespacesByOwner,
   RelayNamespace,
   updateRelayNamespace,
@@ -98,7 +99,7 @@ async function updateRelayNetworks(
     }
   }
 
-  await rediscoverNetworks(player, networks);
+  return rediscoverNetworks(player, networks);
 }
 
 /**
@@ -145,7 +146,7 @@ async function deleteNamespaceAndUnassignRelays(
     relayNamespaceId.set(entity);
   }
 
-  await rediscoverNetworks(player, networks);
+  return rediscoverNetworks(player, networks);
 }
 
 /**
@@ -163,7 +164,7 @@ async function setRelayNamespace(
 
   relayNamespaceId.set(relayEntity, namespaceId);
 
-  await updateRelayNetworks(player, relayBlock, oldNamespaceId, namespaceId);
+  return updateRelayNetworks(player, relayBlock, oldNamespaceId, namespaceId);
 }
 
 /** Parses a comma/newline separated list of player names. */
@@ -184,6 +185,7 @@ async function showNamespaceConfigForm(
   player: Player,
   relayBlock: Block,
   relayEntity: Entity,
+  back: () => Promise<void>,
   existing?: RelayNamespace,
 ): Promise<void> {
   const form = new ModalFormData();
@@ -222,7 +224,9 @@ async function showNamespaceConfigForm(
   );
 
   const response = await form.show(player);
-  if (!response.formValues) return;
+  if (!response.formValues) {
+    return back();
+  }
 
   const name = (response.formValues[0] as string).trim();
   const open = response.formValues[1] as boolean;
@@ -248,7 +252,7 @@ async function showNamespaceConfigForm(
     denylist,
   });
 
-  await setRelayNamespace(player, relayBlock, relayEntity, namespace.id);
+  return setRelayNamespace(player, relayBlock, relayEntity, namespace.id);
 }
 
 /**
@@ -261,12 +265,13 @@ async function showNamespaceActionsForm(
   relayBlock: Block,
   relayEntity: Entity,
   namespace: RelayNamespace,
+  back: () => Promise<void>,
 ): Promise<void> {
   const isOwner = namespace.owner === player.id;
 
   const form = new ActionFormData()
     .title(namespace.name)
-    .body("fluffyalien_asn.ui.relay.actions.body");
+    .body({ translate: "fluffyalien_asn.ui.relay.actions.body" });
 
   form.button({ translate: "fluffyalien_asn.ui.relay.actions.button.select" });
   if (isOwner) {
@@ -279,24 +284,31 @@ async function showNamespaceActionsForm(
   }
 
   const response = await form.show(player);
-  if (response.canceled || response.selection === undefined) return;
+  if (response.selection === undefined) {
+    return back();
+  }
 
   if (!isOwner) {
     // the only button is Select
-    await setRelayNamespace(player, relayBlock, relayEntity, namespace.id);
-    return;
+    return setRelayNamespace(player, relayBlock, relayEntity, namespace.id);
   }
+
+  const reopen = (): Promise<void> =>
+    showNamespaceActionsForm(player, relayBlock, relayEntity, namespace, back);
 
   switch (response.selection) {
     case 0:
-      await setRelayNamespace(player, relayBlock, relayEntity, namespace.id);
-      break;
+      return setRelayNamespace(player, relayBlock, relayEntity, namespace.id);
     case 1:
-      await showNamespaceConfigForm(player, relayBlock, relayEntity, namespace);
-      break;
+      return showNamespaceConfigForm(
+        player,
+        relayBlock,
+        relayEntity,
+        reopen,
+        namespace,
+      );
     case 2:
-      await showDeleteNamespaceConfirmForm(player, namespace);
-      break;
+      return showDeleteNamespaceConfirmForm(player, namespace, reopen);
   }
 }
 
@@ -307,6 +319,7 @@ async function showNamespaceActionsForm(
 async function showDeleteNamespaceConfirmForm(
   player: Player,
   namespace: RelayNamespace,
+  back: () => Promise<void>,
 ): Promise<void> {
   const form = new ActionFormData()
     .title({ translate: "fluffyalien_asn.ui.relay.deleteConfirm.title" })
@@ -322,9 +335,12 @@ async function showDeleteNamespaceConfirmForm(
     });
 
   const response = await form.show(player);
-  if (response.selection !== 0) return;
+  if (response.selection === 0) {
+    return deleteNamespaceAndUnassignRelays(player, namespace.id);
+  }
 
-  await deleteNamespaceAndUnassignRelays(player, namespace.id);
+  // the cancel button or closing the form returns to the previous form
+  return back();
 }
 
 /**
@@ -338,6 +354,7 @@ async function showNamespaceListForm(
   relayEntity: Entity,
   ownerId: string,
   isOwn: boolean,
+  back: () => Promise<void>,
 ): Promise<void> {
   const namespaces = getRelayNamespacesByOwner(ownerId).filter((ns) =>
     canAccessRelayNamespace(player, ns),
@@ -347,7 +364,7 @@ async function showNamespaceListForm(
     .title({
       translate: "fluffyalien_asn.ui.relay.namespaceList.title",
     })
-    .body({ translate: "fluffyalien_asn.ui.relay.body" });
+    .body({ translate: "fluffyalien_asn.ui.relay.namespaceList.body" });
 
   // when present, the "New namespace" button occupies index 0, shifting the
   // namespace buttons by one.
@@ -363,18 +380,35 @@ async function showNamespaceListForm(
   }
 
   const response = await form.show(player);
-  if (response.canceled || response.selection === undefined) return;
+  if (response.selection === undefined) {
+    return back();
+  }
+
+  const reopen = (): Promise<void> =>
+    showNamespaceListForm(
+      player,
+      relayBlock,
+      relayEntity,
+      ownerId,
+      isOwn,
+      back,
+    );
 
   if (isOwn && response.selection === 0) {
-    await showNamespaceConfigForm(player, relayBlock, relayEntity);
-    return;
+    return showNamespaceConfigForm(player, relayBlock, relayEntity, reopen);
   }
 
   // the selection maps directly to a button we added, so the namespace at this
   // index always exists.
   const namespace = namespaces[response.selection - offset];
 
-  await showNamespaceActionsForm(player, relayBlock, relayEntity, namespace);
+  return showNamespaceActionsForm(
+    player,
+    relayBlock,
+    relayEntity,
+    namespace,
+    reopen,
+  );
 }
 
 /**
@@ -396,9 +430,24 @@ async function showRelayForm(
     }
   }
 
+  const currentNamespaceId = relayNamespaceId.safeGet(relayEntity);
+  const currentNamespace =
+    currentNamespaceId !== undefined
+      ? getRelayNamespace(currentNamespaceId)
+      : undefined;
+
   const form = new ActionFormData()
     .title({ translate: "tile.fluffyalien_asn:storage_relay.name" })
-    .body({ translate: "fluffyalien_asn.ui.relay.body" })
+    .body({
+      translate: "fluffyalien_asn.ui.relay.currentNamespace",
+      with: {
+        rawtext: [
+          currentNamespace
+            ? { text: currentNamespace.name }
+            : { translate: "fluffyalien_asn.ui.relay.noNamespace" },
+        ],
+      },
+    })
     .button({ translate: "fluffyalien_asn.ui.relay.button.yourNamespaces" });
 
   const ownerIds = [...otherOwnerNames.keys()];
@@ -407,24 +456,36 @@ async function showRelayForm(
   }
 
   const response = await form.show(player);
+  // this is the top-level form, so closing it simply exits.
   if (response.canceled || response.selection === undefined) return;
 
+  // re-opens this form; the previous form for the list views below.
+  const back = (): Promise<void> =>
+    showRelayForm(player, relayBlock, relayEntity);
+
   if (response.selection === 0) {
-    await showNamespaceListForm(
+    return showNamespaceListForm(
       player,
       relayBlock,
       relayEntity,
       player.id,
       true,
+      back,
     );
-    return;
   }
 
-  // selection 0 is "Your namespaces" (handled above); every other index maps to an
-  // owner button we added, so the owner id at this index always exists.
+  // selection 0 is "Your namespaces" (handled above); every other index maps to
+  // an owner button we added, so the owner id at this index always exists.
   const ownerId = ownerIds[response.selection - 1];
 
-  await showNamespaceListForm(player, relayBlock, relayEntity, ownerId, false);
+  return showNamespaceListForm(
+    player,
+    relayBlock,
+    relayEntity,
+    ownerId,
+    false,
+    back,
+  );
 }
 
 /**

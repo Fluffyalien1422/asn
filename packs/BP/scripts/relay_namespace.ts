@@ -61,6 +61,11 @@ function saveRegistry(data: RegistryData): void {
   world.setDynamicProperty(REGISTRY_PROPERTY, JSON.stringify(data));
 }
 
+/** @returns the namespace with the given id, or `undefined` if none exists. */
+export function getRelayNamespace(id: string): RelayNamespace | undefined {
+  return loadRegistry().namespaces[id];
+}
+
 /** @returns every namespace owned by the given player id. */
 export function getRelayNamespacesByOwner(ownerId: string): RelayNamespace[] {
   return Object.values(loadRegistry().namespaces).filter(
