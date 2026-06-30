@@ -1,0 +1,39 @@
+{
+  "format_version": "1.26.20",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "fluffyalien_asn:disk_upgrader",
+      "is_summonable": true,
+      "is_spawnable": false
+    },
+    "components": {
+      "minecraft:inventory": {
+        "container_type": "container",
+        "inventory_size": 15
+      },
+      "minecraft:type_family": {
+        "family": ["fluffyalien_energisticscore:machine_entity"]
+      },
+      "minecraft:persistent": {},
+      "minecraft:knockback_resistance": {
+        "value": 1
+      },
+      "minecraft:breathable": {
+        "breathes_water": true
+      },
+      "minecraft:physics": {
+        "has_gravity": false,
+        "has_collision": false
+      },
+      "minecraft:damage_sensor": {
+        "triggers": {
+          "deals_damage": "no"
+        }
+      },
+      "minecraft:collision_box": {
+        "width": 1,
+        "height": 1
+      }
+    }
+  }
+}

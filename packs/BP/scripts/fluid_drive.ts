@@ -7,14 +7,14 @@ import {
   RawMessage,
 } from "@minecraft/server";
 import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
-import { makeErrorMessageUi, showForm } from "./utils/ui";
+import { createErrorMessageForm, showForm } from "./utils/ui";
 import { RegisteredStorageType } from "bedrock-energistics-core-api";
 import {
   getBlockDynamicProperties,
   getBlockDynamicProperty,
   removeAllDynamicPropertiesForBlock,
   setBlockDynamicProperty,
-} from "./utils/dynamic_property";
+} from "./utils/block_dynamic_property";
 import { NetworkStoredFluids, StorageNetwork } from "./storage_network";
 import { getPlayerMainhandSlot } from "./utils/item";
 
@@ -108,7 +108,7 @@ export const fluidDriveComponent: BlockCustomComponent = {
       const existingData = getBlockDynamicProperties(e.block);
       if (existingData.length) {
         void showForm(
-          makeErrorMessageUi({
+          createErrorMessageForm({
             translate:
               "fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk",
           }),
@@ -135,7 +135,7 @@ export const fluidDriveComponent: BlockCustomComponent = {
 
     void showFluidDriveUi(e.player, e.block);
   },
-  onPlayerBreak(e) {
+  onBreak(e) {
     const data = getBlockDynamicProperties(e.block);
 
     if (data.length) {

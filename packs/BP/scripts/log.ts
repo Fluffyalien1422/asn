@@ -15,3 +15,7 @@ export function logWarn(message: string): void {
 export function makeErrorString(message: string): string {
   return makeLogString("ERROR", message);
 }
+
+export function panic(message: string): never {
+  throw new Error(makeErrorString(message));
+}

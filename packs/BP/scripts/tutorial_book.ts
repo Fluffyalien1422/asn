@@ -1,147 +1,16 @@
 import { ItemStack, Player, RawMessage, world } from "@minecraft/server";
-import { makeMessageUi, showForm } from "./utils/ui";
+import { createMessageForm, showForm } from "./utils/ui";
 import { ActionFormData } from "@minecraft/server-ui";
-import { BUILD_DETAILS } from "./build_details";
+import TUTORIAL_ENTRIES, { TutorialEntry } from "./generated/tutorial_entries";
 
 const NOT_FIRST_JOIN_DYNAMIC_PROPERTY_ID = "fluffyalien_asn:not_first_join";
-
-interface TutorialEntry {
-  id: string;
-  icon: string;
-  bullets: number;
-  hidden?: boolean;
-}
-
-const TUTORIAL_ENTRIES: TutorialEntry[] = [
-  {
-    id: "storageNetwork",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon",
-    bullets: 4,
-  },
-  {
-    id: "storageCore",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon",
-    bullets: 3,
-  },
-  {
-    id: "storageCable",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_cable_icon",
-    bullets: 1,
-  },
-  {
-    id: "storageDrive",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_drive_icon",
-    bullets: 2,
-  },
-  {
-    id: "storageInterface",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_interface_icon",
-    bullets: 1,
-  },
-  {
-    id: "importBus",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/import_bus_icon",
-    bullets: 2,
-  },
-  {
-    id: "exportBus",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/export_bus_icon",
-    bullets: 4,
-  },
-  {
-    id: "levelEmitter",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/level_emitter_icon",
-    bullets: 4,
-  },
-  {
-    id: "relay",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_relay_icon",
-    bullets: 4,
-  },
-  {
-    id: "powerBank",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/energy_icon",
-    bullets: 2,
-    hidden: !BUILD_DETAILS.isBecBuild,
-  },
-  {
-    id: "wirelessTransmitter",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/wireless_transmitter_icon",
-    bullets: 2,
-  },
-  {
-    id: "wirelessInterface",
-    icon: "textures/fluffyalien/asn/items/wireless_interface",
-    bullets: 3,
-  },
-  {
-    id: "portableStorageNetwork",
-    icon: "textures/fluffyalien/asn/items/portable_storage_network_placer",
-    bullets: 5,
-  },
-  {
-    id: "storageDisk",
-    icon: "textures/fluffyalien/asn/items/storage_disk",
-    bullets: 3,
-  },
-  {
-    id: "addonRules",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon",
-    bullets: 4,
-  },
-  {
-    id: "energy",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/energy_icon",
-    bullets: 5,
-    hidden: !BUILD_DETAILS.isBecBuild,
-  },
-  {
-    id: "fluidStorage",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_drive_icon",
-    bullets: 4,
-    hidden: !BUILD_DETAILS.isBecBuild,
-  },
-  {
-    id: "fluidDrive",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_drive_icon",
-    bullets: 2,
-    hidden: !BUILD_DETAILS.isBecBuild,
-  },
-  {
-    id: "fluidInterface",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_interface_icon",
-    bullets: 1,
-    hidden: !BUILD_DETAILS.isBecBuild,
-  },
-  {
-    id: "fluidImportBus",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_import_bus_icon",
-    bullets: 2,
-    hidden: !BUILD_DETAILS.isBecBuild,
-  },
-  {
-    id: "fluidExportBus",
-    icon: "textures/fluffyalien/asn/ui/tutorial_book/fluid_export_bus_icon",
-    bullets: 4,
-    hidden: !BUILD_DETAILS.isBecBuild,
-  },
-  {
-    id: "fluidStorageDisk",
-    icon: "textures/fluffyalien/asn/items/fluid_storage_disk",
-    bullets: 3,
-    hidden: !BUILD_DETAILS.isBecBuild,
-  },
-];
 
 export async function showTutorialBookUi(player: Player): Promise<void> {
   const form = new ActionFormData();
 
   form.title({ translate: "fluffyalien_asn.ui.tutorialBook.title" });
 
-  const visibleEntries: TutorialEntry[] = [];
   for (const entry of TUTORIAL_ENTRIES) {
-    if (entry.hidden) continue;
-    visibleEntries.push(entry);
     form.button(
       {
         translate: `fluffyalien_asn.ui.tutorialBook.entry.${entry.id}.title`,
@@ -153,7 +22,7 @@ export async function showTutorialBookUi(player: Player): Promise<void> {
   const response = await showForm(form, player);
   if (response.selection === undefined) return;
 
-  const entry = visibleEntries[response.selection];
+  const entry = TUTORIAL_ENTRIES[response.selection];
   return void showTutorialBookEntryUi(player, entry);
 }
 
@@ -175,7 +44,7 @@ async function showTutorialBookEntryUi(
     });
   }
 
-  const form = makeMessageUi(
+  const form = createMessageForm(
     { translate: "fluffyalien_asn.ui.tutorialBook.title" },
     { rawtext },
   );

@@ -1,24 +1,13 @@
-import {
-  BlockCustomComponent,
-  Entity,
-  ItemStack,
-  world,
-} from "@minecraft/server";
+import { BlockCustomComponent, Entity, world } from "@minecraft/server";
 import {
   getMachineStorage,
   MachineDefinition,
   RegisteredStorageType,
-  removeMachineData,
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 import { StorageNetwork } from "./storage_network";
-import {
-  getNetworkOrShowError,
-  makeErrorMessageUi,
-  showForm,
-} from "./utils/ui";
-import { useEnergyRule } from "./addon_rules/addon_rules";
-import { forceCloseInventory } from "./storage_ui";
+import { getNetworkOrShowError, createErrorMessageForm } from "./utils/ui";
+import { forceCloseStorageViewerInventory } from "./storage_ui/shared";
 import {
   BACK_BUTTON_ITEM_ID,
   getPageNumberItemStacks,
@@ -154,10 +143,6 @@ export const fluidInterfaceMachine: MachineDefinition = {
 };
 
 export const fluidInterfaceComponent: BlockCustomComponent = {
-  onPlace(e) {
-    if (e.previousBlock.type.id === e.block.typeId) return;
-    StorageNetwork.updateConnectableNetworks(e.block);
-  },
   onTick(e) {
     const cardinalDirection = e.block.permutation.getState(
       "minecraft:cardinal_direction",
@@ -174,32 +159,14 @@ export const fluidInterfaceComponent: BlockCustomComponent = {
 
 world.afterEvents.entityHitEntity.subscribe((e) => {
   if (
-    e.hitEntity.typeId !== "fluffyalien_asn:fluid_interface" ||
-    e.damagingEntity.typeId !== "minecraft:player"
+    e.damagingEntity.typeId !== "minecraft:player" ||
+    e.hitEntity.typeId !== "fluffyalien_asn:fluid_interface"
   ) {
     return;
   }
 
-  const block = e.hitEntity.dimension.getBlock(e.hitEntity.location);
-  if (!block) {
-    return;
-  }
-
-  void removeMachineData(block).then(() => {
-    block.setType("air");
-
-    e.hitEntity.dimension.spawnItem(
-      new ItemStack("fluffyalien_asn:fluid_interface"),
-      e.hitEntity.location,
-    );
-
-    void StorageNetwork.getNetwork(
-      block,
-      "fluffyalien_asn:fluid_interface",
-    )?.updateConnections();
-
-    e.hitEntity.remove();
-  });
+  e.hitEntity.runCommand("setblock ~~~ air destroy");
+  e.hitEntity.remove();
 });
 
 world.afterEvents.playerInteractWithEntity.subscribe((e) => {
@@ -214,15 +181,12 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     async (network) => {
       if (!network) return;
 
-      if (useEnergyRule.get(world) && network.getStoredEnergy() <= 0) {
-        await forceCloseInventory(e.target);
-        void showForm(
-          makeErrorMessageUi({
-            translate:
-              "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
-          }),
-          e.player,
-        );
+      if (network.getUnmetEnergyDemand() > 0) {
+        await forceCloseStorageViewerInventory(e.target);
+        void createErrorMessageForm({
+          translate:
+            "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
+        }).show(e.player);
         return;
       }
 

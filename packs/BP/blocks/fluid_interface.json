@@ -1,5 +1,5 @@
 {
-  "format_version": "1.26.0",
+  "format_version": "1.26.20",
   "minecraft:block": {
     "description": {
       "identifier": "fluffyalien_asn:fluid_interface",
@@ -22,10 +22,12 @@
     },
     "components": {
       "fluffyalien_energisticscore:machine": {},
+      "fluffyalien_asn:network_device": {},
       "fluffyalien_asn:fluid_interface": {},
-      "fluffyalien_asn:fluid_storage_block": {},
-      "tag:fluffyalien_asn:storage_network_connectable": {},
-      "tag:fluffyalien_energisticscore:machine": {},
+      "minecraft:tags": [
+        "fluffyalien_asn:storage_network_connectable",
+        "fluffyalien_energisticscore:machine"
+      ],
 
       "minecraft:geometry": {
         "identifier": "geometry.fluffyalien_asn.storage_interface",
@@ -43,10 +45,13 @@
         }
       },
       "minecraft:collision_box": {
-        "origin": [-5, 3, -3],
-        "size": [10, 10, 11]
+        "origin": [-5, 3, -8],
+        "size": [10, 10, 12]
       },
-      "minecraft:selection_box": false,
+      "minecraft:selection_box": {
+        "origin": [-5, 3, -8],
+        "size": [10, 10, 12]
+      },
       "minecraft:light_dampening": 0,
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": false,

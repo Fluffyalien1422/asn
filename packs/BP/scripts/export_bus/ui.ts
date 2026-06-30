@@ -1,31 +1,29 @@
-import {
-  Block,
-  Entity,
-  ItemStack,
-  Player,
-  RawMessage,
-} from "@minecraft/server";
+import { Block, Player, RawMessage } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
 import {
   ExportBusExportItemEnchantments,
-  getExportBusExportItemDamageRange,
-  getExportBusExportItemEnchantments,
-  getExportBusExportItemId,
-  setExportBusExportItemDamageRange,
-  setExportBusExportItemEnchantments,
-} from ".";
-import { makeErrorMessageUi, makeMessageUi, showForm } from "../utils/ui";
-import { getItemTranslationKey } from "../utils/item";
+  exportItemEnchantmentsProperty,
+  exportItemProperty,
+  getExportItemDamageRange,
+  resetExportItemFilters,
+  setExportItemDamageRange,
+} from "./properties";
+import {
+  createErrorMessageForm,
+  createMessageForm,
+  showForm,
+} from "../utils/ui";
+import { createItemStack, getItemTranslationKey } from "../utils/item";
 
 export async function showExportBusUi(
   player: Player,
-  dynamicPropertyTarget: Entity | Block,
+  block: Block,
 ): Promise<void> {
-  const exportItemId = getExportBusExportItemId(dynamicPropertyTarget);
+  const exportItemId = exportItemProperty.safeGet(block);
 
   if (!exportItemId) {
     return void showForm(
-      makeMessageUi(
+      createMessageForm(
         { translate: "fluffyalien_asn.ui.exportBus.title" },
         { translate: "fluffyalien_asn.ui.exportBus.noExportItem" },
       ),
@@ -51,17 +49,26 @@ export async function showExportBusUi(
     },
   };
 
-  const mcItemStack = new ItemStack(exportItemId);
+  const mcItemStackr = createItemStack(exportItemId);
+  if (mcItemStackr.isErr()) {
+    return void showForm(
+      createErrorMessageForm({
+        translate: "fluffyalien_asn.ui.storageInterface.error.unknownError",
+        with: { rawtext: [{ text: mcItemStackr.error.message }] },
+      }),
+      player,
+    );
+  }
+  const mcItemStack = mcItemStackr.value;
   const enchantable = !!mcItemStack.getComponent("enchantable");
   const breakable = !!mcItemStack.getComponent("durability");
 
   if (!enchantable && !breakable) {
     // set to default values
-    setExportBusExportItemEnchantments(dynamicPropertyTarget, "ignore");
-    setExportBusExportItemDamageRange(dynamicPropertyTarget, { min: 0 });
+    resetExportItemFilters(block);
 
     return void showForm(
-      makeMessageUi(
+      createMessageForm(
         { translate: "fluffyalien_asn.ui.exportBus.title" },
         exportItemRawMessage,
       ),
@@ -69,13 +76,10 @@ export async function showExportBusUi(
     );
   }
 
-  const exportItemEnchantmentsStatus = getExportBusExportItemEnchantments(
-    dynamicPropertyTarget,
-  );
+  const exportItemEnchantmentsStatus =
+    exportItemEnchantmentsProperty.safeGet(block);
 
-  const exportItemDamageRange = getExportBusExportItemDamageRange(
-    dynamicPropertyTarget,
-  );
+  const exportItemDamageRange = getExportItemDamageRange(block);
 
   const body: RawMessage[] = [
     exportItemRawMessage,
@@ -171,7 +175,7 @@ export async function showExportBusUi(
     : 0;
   if (isNaN(minDamageResponse)) {
     return void showForm(
-      makeErrorMessageUi({
+      createErrorMessageForm({
         translate: "fluffyalien_asn.ui.exportBus.error.invalidMinDamage",
       }),
       player,
@@ -183,21 +187,21 @@ export async function showExportBusUi(
     : undefined;
   if (maxDamageResponse !== undefined && isNaN(maxDamageResponse)) {
     return void showForm(
-      makeErrorMessageUi({
+      createErrorMessageForm({
         translate: "fluffyalien_asn.ui.exportBus.error.invalidMaxDamage",
       }),
       player,
     );
   }
 
-  setExportBusExportItemEnchantments(
-    dynamicPropertyTarget,
+  exportItemEnchantmentsProperty.set(
+    block,
     (["ignore", "with", "without"] as ExportBusExportItemEnchantments[])[
       enchantmentsDropdownResponse
     ],
   );
 
-  setExportBusExportItemDamageRange(dynamicPropertyTarget, {
+  setExportItemDamageRange(block, {
     min: minDamageResponse,
     max: maxDamageResponse,
   });

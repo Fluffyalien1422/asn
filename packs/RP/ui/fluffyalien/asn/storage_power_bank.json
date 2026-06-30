@@ -71,7 +71,7 @@
       },
       {
         "energy_bar@fluffyalien_energisticscore:common.machine_storage_bar": {
-          "offset": [9, 12]
+          "offset": [8, 12]
         }
       }
     ]

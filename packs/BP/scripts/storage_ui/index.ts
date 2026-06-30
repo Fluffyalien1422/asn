@@ -1,312 +1,70 @@
 import { getEntitiesInAllDimensions } from "../utils/dimension";
-import { makeErrorString } from "../log";
-import { StorageSystemItemStack } from "../storage_system_item_stack";
-import { getItemTranslationKey } from "../utils/item";
-import { abbreviateNumber } from "../utils/string";
-import { makeErrorMessageUi, showForm } from "../utils/ui";
-import { showRequestItemUi, showSearchUi } from "./form";
-import {
-  Entity,
-  EntityQueryOptions,
-  ItemStack,
-  Player,
-  system,
-  world,
-} from "@minecraft/server";
-import { showRequestItemDialogRule } from "../addon_rules/addon_rules";
-import { StorageSystem } from "../storage_system";
+import { showSearchForm } from "./form";
+import { Entity, EntityQueryOptions, system, world } from "@minecraft/server";
 import {
   BACK_BUTTON_ITEM_ID,
   CANCEL_SEARCH_BUTTON_ITEM_ID,
-  getPageNumberItemStacks,
+  CRAFTING_VIEW_BUTTON_ITEM_ID,
+  forceCloseStorageViewerInventory,
   NEXT_BUTTON_ITEM_ID,
   SEARCH_BUTTON_ITEM_ID,
-  SORT_AMOUNT_ITEM_ID,
-  SORT_INSERTION_ITEM_ID,
-  SORT_RELEVANCY_ITEM_ID,
+  BACK_BUTTON_INDEX,
+  CRAFTING_VIEW_BUTTON_INDEX,
+  GROUP_VIEW_BUTTON_INDEX,
+  INPUT_SLOT_INDEX,
+  ITEMS_PER_PAGE,
+  NEXT_BUTTON_INDEX,
+  SEARCH_BUTTON_INDEX,
+  STACK_SIZE_BUTTON_INDEX,
+  DEFAULT_VIEW_BUTTON_ITEM_ID,
+  GROUP_VIEW_BUTTON_ITEM_ID,
 } from "./shared";
+import {
+  StorageViewerStackSize,
+  StoredItem,
+  ViewerData,
+  viewerData,
+} from "./state";
+import {
+  getAvailableIngredients,
+  getCraftItemOptions,
+  searchFilter,
+} from "./items";
+import { fillViewerInventory } from "./render";
+import { addItemToStorage, refreshStorageViewerOrLog } from "./storage";
+import {
+  clearUiItemsFromPlayer,
+  isStorageInventoryItemTaken,
+  isUiItem,
+} from "./ui_item";
+import { logWarn } from "../log";
+import { createItemStack } from "../utils/item";
+import { genrecipes } from "../recipes";
 
-const ITEMS_PER_PAGE = 27;
-const INPUT_SLOT_INDEX = 27;
-const BACK_BUTTON_INDEX = 28;
-const NEXT_BUTTON_INDEX = 29;
-const PAGE_NUM_DIGIT1_INDEX = 31;
-const PAGE_NUM_DIGIT2_INDEX = 32;
-const SEARCH_BUTTON_INDEX = 30;
-const SORT_BUTTON_INDEX = 33;
-const STACK_SIZE_BUTTON_INDEX = 34;
-
-const DISPLAY_ITEM_LORE_STR_END = "§a§s§n§r";
-
-type StorageViewerSortOrder = "insertion" | "amount";
-type StorageViewerStackSize = 1 | 2 | 4 | 8 | 16 | 32 | 64;
-
-interface ViewerData {
-  enabled: boolean;
-  hasQuery: boolean;
-  items: StorageSystemItemStack[];
-  storageSystem: StorageSystem;
-  page: number;
-  playerInUi: Player;
-  /**
-   * this value should be ignored if `hasQuery` is true, sorting should be relevancy
-   */
-  sortOrder: StorageViewerSortOrder;
-  stackSize: StorageViewerStackSize;
-}
+// Re-export the public entry point used by storage_interface / wireless_interface.
+export { refreshStorageViewerOrLog } from "./storage";
 
 /**
- * key = dummy entity ID
+ * Prompts the player for a search query and applies it to the viewer. The
+ * crafting view filters its recipe list; other views filter the stored items.
  */
-const viewerData = new Map<string, ViewerData>();
-
-function getDisplayItemLoreStr(amount: number): string {
-  return `§r§2§l${abbreviateNumber(amount)}${DISPLAY_ITEM_LORE_STR_END}`;
-}
-
-function isUiItem(itemStack: ItemStack): boolean {
-  return (
-    itemStack.hasTag("fluffyalien_asn:ui_item") ||
-    !!itemStack.getLore()[0]?.endsWith(DISPLAY_ITEM_LORE_STR_END)
-  );
-}
-
-export async function forceCloseInventory(entity: Entity): Promise<void> {
-  if (entity.typeId === "fluffyalien_asn:wireless_interface_entity") {
-    entity.addTag("fluffyalien_asn:wireless_interface_force_close");
-  }
-  const ogLocation = { ...entity.location };
-
-  entity.teleport({
-    x: entity.location.x,
-    y: entity.location.y + 99,
-    z: entity.location.z,
-  });
-
-  await system.waitTicks(4);
-  entity.teleport(ogLocation);
-
-  if (entity.typeId === "fluffyalien_asn:wireless_interface_entity") {
-    entity.removeTag("fluffyalien_asn:wireless_interface_force_close");
-  }
-}
-
-function getItemsOnPage(
-  items: readonly StorageSystemItemStack[],
-  page: number,
-): StorageSystemItemStack[] {
-  return items.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
-}
-
-function fillViewerInventory(entity: Entity, data: ViewerData): void {
-  const inventory = entity.getComponent("inventory")!.container;
-  inventory.clearAll();
-
-  const itemsOnPage = getItemsOnPage(data.items, data.page);
-
-  for (let i = 0; i < itemsOnPage.length; i++) {
-    const storageSystemItem = itemsOnPage[i];
-
-    const displayItem = storageSystemItem.toItemStack();
-    displayItem.setLore([
-      getDisplayItemLoreStr(storageSystemItem.amount),
-      ...displayItem.getLore(),
-    ]);
-
-    inventory.setItem(i, displayItem);
-  }
-
-  inventory.setItem(BACK_BUTTON_INDEX, new ItemStack(BACK_BUTTON_ITEM_ID));
-  inventory.setItem(
-    SEARCH_BUTTON_INDEX,
-    new ItemStack(
-      data.hasQuery ? CANCEL_SEARCH_BUTTON_ITEM_ID : SEARCH_BUTTON_ITEM_ID,
-    ),
-  );
-  inventory.setItem(NEXT_BUTTON_INDEX, new ItemStack(NEXT_BUTTON_ITEM_ID));
-
-  inventory.setItem(
-    SORT_BUTTON_INDEX,
-    new ItemStack(
-      data.hasQuery
-        ? SORT_RELEVANCY_ITEM_ID
-        : data.sortOrder === "insertion"
-          ? SORT_INSERTION_ITEM_ID
-          : SORT_AMOUNT_ITEM_ID,
-    ),
-  );
-
-  inventory.setItem(
-    STACK_SIZE_BUTTON_INDEX,
-    new ItemStack(
-      `fluffyalien_asn:storage_viewer_ui_stack_size_${data.stackSize.toString()}`,
-    ),
-  );
-
-  const pageNumItems = getPageNumberItemStacks(data.page);
-  inventory.setItem(PAGE_NUM_DIGIT1_INDEX, pageNumItems[0]);
-  inventory.setItem(PAGE_NUM_DIGIT2_INDEX, pageNumItems[1]);
-}
-
-function addItemToStorageOrShowError(
-  interfaceEntity: Entity,
-  data: ViewerData,
-  itemStack: StorageSystemItemStack,
-): boolean {
-  const res = data.storageSystem.addItemStack(itemStack, data.playerInUi);
-  if (res.success) return true;
-
-  void forceCloseInventory(interfaceEntity).then(() => {
-    switch (res.error.type) {
-      case "insufficientStorage":
-        void showForm(
-          makeErrorMessageUi({
-            translate:
-              "fluffyalien_asn.ui.storageInterface.error.insufficientStorage",
-          }),
-          data.playerInUi,
-        );
-        break;
-      case "insufficientEnergy":
-        void showForm(
-          makeErrorMessageUi({
-            translate:
-              "fluffyalien_asn.ui.storageInterface.error.insufficientEnergy",
-          }),
-          data.playerInUi,
-        );
-        break;
-      case "bannedItem":
-        void showForm(
-          makeErrorMessageUi({
-            translate: "fluffyalien_asn.ui.storageInterface.error.bannedItem",
-            with: {
-              rawtext: [
-                {
-                  rawtext: [
-                    { text: "§l" },
-                    { translate: getItemTranslationKey(res.error.itemId) },
-                    { text: "§r" },
-                  ],
-                },
-              ],
-            },
-          }),
-          data.playerInUi,
-        );
-        break;
-    }
-  });
-
-  return false;
-}
-
-/**
- * resets interface data and inventory
- * @returns the new ViewerData
- * @throws if the passed entity is not part of the "fluffyalien_asn:storage_viewer" type family
- */
-export function refreshStorageViewer(
-  interfaceEntity: Entity,
-  player: Player,
-  storageSystem: StorageSystem,
-  preservePage = false,
-): ViewerData {
-  if (
-    !interfaceEntity.matches({
-      families: ["fluffyalien_asn:storage_viewer"],
-    })
-  ) {
-    throw new Error(
-      makeErrorString(
-        "(in refreshStorageViewer) expected `interfaceEntity` to be part of family `fluffyalien_asn:storage_viewer`",
-      ),
-    );
-  }
-
-  const oldData = viewerData.get(interfaceEntity.id);
-  const sortOrder = oldData?.sortOrder ?? "insertion";
-
-  let items: StorageSystemItemStack[];
-  if (oldData?.hasQuery) {
-    items = oldData.items;
-  } else {
-    items = [...storageSystem.getStoredItemStacks()];
-
-    if (sortOrder === "amount") {
-      items.sort((a, b) => b.amount - a.amount);
-    }
-  }
-
-  const data: ViewerData = {
-    enabled: true,
-    hasQuery: oldData?.hasQuery ?? false,
-    items,
-    storageSystem,
-    page: preservePage ? (oldData?.page ?? 0) : 0,
-    playerInUi: player,
-    sortOrder,
-    stackSize: oldData?.stackSize ?? 64,
-  };
-
-  viewerData.set(interfaceEntity.id, data);
-
-  fillViewerInventory(interfaceEntity, data);
-
-  return data;
-}
-
-async function requestItemLegacy(
-  interfaceEntity: Entity,
-  player: Player,
-  network: StorageSystem,
-  item: StorageSystemItemStack,
-): Promise<void> {
-  await forceCloseInventory(interfaceEntity);
-
-  const requestedItemStack = await showRequestItemUi(player, item);
-  if (!requestedItemStack) return;
-
-  network.takeOutItemStack(player, requestedItemStack);
-}
-
 async function search(
   interfaceEntity: Entity,
   data: ViewerData,
 ): Promise<void> {
-  await forceCloseInventory(interfaceEntity);
+  await forceCloseStorageViewerInventory(interfaceEntity);
 
-  const query = await showSearchUi(data.playerInUi);
+  const query = await showSearchForm(data.playerInUi);
   if (!query) {
     return;
   }
 
   data.hasQuery = true;
-
-  const queryKeywords = query.toLowerCase().split(" ");
-
-  const reducer = (matchingCount: number, keyword: string): number =>
-    matchingCount +
-    (queryKeywords.some((queryKeyword) => keyword.includes(queryKeyword))
-      ? 1
-      : 0);
-
-  data.items = data.items
-    .filter((item) =>
-      queryKeywords.some((keyword) => item.typeId.includes(keyword)),
-    )
-    .sort((a, b) => {
-      const aKeywords = a.typeId.split(/:|_/);
-      const bKeywords = b.typeId.split(/:|_/);
-
-      const aMatchingKeywordsCount = aKeywords.reduce(reducer, 0);
-      const bMatchingKeywordsCount = bKeywords.reduce(reducer, 0);
-
-      const aRelevancy = aMatchingKeywordsCount / aKeywords.length;
-      const bRelevancy = bMatchingKeywordsCount / bKeywords.length;
-
-      return bRelevancy - aRelevancy;
-    });
+  if (data.view === "crafting") {
+    data.craftingQuery = query;
+  } else {
+    data.filteredItems = searchFilter(query, data.rawItems);
+  }
 
   data.playerInUi.onScreenDisplay.setActionBar({
     translate:
@@ -315,77 +73,334 @@ async function search(
 }
 
 /**
- * check if an item in the interface inventory has been taken by the player
+ * Crafts `recipe` (producing item `typeId`) up to `craftAmount` times, clamped
+ * to the ingredients currently in storage, then refreshes the viewer. This is
+ * the action the old craft form performed when a recipe button was pressed.
  */
-function isStorageInventoryItemTaken(
-  storageItem: StorageSystemItemStack,
-  inventoryItem: ItemStack,
-): boolean {
-  inventoryItem = inventoryItem.clone();
+async function craft(
+  entity: Entity,
+  data: ViewerData,
+  typeId: string,
+  recipe: genrecipes.RecipeData,
+  craftAmount: number,
+): Promise<void> {
+  const refresh = (): void => {
+    refreshStorageViewerOrLog(
+      entity,
+      data.playerInUi,
+      data.storageSystem,
+      true,
+    );
+  };
 
-  // remove the first lore line - it's the line that shows the amount in the storage
-  inventoryItem.setLore(inventoryItem.getLore().slice(1));
-
-  if (
-    storageItem.isStackableWith(
-      StorageSystemItemStack.fromItemStack(inventoryItem),
-    )
-  ) {
-    return false;
+  const resultStackr = createItemStack(typeId);
+  if (resultStackr.isErr()) {
+    logWarn(`Failed to craft item: ${resultStackr.error.message}`);
+    refresh();
+    return;
   }
+  const resultStack = resultStackr.value;
 
-  return true;
-}
+  const storedItemsr = await data.storageSystem.getStoredItemStacks();
+  if (storedItemsr.isErr()) {
+    logWarn(`Failed to prepare crafting: ${storedItemsr.error}`);
+    refresh();
+    return;
+  }
+  const storedItems = storedItemsr.value;
+  const [recipeAmount, recipeIngredients] = recipe;
 
-function clearUiItemsFromPlayer(player: Player): void {
-  const playerCursorInventory = player.getComponent("cursor_inventory")!;
-  if (playerCursorInventory.item && isUiItem(playerCursorInventory.item)) {
-    playerCursorInventory.clear();
+  // `storedItems` is a live reference to the storage system's cache. We compute
+  // everything against it before removing anything, so the craft is
+  // non-destructive: if it can no longer be fully satisfied we craft the maximum
+  // the current contents allow and never remove unused ingredients.
+  const available = getAvailableIngredients([...storedItems]);
+
+  // Clamp the requested craft count to what the available ingredients support.
+  let crafts = craftAmount;
+  for (const [ingredientTypeId, count] of recipeIngredients) {
+    crafts = Math.min(
+      crafts,
+      Math.floor((available.get(ingredientTypeId) ?? 0) / count),
+    );
+  }
+  if (crafts <= 0) {
+    refresh();
     return;
   }
 
-  const playerInventory = player.getComponent("inventory")!.container;
-  for (let i = 0; i < playerInventory.size; i++) {
-    const item = playerInventory.getItem(i);
+  for (const [ingredientTypeId, count] of recipeIngredients) {
+    let remaining = count * crafts;
+    for (const [stackId, stack] of storedItems) {
+      if (remaining <= 0) break;
+      const matches = ingredientTypeId.startsWith("#")
+        ? stack.hasTag(ingredientTypeId.slice(1))
+        : stack.typeId === ingredientTypeId;
+      if (!matches) continue;
 
-    if (item && isUiItem(item)) {
-      playerInventory.setItem(i);
-      return;
+      const toRemove = Math.min(remaining, stack.amount);
+      const removedr = await data.storageSystem.removeItemStack(
+        stackId,
+        toRemove,
+      );
+      if (removedr.isErr()) {
+        logWarn(
+          `Failed to remove ingredient during crafting: ${removedr.error.type === "unknownError" ? removedr.error.message : removedr.error.type}`,
+        );
+        refresh();
+        return;
+      }
+      remaining -= removedr.value.amount;
     }
   }
+
+  const totalAmount = recipeAmount * crafts;
+  const location = data.playerInUi.location;
+  const dimension = data.playerInUi.dimension;
+
+  let spawned = 0;
+  while (spawned < totalAmount) {
+    const spawnStack = resultStack.clone();
+    spawnStack.amount = Math.min(totalAmount - spawned, resultStack.maxAmount);
+    dimension.spawnItem(spawnStack, location);
+    spawned += spawnStack.amount;
+  }
+
+  refresh();
 }
 
 /**
- * add an item to the storage or show the appropriate error. automatically refreshes the interface if the item was added.
- * if the item was not added then the item will be given back to the player
- * @returns whether the item was added or not. note: if this returns false then assume that the inventory has been closed and an error UI is displayed
+ * Handles one tick of interaction for a single storage viewer entity.
+ *
+ * The viewer has no input events, so interaction is detected by polling: each
+ * control slot is compared against the item it should hold, and any mismatch
+ * means the player clicked (took) that button. The first detected change is
+ * handled and processing stops for this tick. Item slots are checked last.
+ *
+ * @returns whether an interaction was handled this tick. The caller uses this
+ *   to decide whether to perform a passive real-time refresh: a refresh must
+ *   never run on a tick the player interacted, or it would rebuild the
+ *   inventory before the (already-handled) interaction's own refresh.
  */
-function addItemToStorage(
-  interfaceEntity: Entity,
-  data: ViewerData,
-  itemStack: ItemStack,
-): boolean {
-  const added = addItemToStorageOrShowError(
-    interfaceEntity,
-    data,
-    StorageSystemItemStack.fromItemStack(itemStack),
-  );
+function processStorageViewerEntity(entity: Entity, data: ViewerData): boolean {
+  const inventory = entity.getComponent("inventory")!.container;
 
-  if (!added) {
-    data.enabled = false;
-    data.playerInUi.dimension.spawnItem(itemStack, data.playerInUi.location);
-    return false;
+  // An item placed in the input slot is added to storage. UI items must never
+  // be stored, so a stray UI item there just closes the viewer.
+  const inputSlotItem = inventory.getItem(INPUT_SLOT_INDEX);
+  if (inputSlotItem) {
+    if (isUiItem(inputSlotItem)) {
+      inventory.setItem(INPUT_SLOT_INDEX);
+      data.enabled = false;
+      void forceCloseStorageViewerInventory(entity);
+      return true;
+    }
+
+    addItemToStorage(entity, data, inputSlotItem);
+    return true;
   }
 
-  refreshStorageViewer(
-    interfaceEntity,
-    data.playerInUi,
-    data.storageSystem,
-    true,
-  );
-  return true;
+  const player = data.playerInUi;
+
+  const handleButton = (index: number, id: string): boolean => {
+    if (inventory.getItem(index)?.typeId === id) return false;
+    clearUiItemsFromPlayer(player);
+    return true;
+  };
+
+  // Back: go to the previous page (clamped at the first page).
+  if (handleButton(BACK_BUTTON_INDEX, BACK_BUTTON_ITEM_ID)) {
+    data.page = Math.max(data.page - 1, 0);
+    fillViewerInventory(entity, data);
+    return true;
+  }
+
+  // Next: go to the next page.
+  if (handleButton(NEXT_BUTTON_INDEX, NEXT_BUTTON_ITEM_ID)) {
+    data.page++;
+    fillViewerInventory(entity, data);
+    return true;
+  }
+
+  // Crafting view: toggle between the crafting view and the default view.
+  if (
+    handleButton(
+      CRAFTING_VIEW_BUTTON_INDEX,
+      data.view === "crafting"
+        ? DEFAULT_VIEW_BUTTON_ITEM_ID
+        : CRAFTING_VIEW_BUTTON_ITEM_ID,
+    )
+  ) {
+    data.groupTypeId = undefined;
+    data.craftItemTypeId = undefined;
+    data.craftingQuery = undefined;
+    data.hasQuery = false;
+    data.page = 0;
+    if (data.view === "crafting") {
+      data.view = "default";
+      refreshStorageViewerOrLog(entity, player, data.storageSystem);
+    } else {
+      data.view = "crafting";
+      fillViewerInventory(entity, data);
+    }
+    return true;
+  }
+
+  // Stack size: cycle 1 -> 2 -> 4 -> ... -> 64 -> 1.
+  if (
+    handleButton(
+      STACK_SIZE_BUTTON_INDEX,
+      `fluffyalien_asn:ui_stack_size_${data.stackSize.toString()}`,
+    )
+  ) {
+    data.stackSize = (
+      data.stackSize >= 64 ? 1 : data.stackSize * 2
+    ) as StorageViewerStackSize;
+    fillViewerInventory(entity, data);
+    return true;
+  }
+
+  // Search: this slot toggles between "search" and "cancel search" depending on
+  // whether a query is active, so its expected item and action both vary.
+  if (
+    handleButton(
+      SEARCH_BUTTON_INDEX,
+      data.hasQuery ? CANCEL_SEARCH_BUTTON_ITEM_ID : SEARCH_BUTTON_ITEM_ID,
+    )
+  ) {
+    if (data.hasQuery) {
+      // cancel the active query and reload the full storage contents
+      data.hasQuery = false;
+      data.craftingQuery = undefined;
+      refreshStorageViewerOrLog(entity, player, data.storageSystem);
+    } else {
+      data.enabled = false;
+      void search(entity, data);
+    }
+    return true;
+  }
+
+  // Group view: toggle between the grouped view and the default view.
+  if (
+    handleButton(
+      GROUP_VIEW_BUTTON_INDEX,
+      data.view === "group"
+        ? DEFAULT_VIEW_BUTTON_ITEM_ID
+        : GROUP_VIEW_BUTTON_ITEM_ID,
+    )
+  ) {
+    data.groupTypeId = undefined;
+    data.craftItemTypeId = undefined;
+    data.craftingQuery = undefined;
+    data.hasQuery = false;
+    data.page = 0;
+    if (data.view === "group") {
+      data.view = "default";
+      refreshStorageViewerOrLog(entity, player, data.storageSystem);
+    } else {
+      data.view = "group";
+      fillViewerInventory(entity, data);
+    }
+    return true;
+  }
+
+  // No control button changed; check whether the player took an item slot.
+  // Reuse the page items cached when the inventory was last (re)built rather
+  // than recomputing the (potentially expensive) display list every poll.
+  const itemsOnPage = data.itemsOnPage;
+
+  for (let i = 0; i < ITEMS_PER_PAGE; i++) {
+    const storageEntry = itemsOnPage[i] as StoredItem | undefined;
+    const inventoryItem = inventory.getItem(i);
+
+    if (!storageEntry) {
+      // Empty display slot: a real item here was deposited by the player.
+      if (inventoryItem && !isUiItem(inventoryItem)) {
+        addItemToStorage(entity, data, inventoryItem);
+        return true;
+      }
+
+      continue;
+    }
+
+    const [storageId, storageStack] = storageEntry;
+
+    if (
+      inventoryItem &&
+      !isStorageInventoryItemTaken(storageStack, inventoryItem)
+    ) {
+      continue;
+    }
+
+    // An item has been selected:
+
+    clearUiItemsFromPlayer(data.playerInUi);
+
+    if (inventoryItem) {
+      // give the item back
+      data.playerInUi.dimension.spawnItem(
+        inventoryItem,
+        data.playerInUi.location,
+      );
+    }
+
+    if (data.view === "group") {
+      // Drill into the clicked type's individual stacks.
+      data.view = "group_type";
+      data.groupTypeId = storageStack.typeId;
+      data.page = 0;
+      fillViewerInventory(entity, data);
+      return true;
+    }
+
+    if (data.view === "crafting") {
+      // Drill into the clicked item's craft options (replaces the craft form).
+      data.view = "craft_item";
+      data.craftItemTypeId = storageStack.typeId;
+      data.page = 0;
+      fillViewerInventory(entity, data);
+      return true;
+    }
+
+    if (data.view === "craft_item") {
+      // Each item button maps to one recipe×amount option; perform that craft.
+      const options = getCraftItemOptions(
+        data.rawItems,
+        data.craftItemTypeId,
+        data.stackSize,
+      );
+      const optionIndex = data.page * ITEMS_PER_PAGE + i;
+      if (optionIndex < options.length) {
+        const { recipe, amount } = options[optionIndex];
+        data.enabled = false;
+        void craft(entity, data, storageStack.typeId, recipe, amount);
+      }
+      return true;
+    }
+
+    if (storageStack.amount <= 0) {
+      return true;
+    }
+
+    void data.storageSystem
+      .takeOutItemStack(data.playerInUi, storageId, data.stackSize)
+      .finally(() => {
+        refreshStorageViewerOrLog(
+          entity,
+          data.playerInUi,
+          data.storageSystem,
+          true,
+        );
+      });
+
+    return true;
+  }
+
+  // No interaction this tick.
+  return false;
 }
 
+// Prevent UI items from escaping into the world (eg. if one is somehow dropped).
 world.afterEvents.entitySpawn.subscribe((e) => {
   if (e.entity.typeId !== "minecraft:item" || !e.entity.isValid) return;
 
@@ -395,6 +410,8 @@ world.afterEvents.entitySpawn.subscribe((e) => {
   }
 });
 
+// Poll every storage viewer for player interaction. The viewer is only
+// processed while enabled and while a player is nearby.
 system.runInterval(() => {
   const entityQueryOptions: EntityQueryOptions = {
     // we also want this to run for the wireless interface, so check families instead of type
@@ -407,173 +424,52 @@ system.runInterval(() => {
       !data?.enabled ||
       !entity.dimension.getPlayers({
         location: entity.location,
-        maxDistance: 10,
+        maxDistance: 15,
       }).length
-    )
-      continue;
-
-    const inventory = entity.getComponent("inventory")!.container;
-
-    const inputSlotItem = inventory.getItem(INPUT_SLOT_INDEX);
-    if (inputSlotItem) {
-      if (isUiItem(inputSlotItem)) {
-        inventory.setItem(INPUT_SLOT_INDEX);
-        data.enabled = false;
-        void forceCloseInventory(entity);
-        continue;
-      }
-
-      if (!addItemToStorage(entity, data, inputSlotItem)) {
-        continue;
-      }
-    }
-
-    const backBtnSlotItem = inventory.getItem(BACK_BUTTON_INDEX);
-    if (backBtnSlotItem?.typeId !== BACK_BUTTON_ITEM_ID) {
-      clearUiItemsFromPlayer(data.playerInUi);
-
-      data.page = Math.max(data.page - 1, 0);
-      fillViewerInventory(entity, data);
-
-      continue;
-    }
-
-    const nextBtnSlotItem = inventory.getItem(NEXT_BUTTON_INDEX);
-    if (nextBtnSlotItem?.typeId !== NEXT_BUTTON_ITEM_ID) {
-      clearUiItemsFromPlayer(data.playerInUi);
-
-      data.page++;
-      fillViewerInventory(entity, data);
-
-      continue;
-    }
-
-    const expectedStackSizeBtnItemId = `fluffyalien_asn:storage_viewer_ui_stack_size_${data.stackSize.toString()}`;
-    const stackSizeBtnSlotItem = inventory.getItem(STACK_SIZE_BUTTON_INDEX);
-    if (stackSizeBtnSlotItem?.typeId !== expectedStackSizeBtnItemId) {
-      clearUiItemsFromPlayer(data.playerInUi);
-
-      data.stackSize = (
-        data.stackSize >= 64 ? 1 : data.stackSize * 2
-      ) as StorageViewerStackSize;
-      fillViewerInventory(entity, data);
-
-      continue;
-    }
-
-    const searchButtonSlotItem = inventory.getItem(SEARCH_BUTTON_INDEX);
-    const sortButtonSlotItem = inventory.getItem(SORT_BUTTON_INDEX);
-
-    if (data.hasQuery) {
-      if (searchButtonSlotItem?.typeId !== CANCEL_SEARCH_BUTTON_ITEM_ID) {
-        clearUiItemsFromPlayer(data.playerInUi);
-
-        data.hasQuery = false;
-        refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
-
-        continue;
-      }
-
-      if (sortButtonSlotItem?.typeId !== SORT_RELEVANCY_ITEM_ID) {
-        clearUiItemsFromPlayer(data.playerInUi);
-
-        refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
-
-        continue;
-      }
-    } else {
-      if (searchButtonSlotItem?.typeId !== SEARCH_BUTTON_ITEM_ID) {
-        clearUiItemsFromPlayer(data.playerInUi);
-
-        data.enabled = false;
-        void search(entity, data);
-
-        continue;
-      }
-
+    ) {
+      // Handle edge case where the inventory was closed or disabled but interactions
+      // were not re-allowed:
+      // ---
+      // Ensure enabled is false. This will trigger if data.enabled was true
+      // but there were no players in range.
+      if (data) data.enabled = false;
+      // If the viewer is disabled, then ensure interactions are allowed.
       if (
-        data.sortOrder === "insertion" &&
-        sortButtonSlotItem?.typeId !== SORT_INSERTION_ITEM_ID
+        entity.getProperty("fluffyalien_asn:interactions_allowed") === false
       ) {
-        clearUiItemsFromPlayer(data.playerInUi);
-
-        data.sortOrder = "amount";
-        refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
-
-        continue;
+        entity.triggerEvent("fluffyalien_asn:allow_interactions");
       }
+      // ---
 
-      if (
-        data.sortOrder === "amount" &&
-        sortButtonSlotItem?.typeId !== SORT_AMOUNT_ITEM_ID
-      ) {
-        clearUiItemsFromPlayer(data.playerInUi);
-
-        data.sortOrder = "insertion";
-        refreshStorageViewer(entity, data.playerInUi, data.storageSystem);
-
-        continue;
-      }
+      continue;
     }
 
-    const itemsOnPage = getItemsOnPage(data.items, data.page);
+    const handled = processStorageViewerEntity(entity, data);
 
-    for (let i = 0; i < ITEMS_PER_PAGE; i++) {
-      const storageItem = itemsOnPage[i] as StorageSystemItemStack | undefined;
-      const inventoryItem = inventory.getItem(i);
-
-      if (!storageItem) {
-        if (inventoryItem && !isUiItem(inventoryItem)) {
-          addItemToStorage(entity, data, inventoryItem);
-          break;
-        }
-
-        continue;
-      }
-
-      if (
-        inventoryItem &&
-        !isStorageInventoryItemTaken(storageItem, inventoryItem)
-      ) {
-        continue;
-      }
-
-      clearUiItemsFromPlayer(data.playerInUi);
-
-      if (inventoryItem) {
-        // give the item back
-        data.playerInUi.dimension.spawnItem(
-          inventoryItem,
-          data.playerInUi.location,
-        );
-      }
-
-      if (showRequestItemDialogRule.get(world)) {
-        data.enabled = false;
-        void requestItemLegacy(
-          entity,
-          data.playerInUi,
-          data.storageSystem,
-          storageItem,
-        );
-        break;
-      }
-
-      if (storageItem.amount <= 0) {
-        break;
-      }
-
-      data.storageSystem.takeOutItemStack(
+    // Real-time updates: if the player didn't interact this tick and the
+    // system's contents changed since the viewer was last (re)built, refresh
+    // it so external changes (eg. an import bus, autocrafter, or another player)
+    // are reflected live. Skipped while a search query is active, since those
+    // results are intentionally frozen until the viewer is reopened.
+    //
+    // The detection must run after processStorageViewerEntity so a refresh never
+    // clobbers an interaction handled this tick. The recorded revision is bumped
+    // optimistically here so an in-flight refresh isn't triggered again next tick.
+    const revision = data.storageSystem.getStoredItemsRevision();
+    if (!handled && !data.hasQuery && revision !== data.storedItemsRevision) {
+      data.storedItemsRevision = revision;
+      refreshStorageViewerOrLog(
+        entity,
         data.playerInUi,
-        // takeOutItemStack will clamp this value if it is greater than the amount available in storage
-        storageItem.withAmount(
-          Math.min(data.stackSize, new ItemStack(storageItem.typeId).maxAmount),
-        ),
+        data.storageSystem,
+        true,
       );
-
-      refreshStorageViewer(entity, data.playerInUi, data.storageSystem, true);
-
-      break;
     }
   }
 }, 4);
+
+// Strip UI items that end up in a player's inventory (eg. left over from a view).
+world.afterEvents.playerInventoryItemChange.subscribe((e) => {
+  if (!e.itemStack || !isUiItem(e.itemStack)) return;
+  e.player.getComponent("inventory")?.container.setItem(e.slot);
+});

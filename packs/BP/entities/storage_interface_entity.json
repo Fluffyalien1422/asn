@@ -1,19 +1,43 @@
 {
-  "format_version": "1.20.70",
+  "format_version": "1.26.20",
   "minecraft:entity": {
     "description": {
       "identifier": "fluffyalien_asn:storage_interface_entity",
       "is_summonable": true,
-      "is_spawnable": false
+      "is_spawnable": false,
+      "properties": {
+        "fluffyalien_asn:interactions_allowed": {
+          "type": "bool",
+          "default": true
+        }
+      }
+    },
+    "component_groups": {
+      "fluffyalien_asn:interactable": {
+        "minecraft:collision_box": {
+          "width": 1,
+          "height": 1
+        }
+      },
+      "fluffyalien_asn:not_interactable": {
+        "minecraft:collision_box": {
+          "width": 0,
+          "height": 0
+        }
+      }
     },
     "components": {
-      "minecraft:knockback_resistance": {
-        "value": 1
+      "minecraft:inventory": {
+        "container_type": "container",
+        "inventory_size": 59
       },
       "minecraft:type_family": {
         "family": ["fluffyalien_asn:storage_viewer"]
       },
       "minecraft:persistent": {},
+      "minecraft:knockback_resistance": {
+        "value": 1
+      },
       "minecraft:breathable": {
         "breathes_water": true
       },
@@ -23,20 +47,37 @@
       },
       "minecraft:damage_sensor": {
         "triggers": {
-          "deals_damage": false
+          "deals_damage": "no"
+        }
+      }
+    },
+    "events": {
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": ["fluffyalien_asn:interactable"]
         }
       },
-      "minecraft:pushable": {
-        "is_pushable": false,
-        "is_pushable_by_piston": false
+      "fluffyalien_asn:allow_interactions": {
+        "set_property": {
+          "fluffyalien_asn:interactions_allowed": true
+        },
+        "remove": {
+          "component_groups": ["fluffyalien_asn:not_interactable"]
+        },
+        "add": {
+          "component_groups": ["fluffyalien_asn:interactable"]
+        }
       },
-      "minecraft:collision_box": {
-        "width": 1,
-        "height": 1
-      },
-      "minecraft:inventory": {
-        "container_type": "container",
-        "inventory_size": 35
+      "fluffyalien_asn:block_interactions": {
+        "set_property": {
+          "fluffyalien_asn:interactions_allowed": false
+        },
+        "remove": {
+          "component_groups": ["fluffyalien_asn:interactable"]
+        },
+        "add": {
+          "component_groups": ["fluffyalien_asn:not_interactable"]
+        }
       }
     }
   }

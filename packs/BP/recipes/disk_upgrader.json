@@ -1,0 +1,43 @@
+{
+  "format_version": "1.20.70",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "fluffyalien_asn:disk_upgrader"
+    },
+    "tags": ["crafting_table"],
+    // prettier-ignore
+    "pattern": [
+      "D#R",
+      "AHA",
+      "CAD"
+    ],
+    "key": {
+      "R": {
+        "item": "repeater"
+      },
+      "C": {
+        "item": "comparator"
+      },
+      "D": {
+        "item": "quartz"
+      },
+      "#": {
+        "item": "fluffyalien_asn:storage_disk_core"
+      },
+      "A": {
+        "item": "fluffyalien_asn:storage_disk_casing"
+      },
+      "H": {
+        "item": "crafter"
+      }
+    },
+    "result": {
+      "item": "fluffyalien_asn:disk_upgrader"
+    },
+    "unlock": [
+      {
+        "item": "diamond"
+      }
+    ]
+  }
+}

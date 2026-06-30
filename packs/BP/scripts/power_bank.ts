@@ -5,7 +5,7 @@ import { BlockStateSuperset } from "@minecraft/vanilla-data";
 
 export const storagePowerBankComponent: BlockCustomComponent = {
   onTick(e) {
-    if (!useEnergyRule.get(world)) {
+    if (!useEnergyRule.safeGet(world)) {
       return;
     }
 

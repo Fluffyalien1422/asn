@@ -6,25 +6,24 @@
     "check": "tsc && tsc -p ./scripts && eslint .",
     "fmt": "prettier . -w",
     "fmt-check": "npm run fmt && npm run check",
-    "tsx": "tsx",
     "docgen": "tsx scripts/docgen"
   },
   "devDependencies": {
-    "@eslint/js": "^9.23.0",
-    "@minecraft/server": "2.5.0",
-    "@minecraft/server-ui": "2.0.0",
-    "@minecraft/vanilla-data": "1.26.2",
-    "esbuild": "^0.25.2",
-    "eslint": "^9.23.0",
-    "prettier": "^3.5.3",
-    "terser": "^5.39.0",
-    "ts-essentials": "^10.0.4",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.2",
-    "typescript-eslint": "^8.29.0"
+    "@eslint/js": "^10.0.1",
+    "@minecraft/server": "2.8.0",
+    "@minecraft/server-ui": "2.1.0",
+    "@minecraft/vanilla-data": "1.26.30",
+    "esbuild": "^0.28.0",
+    "eslint": "^10.4.0",
+    "prettier": "^3.8.3",
+    "terser": "^5.48.0",
+    "ts-essentials": "^10.2.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.60.0"
   },
   "dependencies": {
     "@minecraft/math": "^2.4.0",
-    "bedrock-energistics-core-api": "file:bedrock-energistics-core-api-0.10.0.tgz"
+    "bedrock-energistics-core-api": "file:bedrock-energistics-core-api-0.10.0.tgz",
+    "neverthrow": "^8.2.0"
   }
 }

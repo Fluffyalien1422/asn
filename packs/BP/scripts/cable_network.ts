@@ -2,11 +2,11 @@ import {
   Block,
   Dimension,
   Direction,
+  Entity,
   Player,
   Vector3,
-  world,
 } from "@minecraft/server";
-import { ErrorResult, Result, failure, success } from "./utils/result";
+import { err, ok, Result } from "neverthrow";
 import { Vector3Utils } from "@minecraft/math";
 import { ActionFormResponse } from "@minecraft/server-ui";
 import { logWarn } from "./log";
@@ -14,11 +14,10 @@ import {
   addAnonymousTickingArea,
   removeAnonymousTickingArea,
 } from "./utils/tickingarea";
-import { forceLoadNetworksRule } from "./addon_rules/addon_rules";
 import { directionToVector3 } from "./utils/direction";
-import { makeErrorMessageUi, showForm } from "./utils/ui";
+import { createErrorMessageForm } from "./utils/ui";
 import { getEntityAtBlockLocation } from "./utils/location";
-import { relayName } from "./relay";
+import { relayNamespaceId } from "./relay";
 import { getEntitiesInAllDimensions } from "./utils/dimension";
 
 export interface CableNetworkConnections {
@@ -44,13 +43,6 @@ export async function tryForceGetBlock(
   let nextBlock = dimension.getBlock(location);
 
   if (!nextBlock) {
-    if (!forceLoadNetworksRule.get(world)) {
-      logWarn(
-        `storage network extends into unloaded chunks at ${Vector3Utils.toString(location)} in ${dimension.id} and forceLoadNetworks is disabled. some parts of the network may be unloaded`,
-      );
-      return;
-    }
-
     await addAnonymousTickingArea(dimension, location, 2);
 
     nextBlock = dimension.getBlock(location);
@@ -73,7 +65,7 @@ export async function discoverCableNetworkConnections(
 ): Promise<
   Result<CableNetworkConnections, DiscoverCableNetworkConnectionsError>
 > {
-  const visitedLocations: Vector3[] = [];
+  const visited = new Set<string>();
   const stack: Block[] = [];
 
   const cables: Block[] = [];
@@ -86,56 +78,87 @@ export async function discoverCableNetworkConnections(
   const fluidDrives: Block[] = [];
   let storageCore: Block | undefined;
 
-  function handleBlock(
-    block: Block,
-  ): ErrorResult<DiscoverCableNetworkConnectionsError> {
-    if (
-      !block.hasTag("fluffyalien_asn:storage_network_connectable") ||
-      visitedLocations.some((vector) =>
-        Vector3Utils.equals(block.location, vector),
-      )
-    ) {
-      return success();
+  // relay entities indexed by name, built once on first use and reused for the
+  // rest of this discovery. relays bridge globally by namespace, so without
+  // this index we would rescan every entity in every dimension once per relay
+  // encountered (3 cross-dimension queries each).
+  let relayEntitiesByNamespace: Map<string, Entity[]> | undefined;
+  function getRelayEntitiesByNamespace(): Map<string, Entity[]> {
+    if (relayEntitiesByNamespace) return relayEntitiesByNamespace;
+
+    relayEntitiesByNamespace = new Map<string, Entity[]>();
+    for (const relayEntity of getEntitiesInAllDimensions({
+      type: "fluffyalien_asn:relay_entity",
+    })) {
+      const namespaceId = relayNamespaceId.safeGet(relayEntity);
+      if (!namespaceId) continue;
+
+      const existing = relayEntitiesByNamespace.get(namespaceId);
+      if (existing) {
+        existing.push(relayEntity);
+      } else {
+        relayEntitiesByNamespace.set(namespaceId, [relayEntity]);
+      }
     }
 
-    visitedLocations.push(block.location);
+    return relayEntitiesByNamespace;
+  }
+
+  function handleBlock(
+    block: Block,
+  ): Result<void, DiscoverCableNetworkConnectionsError> {
+    if (!block.hasTag("fluffyalien_asn:storage_network_connectable")) {
+      return ok();
+    }
+
+    // unique key per block. includes the dimension so blocks at identical
+    // coordinates in different dimensions (reachable via relays) aren't treated
+    // as the same block. a Set keeps discovery O(n) instead of O(n^2).
+    const loc = block.location;
+    const key = `${block.dimension.id} ${loc.x.toString()} ${loc.y.toString()} ${loc.z.toString()}`;
+    if (visited.has(key)) {
+      return ok();
+    }
+    visited.add(key);
+
     stack.push(block);
 
     switch (block.typeId) {
       case "fluffyalien_asn:storage_cable":
         cables.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:storage_core":
         if (storageCore) {
-          return failure("multipleStorageCores");
+          return err("multipleStorageCores");
         }
         storageCore = block;
-        return success();
-      case "fluffyalien_asn:storage_drive":
+        return ok();
+      case "fluffyalien_asn:storage_drive_v3":
         storageDrives.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:storage_interface":
       case "fluffyalien_asn:fluid_interface":
         interfaces.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:level_emitter":
         levelEmitters.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:storage_power_bank":
         powerBanks.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:wireless_transmitter":
         wirelessTransmitters.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:fluid_drive":
         fluidDrives.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:import_bus":
       case "fluffyalien_asn:export_bus":
       case "fluffyalien_asn:fluid_import_bus":
       case "fluffyalien_asn:fluid_export_bus":
+      case "fluffyalien_asn:autocrafter":
         buses.push(block);
-        return success();
+        return ok();
       case "fluffyalien_asn:storage_relay": {
         cables.push(block);
 
@@ -147,49 +170,46 @@ export async function discoverCableNetworkConnections(
           logWarn(
             `couldn't add matching relays to discovery stack: couldn't get relay entity at ${Vector3Utils.toString(block.location)} in ${block.dimension.id}`,
           );
-          return success();
+          return ok();
         }
 
-        const name = relayName.get(entity);
-        if (!name) return success();
+        const namespaceId = relayNamespaceId.safeGet(entity);
+        if (!namespaceId) return ok();
 
-        for (const otherEntity of getEntitiesInAllDimensions({
-          type: "fluffyalien_asn:relay_entity",
-          minDistance: 2,
-          location: entity.location,
-        })) {
-          const otherName = relayName.get(otherEntity);
-          if (name !== otherName) continue;
+        for (const otherEntity of getRelayEntitiesByNamespace().get(
+          namespaceId,
+        ) ?? []) {
+          // skip this relay's own entity.
+          if (otherEntity.id === entity.id) continue;
 
           const nextBlock = otherEntity.dimension.getBlock(
             otherEntity.location,
           );
-
           if (nextBlock) {
             stack.push(nextBlock);
           }
         }
 
-        return success();
+        return ok();
       }
       default:
         logWarn(
           "unknown block type in storage network discovery: " + block.typeId,
         );
-        return success();
+        return ok();
     }
   }
 
   async function next(
     block: Block,
     nextDirection: Direction,
-  ): Promise<ErrorResult<DiscoverCableNetworkConnectionsError>> {
+  ): Promise<Result<void, DiscoverCableNetworkConnectionsError>> {
     const nextBlock = await tryForceGetBlock(
       block.dimension,
       Vector3Utils.add(block.location, directionToVector3(nextDirection)),
     );
     if (!nextBlock) {
-      return success();
+      return ok();
     }
 
     return handleBlock(nextBlock);
@@ -202,40 +222,40 @@ export async function discoverCableNetworkConnections(
 
     {
       const res = await next(block, Direction.North);
-      if (!res.success) return res;
+      if (res.isErr()) return err(res.error);
     }
 
     {
       const res = await next(block, Direction.East);
-      if (!res.success) return res;
+      if (res.isErr()) return err(res.error);
     }
 
     {
       const res = await next(block, Direction.South);
-      if (!res.success) return res;
+      if (res.isErr()) return err(res.error);
     }
 
     {
       const res = await next(block, Direction.West);
-      if (!res.success) return res;
+      if (res.isErr()) return err(res.error);
     }
 
     {
       const res = await next(block, Direction.Up);
-      if (!res.success) return res;
+      if (res.isErr()) return err(res.error);
     }
 
     {
       const res = await next(block, Direction.Down);
-      if (!res.success) return res;
+      if (res.isErr()) return err(res.error);
     }
   }
 
   if (!storageCore) {
-    return failure("noStorageCore");
+    return err("noStorageCore");
   }
 
-  return success({
+  return ok({
     cables,
     storageCore,
     storageDrives,
@@ -252,13 +272,10 @@ export function showEstablishNetworkError(
   player: Player,
   error: DiscoverCableNetworkConnectionsError,
 ): Promise<ActionFormResponse> {
-  return showForm(
-    makeErrorMessageUi({
-      translate:
-        error === "multipleStorageCores"
-          ? "fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores"
-          : "fluffyalien_asn.ui.cableNetwork.error.noStorageCores",
-    }),
-    player,
-  );
+  return createErrorMessageForm({
+    translate:
+      error === "multipleStorageCores"
+        ? "fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores"
+        : "fluffyalien_asn.ui.cableNetwork.error.noStorageCores",
+  }).show(player);
 }

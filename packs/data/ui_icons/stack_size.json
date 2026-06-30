@@ -1,0 +1,12 @@
+{
+  "id": "fluffyalien_asn:ui_stack_size",
+  "states": {
+    "1": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_1",
+    "2": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_2",
+    "4": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_4",
+    "8": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_8",
+    "16": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_16",
+    "32": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_32",
+    "64": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_64"
+  }
+}

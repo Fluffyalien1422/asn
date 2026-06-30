@@ -1,37 +1,42 @@
-import { Dimension } from "@minecraft/server";
-import { wait } from "./async";
-import { logInfo } from "../log";
+import { Dimension, world } from "@minecraft/server";
 
 export interface ChunkLocation {
   x: number;
   z: number;
 }
 
-export function addAnonymousTickingArea(
+function anonymousTickingAreaId(
+  dimension: Dimension,
+  center: ChunkLocation,
+): string {
+  return `fluffyalien_asn:anon_${dimension.id}_${center.x.toString()}_${center.z.toString()}`;
+}
+
+export async function addAnonymousTickingArea(
   dimension: Dimension,
   center: ChunkLocation,
   radius: number,
 ): Promise<void> {
-  logInfo(
-    `adding ticking area at ${center.x.toString()} ${center.z.toString()}`,
-  );
+  const id = anonymousTickingAreaId(dimension, center);
 
-  dimension.runCommand(
-    `tickingarea add circle ${center.x.toString()} 0 ${center.z.toString()} ${radius.toString()}`,
-  );
+  if (world.tickingAreaManager.hasTickingArea(id)) {
+    return;
+  }
 
-  return wait(1);
+  const offset = radius * 16;
+
+  await world.tickingAreaManager.createTickingArea(id, {
+    dimension,
+    from: { x: center.x - offset, y: 0, z: center.z - offset },
+    to: { x: center.x + offset, y: 0, z: center.z + offset },
+  });
 }
 
 export function removeAnonymousTickingArea(
   dimension: Dimension,
   center: ChunkLocation,
 ): void {
-  logInfo(
-    `removing ticking area at ${center.x.toString()} ${center.z.toString()}`,
-  );
-
-  dimension.runCommand(
-    `tickingarea remove ${center.x.toString()} 0 ${center.z.toString()}`,
+  world.tickingAreaManager.removeTickingArea(
+    anonymousTickingAreaId(dimension, center),
   );
 }

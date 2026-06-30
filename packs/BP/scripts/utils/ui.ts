@@ -6,10 +6,10 @@ import {
   ModalFormResponse,
 } from "@minecraft/server-ui";
 import { StorageNetwork } from "../storage_network";
-import { forceCloseInventory } from "../storage_ui";
 import { showEstablishNetworkError } from "../cable_network";
+import { forceCloseStorageViewerInventory } from "../storage_ui/shared";
 
-export function makeMessageUi(
+export function createMessageForm(
   title: RawMessage,
   body: RawMessage,
 ): ActionFormData {
@@ -24,8 +24,8 @@ export function makeMessageUi(
   return form;
 }
 
-export function makeErrorMessageUi(body: RawMessage): ActionFormData {
-  return makeMessageUi(
+export function createErrorMessageForm(body: RawMessage): ActionFormData {
+  return createMessageForm(
     {
       translate: "fluffyalien_asn.ui.common.error",
     },
@@ -33,10 +33,16 @@ export function makeErrorMessageUi(body: RawMessage): ActionFormData {
   );
 }
 
+/**
+ * @deprecated
+ */
 export function showForm(
   form: ActionFormData,
   player: Player,
 ): Promise<ActionFormResponse>;
+/**
+ * @deprecated
+ */
 export function showForm(
   form: ModalFormData,
   player: Player,
@@ -57,8 +63,8 @@ export async function getNetworkOrShowError(
   player: Player,
 ): Promise<StorageNetwork | undefined> {
   const networkResult = await StorageNetwork.getOrEstablishNetwork(block);
-  if (!networkResult.success) {
-    await forceCloseInventory(interfaceEntity);
+  if (networkResult.isErr()) {
+    await forceCloseStorageViewerInventory(interfaceEntity);
     void showEstablishNetworkError(player, networkResult.error);
 
     return;

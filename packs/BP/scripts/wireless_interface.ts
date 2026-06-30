@@ -6,17 +6,17 @@ import {
   system,
   world,
 } from "@minecraft/server";
-import { DynamicPropertyAccessor } from "./utils/dynamic_property";
 import {
-  forceLoadNetworksRule,
   useEnergyRule,
   wirelessInterfaceEnergyConsumptionRule,
   wirelessInterfaceRangeRule,
 } from "./addon_rules/addon_rules";
 import { StorageNetwork } from "./storage_network";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
-import { refreshStorageViewer } from "./storage_ui";
+import { refreshStorageViewerOrLog } from "./storage_ui";
 import { ItemMachine, StandardStorageType } from "bedrock-energistics-core-api";
+import { STORAGE_VIEWER_FORCE_CLOSE_TAG } from "./storage_ui/shared";
+import { DynamicPropertyAccessor } from "./utils/dynamic_property_v3";
 
 /**
  * key = player ID
@@ -25,12 +25,12 @@ import { ItemMachine, StandardStorageType } from "bedrock-energistics-core-api";
 const wirelessInterfaceEntities = new Map<string, Entity>();
 
 export const wirelessInterfaceLinkLocationProperty =
-  DynamicPropertyAccessor.withoutDefault<Vector3>(
+  new DynamicPropertyAccessor<Vector3>(
     "fluffyalien_asn:wireless_interface_link_location",
   );
 
 export const wirelessInterfaceLinkDimensionProperty =
-  DynamicPropertyAccessor.withoutDefault<string>(
+  new DynamicPropertyAccessor<string>(
     "fluffyalien_asn:wireless_interface_link_dimension",
   );
 
@@ -89,7 +89,7 @@ system.runInterval(() => {
       wirelessInterfaceEntities.set(player.id, entity);
     }
 
-    if (!entity.hasTag("fluffyalien_asn:wireless_interface_force_close")) {
+    if (!entity.hasTag(STORAGE_VIEWER_FORCE_CLOSE_TAG)) {
       entity.teleport(Vector3Utils.add(player.location, VECTOR3_UP));
     }
   }
@@ -115,25 +115,10 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   // see [#32](https://github.com/Fluffyalien1422/asn/issues/32)
   mainHandSlot.lockMode = ItemLockMode.slot;
 
-  if (!forceLoadNetworksRule.get(world)) {
-    removeWirelessInterfaceEntity(e.player, e.target);
-    e.player.sendMessage({
-      rawtext: [
-        {
-          text: "§c",
-        },
-        {
-          translate:
-            "fluffyalien_asn.message.wirelessInterface.forceLoadNetworksDisabled",
-        },
-      ],
-    });
-    return;
-  }
-
-  const linkLocation = wirelessInterfaceLinkLocationProperty.get(mainHandSlot);
+  const linkLocation =
+    wirelessInterfaceLinkLocationProperty.safeGet(mainHandSlot);
   const linkDimension =
-    wirelessInterfaceLinkDimensionProperty.get(mainHandSlot);
+    wirelessInterfaceLinkDimensionProperty.safeGet(mainHandSlot);
 
   if (!linkLocation || !linkDimension) {
     removeWirelessInterfaceEntity(e.player, e.target);
@@ -205,14 +190,14 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
     }
 
     const networkResult = await StorageNetwork.getOrEstablishNetwork(block);
-    if (!networkResult.success) {
+    if (networkResult.isErr()) {
       errLinkedNetworkNotFound();
       return;
     }
 
     const network = networkResult.value;
 
-    const maxDistance = wirelessInterfaceRangeRule.get(world);
+    const maxDistance = wirelessInterfaceRangeRule.safeGet(world);
 
     const anyTransmittersInRange =
       maxDistance === -1
@@ -233,7 +218,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
       return;
     }
 
-    if (useEnergyRule.get(world)) {
+    if (useEnergyRule.safeGet(world)) {
       const itemMachine = new ItemMachine(playerInv, playerMainHandSlotIndex);
 
       const storedEnergy = await itemMachine.getStorage(
@@ -241,7 +226,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
       );
 
       const energyConsumption =
-        wirelessInterfaceEnergyConsumptionRule.get(world);
+        wirelessInterfaceEnergyConsumptionRule.safeGet(world);
 
       if (storedEnergy < energyConsumption) {
         errInsufficientEnergy();
@@ -254,6 +239,6 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
       );
     }
 
-    refreshStorageViewer(e.target, e.player, network);
+    refreshStorageViewerOrLog(e.target, e.player, network);
   })();
 });

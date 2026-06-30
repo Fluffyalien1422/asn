@@ -14,5 +14,5 @@ export function sendCurrentRuleValueMessage(
   rule: string,
   ruleCommand: AddonRuleCommand,
 ): void {
-  sendRuleValueMessage(player, rule, ruleCommand.property.get(world));
+  sendRuleValueMessage(player, rule, ruleCommand.property.safeGet(world));
 }

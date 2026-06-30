@@ -1,41 +1,5 @@
 {
   "texture_data": {
-    "fluffyalien_asn:storage_viewer_ui_back": {
-      "textures": "textures/fluffyalien/asn/ui/storage_viewer/previous_page"
-    },
-    "fluffyalien_asn:storage_viewer_ui_cancel_search": {
-      "textures": "textures/fluffyalien/asn/ui/storage_viewer/cancel_search"
-    },
-    "fluffyalien_asn:storage_viewer_ui_next": {
-      "textures": "textures/fluffyalien/asn/ui/storage_viewer/next_page"
-    },
-    "fluffyalien_asn:storage_viewer_ui_search": {
-      "textures": "textures/fluffyalien/asn/ui/storage_viewer/search"
-    },
-    "fluffyalien_asn:storage_viewer_ui_sort": {
-      "textures": "textures/fluffyalien/asn/ui/storage_viewer/sort"
-    },
-    "fluffyalien_asn:storage_viewer_ui_stack_size_1": {
-      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_1"
-    },
-    "fluffyalien_asn:storage_viewer_ui_stack_size_2": {
-      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_2"
-    },
-    "fluffyalien_asn:storage_viewer_ui_stack_size_4": {
-      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_4"
-    },
-    "fluffyalien_asn:storage_viewer_ui_stack_size_8": {
-      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_8"
-    },
-    "fluffyalien_asn:storage_viewer_ui_stack_size_16": {
-      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_16"
-    },
-    "fluffyalien_asn:storage_viewer_ui_stack_size_32": {
-      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_32"
-    },
-    "fluffyalien_asn:storage_viewer_ui_stack_size_64": {
-      "textures": "textures/fluffyalien/asn/ui/storage_viewer/stack_size_64"
-    },
     "fluffyalien_asn:storage_disk": {
       "textures": "textures/fluffyalien/asn/items/storage_disk"
     },
@@ -50,9 +14,6 @@
     },
     "fluffyalien_asn:wireless_interface_antenna": {
       "textures": "textures/fluffyalien/asn/items/wireless_interface_antenna"
-    },
-    "fluffyalien_asn:portable_storage_network_placer": {
-      "textures": "textures/fluffyalien/asn/items/portable_storage_network_placer"
     },
     "fluffyalien_asn:fluid_storage_disk": {
       "textures": "textures/fluffyalien/asn/items/fluid_storage_disk"

@@ -1,23 +1,14 @@
-import { system, Block, world } from "@minecraft/server";
+import { system, Block, world, ItemStack } from "@minecraft/server";
 import {
   CableNetworkConnections,
   DiscoverCableNetworkConnectionsError,
   discoverCableNetworkConnections,
 } from "./cable_network";
-import { ErrorResult, Result, failure, success } from "./utils/result";
-import {
-  MAX_STORAGE_DRIVE_DATA_LENGTH,
-  getStorageDriveSerializedData,
-  setStorageDriveSerializedData,
-} from "./storage_drive";
-import { StorageSystemItemStack } from "./storage_system_item_stack";
-import { deserialize, serialize } from "./serialize";
-import { STRING_DYNAMIC_PROPERTY_MAX_LENGTH } from "./constants";
 import { DeepReadonly } from "ts-essentials";
 import { updateImportBus } from "./import_bus";
-import { Vector3Utils } from "@minecraft/math";
 import { updateExportBus } from "./export_bus";
-import { logWarn, makeErrorString } from "./log";
+import { updateAutocrafter } from "./autocrafter";
+import { logWarn, panic } from "./log";
 import { updateLevelEmitter } from "./level_emitter";
 import {
   getMachineStorage,
@@ -25,34 +16,113 @@ import {
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 import {
-  driveEnergyConsumptionRule,
+  deviceEnergyConsumptionRule,
   useEnergyRule,
 } from "./addon_rules/addon_rules";
 import {
   AddItemStackToStorageError,
-  isBannedItem,
+  RemoveItemStackFromStorageError,
   StorageSystem,
 } from "./storage_system";
 import { FLUID_DRIVE_CAPACITY } from "./fluid_drive";
 import {
   getBlockDynamicProperty,
   setBlockDynamicProperty,
-} from "./utils/dynamic_property";
+} from "./utils/block_dynamic_property";
 import { updateFluidExportBus } from "./fluid_export_bus";
+import { getDisksInDrive } from "./storage_drive_v3";
+import {
+  getDiskCapacity,
+  loadItemsFromDisk,
+  saveItemsToDisk,
+} from "./storage_disk_v3";
+import { cloneItemStackWithAmount } from "./utils/item";
+import { getBlockUid } from "./utils/block";
+import { ContainerSlot } from "@minecraft/server";
+import { err, ok, Result } from "neverthrow";
 
-export const STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL = 10;
+/**
+ * How often (in ticks) {@link StorageNetwork.standardTick} runs. Energy
+ * accounting and bus/autocrafter updates happen at this cadence. The "fast"
+ * tick (level emitters) runs every tick instead.
+ */
+export const STORAGE_NETWORK_STANDARD_TICK_INTERVAL = 10;
 
+/** The fluids stored across a network, aggregated over all of its fluid drives. */
 export interface NetworkStoredFluids {
+  /** The combined amount of every fluid type. */
   total: number;
+  /** The amount stored per fluid type id. Types with zero are omitted. */
   types: Map<string, number>;
+}
+
+/**
+ * A snapshot of a single disk slot: the stored {@link ItemStack} object that
+ * was last written there, plus its amount at that time.
+ */
+interface DiskSlotSnapshot {
+  stack: ItemStack;
+  amount: number;
+}
+
+/**
+ * Whether the item stacks a disk would be written with still match the snapshot
+ * of what was last persisted to it.
+ *
+ * This compares by object identity (plus amount), NOT by value. The scripting
+ * API can't expose every byte the structure save persists, so a value
+ * comparison ({@link itemStacksMatch}) could call two distinct items equal and
+ * wrongly skip a write. Identity sidesteps that: stored items are only ever
+ * mutated in place by `.amount`, and any other change (a new item, a removal, a
+ * slot shift) puts a different object reference in the slot. So matching
+ * reference + amount means the persisted bytes are unchanged. A `saved`
+ * snapshot of `undefined` means the previous contents are unknown (eg. the disk
+ * failed to load), so the disk is always treated as changed.
+ *
+ * IMPORTANT: this relies on stored items never being mutated except by amount.
+ * If that ever changes, this check must be revisited.
+ */
+function diskContentsMatch(
+  saved: readonly DiskSlotSnapshot[] | undefined,
+  current: readonly ItemStack[],
+): boolean {
+  if (!saved) return false;
+  if (saved.length !== current.length) return false;
+  for (let i = 0; i < saved.length; i++) {
+    if (saved[i].stack !== current[i]) return false;
+    if (saved[i].amount !== current[i].amount) return false;
+  }
+  return true;
+}
+
+/** Captures a snapshot of the given disk slice for {@link diskContentsMatch}. */
+function snapshotDiskContents(items: readonly ItemStack[]): DiskSlotSnapshot[] {
+  return items.map((stack) => ({ stack, amount: stack.amount }));
 }
 
 /**
  * A {@link StorageSystem} that is comprised of many devices.
  */
 export class StorageNetwork extends StorageSystem {
-  private static readonly storageNetworks: StorageNetwork[] = [];
-  private internalIsValid = true;
+  /**
+   * Index from block uid (see {@link getBlockUid}) to the network containing
+   * that block, so {@link StorageNetwork.getNetwork} is O(1). Kept in sync by
+   * {@link StorageNetwork.indexConnections} / {@link StorageNetwork.unindexConnections}.
+   */
+  private static readonly networkByBlockUid = new Map<string, StorageNetwork>();
+
+  /**
+   * In-flight {@link StorageNetwork.establishNetwork} calls keyed by origin
+   * block uid. Concurrent establishments from the same origin share a single
+   * discovery instead of each running their own and constructing duplicate
+   * networks. The cross-origin race (two different origins in the same network)
+   * is additionally guarded by a post-discovery re-check inside
+   * {@link StorageNetwork.discoverAndConstruct}.
+   */
+  private static readonly establishmentsInFlight = new Map<
+    string,
+    Promise<Result<StorageNetwork, DiscoverCableNetworkConnectionsError>>
+  >();
 
   /**
    * Establish a network from any starting position inside of the network
@@ -62,28 +132,60 @@ export class StorageNetwork extends StorageSystem {
   static async establishNetwork(
     origin: Block,
   ): Promise<Result<StorageNetwork, DiscoverCableNetworkConnectionsError>> {
+    // Discovery is slow (it can force-load chunks and scan entities across all
+    // dimensions when following relays). Without deduplication, two triggers
+    // firing in that window - eg. the storage core load timeout running while a
+    // player opens the core - would each run a full discovery and construct a
+    // separate StorageNetwork ticking the same blocks, leaking the first.
+    const originUid = getBlockUid(origin);
+
+    const inFlight = StorageNetwork.establishmentsInFlight.get(originUid);
+    if (inFlight) return inFlight;
+
+    const promise = StorageNetwork.discoverAndConstruct(origin);
+    StorageNetwork.establishmentsInFlight.set(originUid, promise);
+    try {
+      return await promise;
+    } finally {
+      StorageNetwork.establishmentsInFlight.delete(originUid);
+    }
+  }
+
+  /**
+   * Runs discovery and constructs the network, guarding against a concurrent
+   * establishment from a *different* origin in the same network (which the
+   * per-origin in-flight map cannot catch). Discovery is async but construction
+   * and indexing are synchronous, so re-checking the index here - after the
+   * await, with nothing awaited before the construct - guarantees that whichever
+   * call finishes discovery first builds the network and any later call returns
+   * that same network instead of leaking a duplicate.
+   */
+  private static async discoverAndConstruct(
+    origin: Block,
+  ): Promise<Result<StorageNetwork, DiscoverCableNetworkConnectionsError>> {
     const result = await discoverCableNetworkConnections(origin);
-    if (!result.success) {
-      return result;
+    if (result.isErr()) {
+      return err(result.error);
     }
 
     const connections = result.value;
 
-    return success(new StorageNetwork(connections));
+    const existing = StorageNetwork.getNetwork(connections.storageCore);
+    if (existing) {
+      return ok(existing);
+    }
+
+    return ok(new StorageNetwork(connections));
   }
 
   /**
-   * Get the {@link StorageNetwork} that the {@link Block} belongs to
-   * @param typeIdOverride forwarded to {@link StorageNetwork.isPartOfNetwork}
+   * Get the {@link StorageNetwork} that the {@link Block} belongs to. Resolved
+   * by the block's position, so this also works for a block that has since been
+   * broken (the location stays indexed until the network's connections update).
    * @returns the {@link StorageNetwork} if it was found or undefined
    */
-  static getNetwork(
-    block: Block,
-    typeIdOverride?: string,
-  ): StorageNetwork | undefined {
-    return StorageNetwork.storageNetworks.find((network) =>
-      network.isPartOfNetwork(block, typeIdOverride),
-    );
+  static getNetwork(block: Block): StorageNetwork | undefined {
+    return StorageNetwork.networkByBlockUid.get(getBlockUid(block));
   }
 
   /**
@@ -168,67 +270,165 @@ export class StorageNetwork extends StorageSystem {
   ): Promise<Result<StorageNetwork, DiscoverCableNetworkConnectionsError>> {
     const existingNetwork = StorageNetwork.getNetwork(block);
     if (existingNetwork) {
-      return success(existingNetwork);
+      return ok(existingNetwork);
     }
 
     return StorageNetwork.establishNetwork(block);
   }
 
-  private storedItems?: StorageSystemItemStack[];
-  private readonly updateIntervalRunId: number;
-  private readonly levelEmitterUpdateIntervalRunId: number;
-
+  /**
+   * Backing flag for {@link StorageNetwork.isValid}. Set to `false` by
+   * {@link StorageNetwork.destroy}, after which most methods throw.
+   */
+  private internalIsValid = true;
+  /**
+   * The block uids this network currently has registered in
+   * {@link StorageNetwork.networkByBlockUid}.
+   */
+  private indexedUids: string[] = [];
+  /**
+   * In-memory cache of every item stack on the network, keyed by a unique id
+   * (see {@link StorageNetwork.getNextItemId}). Lazily loaded from the disks by
+   * {@link StorageNetwork.getStoredItemStacks} and `undefined` until then.
+   * Mutated in place by the add/remove methods and flushed to disk by
+   * {@link StorageNetwork.saveStoredItemData}.
+   */
+  private storedItems?: Map<string, ItemStack>;
+  /** Monotonic counter backing {@link StorageNetwork.getNextItemId}. */
+  private nextItemIdNum = 0;
+  /**
+   * The disk slots that {@link StorageNetwork.storedItems} were loaded from,
+   * in the same order they were discovered. Used to write items back to disks
+   * in {@link StorageNetwork.saveStoredItemData}.
+   */
+  private storedItemDisks?: ContainerSlot[];
+  /**
+   * Snapshot of the item stacks last persisted to each disk in
+   * {@link StorageNetwork.storedItemDisks}, parallel by index. Used by
+   * {@link StorageNetwork.saveStoredItemData} to skip rewriting disks whose
+   * contents have not changed. An entry is `undefined` if that disk's contents
+   * are unknown (eg. it failed to load), forcing it to be rewritten.
+   */
+  private savedDiskContents?: (DiskSlotSnapshot[] | undefined)[];
+  /** Run id for the {@link STORAGE_NETWORK_STANDARD_TICK_INTERVAL} interval, cleared on {@link StorageNetwork.destroy}. */
+  private readonly standardTickRunId: number;
+  /** Run id for the per-tick {@link StorageNetwork.fastTick} interval, cleared on {@link StorageNetwork.destroy}. */
+  private readonly fastTickRunId: number;
+  /**
+   * In-memory cache of the network's stored fluids. Lazily populated from the
+   * fluid drives by {@link StorageNetwork.getStoredFluids} and `undefined`
+   * until then.
+   */
   private storedFluids?: NetworkStoredFluids;
+  /**
+   * The total amount of energy stored across the network's power banks.
+   * Recalcualated every `standardTick` if `useEnergy` is enabled.
+   * Resets to `0` if `useEnergy` is disabled.
+   */
+  private storedEnergy = 0;
+  /**
+   * The energy demand that is currently being unmet by the network.
+   * Recalcualated every `standardTick` if `useEnergy` is enabled.
+   * Resets to `0` if `useEnergy` is disabled.
+   */
+  private unmetEnergyDemand = 0;
 
+  /**
+   * Use {@link StorageNetwork.establishNetwork} or
+   * {@link StorageNetwork.getOrEstablishNetwork} to create a network. Indexes
+   * the connections and starts the standard and fast tick intervals.
+   * @param connections the discovered connections that make up this network
+   */
   private constructor(private connections: CableNetworkConnections) {
     super();
 
-    StorageNetwork.storageNetworks.push(this);
+    this.indexConnections();
 
-    this.updateIntervalRunId = system.runInterval(() => {
-      for (const block of this.connections.buses) {
-        if (!block.isValid) continue;
-
-        switch (block.typeId) {
-          case "fluffyalien_asn:import_bus":
-            updateImportBus(block, this);
-            break;
-          case "fluffyalien_asn:export_bus":
-            updateExportBus(block, this);
-            break;
-          case "fluffyalien_asn:fluid_export_bus":
-            void updateFluidExportBus(block, this);
-            break;
-        }
-      }
-
-      if (useEnergyRule.get(world)) {
-        let energyConsumptionRemaining = this.getEnergyConsumption();
-        for (const block of this.connections.powerBanks) {
-          const storedEnergy = getMachineStorage(block, "energy");
-
-          const consumption = Math.min(
-            storedEnergy,
-            energyConsumptionRemaining,
-          );
-          energyConsumptionRemaining -= consumption;
-          void setMachineStorage(block, "energy", storedEnergy - consumption);
-
-          if (energyConsumptionRemaining <= 0) {
-            break;
-          }
-        }
-      }
-    }, 10);
-
-    this.levelEmitterUpdateIntervalRunId = system.runInterval(() => {
-      for (const block of this.connections.levelEmitters) {
-        if (!block.isValid) continue;
-
-        updateLevelEmitter(block, this);
-      }
-    });
+    this.standardTickRunId = system.runInterval(
+      this.standardTick,
+      STORAGE_NETWORK_STANDARD_TICK_INTERVAL,
+    );
+    this.fastTickRunId = system.runInterval(this.fastTick);
   }
+
+  /**
+   * Runs every {@link STORAGE_NETWORK_STANDARD_TICK_INTERVAL} ticks. Settles
+   * energy accounting (draining power banks to cover the network's consumption
+   * and recording stored/unmet energy) then updates every bus and autocrafter.
+   * If energy is enabled and demand cannot be met, the tick is cancelled before
+   * any devices update.
+   */
+  private readonly standardTick = (): void => {
+    if (useEnergyRule.safeGet(world)) {
+      // drain the power banks one at a time to cover this tick's consumption,
+      // tallying what remains in each so storedEnergy reflects the post-drain
+      // total and unmetEnergyDemand reflects any shortfall.
+      let totalStoredEnergy = 0;
+      let energyConsumptionRemaining = this.getEnergyConsumption();
+      for (const block of this.connections.powerBanks) {
+        const storedEnergy = getMachineStorage(block, "energy");
+
+        const consumption = Math.max(
+          Math.min(storedEnergy, energyConsumptionRemaining),
+          0,
+        );
+        const newStoredEnergy = storedEnergy - consumption;
+        if (storedEnergy !== newStoredEnergy) {
+          void setMachineStorage(block, "energy", newStoredEnergy);
+        }
+
+        totalStoredEnergy += newStoredEnergy;
+        energyConsumptionRemaining -= consumption;
+      }
+      this.storedEnergy = totalStoredEnergy;
+      this.unmetEnergyDemand = energyConsumptionRemaining;
+
+      if (energyConsumptionRemaining > 0) {
+        // There is insufficient energy. Cancel this tick.
+        return;
+      }
+    } else {
+      // Reset energy values to 0 if useEnergy is disabled.
+      this.storedEnergy = 0;
+      this.unmetEnergyDemand = 0;
+    }
+
+    for (const block of this.connections.buses) {
+      if (!block.isValid) continue;
+
+      switch (block.typeId) {
+        case "fluffyalien_asn:import_bus":
+          void updateImportBus(block, this);
+          break;
+        case "fluffyalien_asn:export_bus":
+          void updateExportBus(block, this);
+          break;
+        case "fluffyalien_asn:fluid_export_bus":
+          void updateFluidExportBus(block, this);
+          break;
+        case "fluffyalien_asn:autocrafter":
+          void updateAutocrafter(block, this);
+          break;
+      }
+    }
+  };
+
+  /**
+   * Runs every tick. Updates the network's level emitters. Skipped while there
+   * is unmet energy demand (as last computed by {@link StorageNetwork.standardTick}).
+   */
+  private readonly fastTick = (): void => {
+    if (this.unmetEnergyDemand > 0) {
+      // There is insufficient energy. Cancel this tick.
+      return;
+    }
+
+    for (const block of this.connections.levelEmitters) {
+      if (!block.isValid) continue;
+
+      void updateLevelEmitter(block, this);
+    }
+  };
 
   /**
    * @throws if this object is not valid (if it has been destroyed)
@@ -236,77 +436,201 @@ export class StorageNetwork extends StorageSystem {
    */
   private ensureValidity(): void {
     if (!this.internalIsValid) {
-      throw new Error(makeErrorString(`StorageNetwork: object destroyed`));
+      panic("The StorageNetwork object has been destroyed.");
     }
-  }
-
-  private getStoredItemStacksMutable(): StorageSystemItemStack[] {
-    if (this.storedItems) {
-      return this.storedItems;
-    }
-
-    const itemStacks: StorageSystemItemStack[] = [];
-
-    for (const drive of this.connections.storageDrives) {
-      const serialized = getStorageDriveSerializedData(drive);
-      if (!serialized) {
-        continue;
-      }
-
-      itemStacks.push(...deserialize(serialized));
-    }
-
-    this.storedItems = itemStacks;
-    return itemStacks;
   }
 
   /**
-   * Writes in-memory item data to dynamic properties on drives.
-   * use saveData instead to save all data.
-   * @param useRealMaxLength internal argument, do not use
+   * Allocates a fresh unique id for a stored item stack. Ids are only unique
+   * within this network's lifetime; they are not persisted.
    */
-  private saveStoredItemData(useRealMaxLength = false): void {
-    const storedItems = this.getStoredItemStacks();
-    const maxStorageDriveDataLength = useRealMaxLength
-      ? STRING_DYNAMIC_PROPERTY_MAX_LENGTH
-      : MAX_STORAGE_DRIVE_DATA_LENGTH;
+  private getNextItemId(): string {
+    return (this.nextItemIdNum++).toString();
+  }
 
-    let itemsStored = 0;
+  /**
+   * (Re)indexes this network's blocks in {@link StorageNetwork.networkByBlockUid}
+   * so {@link StorageNetwork.getNetwork} can resolve a block to its network in
+   * O(1). Any stale entries this network previously owned are removed first.
+   */
+  private indexConnections(): void {
+    this.unindexConnections();
+
+    const index = (block: Block): void => {
+      const uid = getBlockUid(block);
+      StorageNetwork.networkByBlockUid.set(uid, this);
+      this.indexedUids.push(uid);
+    };
+
+    const c = this.connections;
+    index(c.storageCore);
+    for (const block of c.cables) index(block);
+    for (const block of c.storageDrives) index(block);
+    for (const block of c.interfaces) index(block);
+    for (const block of c.buses) index(block);
+    for (const block of c.levelEmitters) index(block);
+    for (const block of c.powerBanks) index(block);
+    for (const block of c.wirelessTransmitters) index(block);
+    for (const block of c.fluidDrives) index(block);
+  }
+
+  /**
+   * Removes this network's entries from {@link StorageNetwork.networkByBlockUid}.
+   * Only removes entries that still point to this network, so a block since
+   * claimed by another network is left untouched.
+   */
+  private unindexConnections(): void {
+    for (const uid of this.indexedUids) {
+      if (StorageNetwork.networkByBlockUid.get(uid) === this) {
+        StorageNetwork.networkByBlockUid.delete(uid);
+      }
+    }
+    this.indexedUids = [];
+  }
+
+  /**
+   * Gets all disk slots across every storage drive in this network.
+   */
+  private getDisks(): ContainerSlot[] {
+    const disks: ContainerSlot[] = [];
 
     for (const drive of this.connections.storageDrives) {
-      let serializedData = "";
-
-      while (itemsStored < storedItems.length) {
-        const newData = serialize(storedItems[itemsStored]);
-
-        if (
-          serializedData.length + newData.length >
-          maxStorageDriveDataLength
-        ) {
-          break;
-        }
-
-        serializedData += newData;
-        itemsStored++;
+      const disksr = getDisksInDrive(drive);
+      if (disksr.isErr()) {
+        logWarn(`Failed to get disks in drive: ${disksr.error}`);
+        continue;
       }
-
-      setStorageDriveSerializedData(drive, serializedData);
+      disks.push(...disksr.value);
     }
 
-    if (itemsStored < storedItems.length) {
-      if (useRealMaxLength) {
-        // if the fallback failed as well, throw an error
-        throw new Error(
-          makeErrorString("could not save item data: reached max storage"),
-        );
-      }
+    return disks;
+  }
 
-      // fall back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH if we could not save everything
-      logWarn(
-        "could not save item data with default max data length (MAX_STORAGE_DRIVE_DATA_LENGTH). falling back to STRING_DYNAMIC_PROPERTY_MAX_LENGTH",
+  /**
+   * Gets all item stacks stored on the network, keyed by unique id. On the
+   * first call the items are loaded from every disk and cached, along with the
+   * disks they came from ({@link StorageNetwork.storedItemDisks}) and a snapshot
+   * of each disk's contents ({@link StorageNetwork.savedDiskContents}) for
+   * change detection. Subsequent calls return the cache until it is cleared.
+   * @returns a result containing the stored items map, or an error
+   */
+  async getStoredItemStacks(): Promise<Result<Map<string, ItemStack>, Error>> {
+    if (this.storedItems) {
+      return ok(this.storedItems);
+    }
+
+    const storedItems = new Map<string, ItemStack>();
+    const disks = this.getDisks();
+    // snapshot of what is currently on each disk, parallel to `disks`
+    const savedDiskContents: (DiskSlotSnapshot[] | undefined)[] = [];
+
+    for (const disk of disks) {
+      const itemsr = await loadItemsFromDisk(disk);
+      if (itemsr.isErr()) {
+        logWarn(`Failed to load items from disk: ${itemsr.error}`);
+        // contents unknown, force this disk to be rewritten on the next save
+        savedDiskContents.push(undefined);
+        continue;
+      }
+      const items = itemsr.value;
+      for (const stack of items) {
+        storedItems.set(this.getNextItemId(), stack);
+      }
+      savedDiskContents.push(snapshotDiskContents(items));
+    }
+
+    this.storedItems = storedItems;
+    this.storedItemDisks = disks;
+    this.savedDiskContents = savedDiskContents;
+    return ok(storedItems);
+  }
+
+  /**
+   * Gets the number of distinct item stacks (slots) currently stored. Returns
+   * `0` if the stored items could not be loaded.
+   */
+  async getStoredItemStacksCount(): Promise<number> {
+    return (await this.getStoredItemStacks()).unwrapOr({ size: 0 }).size;
+  }
+
+  /**
+   * The total number of item stacks (slots) that this network can hold across
+   * all of its disks.
+   */
+  getItemSlotsCapacity(): number {
+    return this.computeItemSlotsCapacity(this.getDisks());
+  }
+
+  /**
+   * Sums the slot capacity of the given disks. Use this with the cached
+   * {@link StorageNetwork.storedItemDisks} to avoid re-scanning the drives.
+   */
+  private computeItemSlotsCapacity(disks: readonly ContainerSlot[]): number {
+    let total = 0;
+    for (const disk of disks) {
+      total += getDiskCapacity(disk.typeId);
+    }
+    return total;
+  }
+
+  /**
+   * Writes the in-memory item data ({@link StorageNetwork.storedItems}) back to
+   * the network's disks. Items are distributed across the disks that they were
+   * loaded from, up to the capacity of each disk.
+   * @returns a result containing an error if the data area could not be loaded
+   */
+  private async saveStoredItemData(): Promise<Result<void, Error>> {
+    // nothing to save if items were never loaded
+    if (!this.storedItems || !this.storedItemDisks || !this.savedDiskContents) {
+      return ok();
+    }
+
+    const storedItemsArray = [...this.storedItems.values()];
+    const disks = this.storedItemDisks;
+    const savedDiskContents = this.savedDiskContents;
+
+    // compute the new contents of each disk and find which ones actually
+    // changed since the last save. disk writes are expensive, so unchanged
+    // disks are skipped entirely.
+    const newDiskContents: ItemStack[][] = [];
+    const dirtyDiskIndexes: number[] = [];
+    let itemsStored = 0;
+    for (let i = 0; i < disks.length; i++) {
+      const capacity = getDiskCapacity(disks[i].typeId);
+      const diskItems = storedItemsArray.slice(
+        itemsStored,
+        itemsStored + capacity,
       );
-      this.saveStoredItemData(true);
+      itemsStored += diskItems.length;
+      newDiskContents.push(diskItems);
+
+      if (!diskContentsMatch(savedDiskContents[i], diskItems)) {
+        dirtyDiskIndexes.push(i);
+      }
     }
+
+    // nothing changed, so there's no need to touch the data area at all
+    if (!dirtyDiskIndexes.length) {
+      return ok();
+    }
+
+    for (const i of dirtyDiskIndexes) {
+      const disk = disks[i];
+      const diskItems = newDiskContents[i];
+      const capacity = getDiskCapacity(disk.typeId);
+
+      const saveResult = await saveItemsToDisk(disk, diskItems, capacity);
+      if (saveResult.isErr()) {
+        // leave this disk's snapshot unchanged so it is retried next save
+        logWarn(`Failed to save item data: ${saveResult.error.message}`);
+        continue;
+      }
+
+      // record what we just persisted so future saves can skip this disk
+      savedDiskContents[i] = snapshotDiskContents(diskItems);
+    }
+
+    return ok();
   }
 
   /**
@@ -350,7 +674,9 @@ export class StorageNetwork extends StorageSystem {
       setBlockDynamicProperty(
         drive,
         dynamicPropId,
-        (getBlockDynamicProperty(drive, dynamicPropId) as number) + amount,
+        ((getBlockDynamicProperty(drive, dynamicPropId) as
+          | number
+          | undefined) ?? 0) + amount,
       );
     }
   }
@@ -369,56 +695,10 @@ export class StorageNetwork extends StorageSystem {
   destroy(): void {
     this.internalIsValid = false;
 
-    system.clearRun(this.updateIntervalRunId);
-    system.clearRun(this.levelEmitterUpdateIntervalRunId);
+    system.clearRun(this.standardTickRunId);
+    system.clearRun(this.fastTickRunId);
 
-    const i = StorageNetwork.storageNetworks.indexOf(this);
-    if (i === -1) return;
-
-    StorageNetwork.storageNetworks.splice(i, 1);
-  }
-
-  /**
-   * Check if a {@link Block} is part of this network
-   * @param typeIdOverride use this string instead of the block's actual type ID. Use this parameter to get the network of a block that has since been changed (eg. a broken block)
-   * @throws if this object is not valid
-   */
-  isPartOfNetwork(block: Block, typeIdOverride?: string): boolean {
-    this.ensureValidity();
-
-    const typeId = typeIdOverride ?? block.typeId;
-
-    const condition = (v: Block): boolean =>
-      v.dimension.id === block.dimension.id &&
-      Vector3Utils.equals(v, block.location);
-
-    switch (typeId) {
-      case "fluffyalien_asn:storage_relay":
-      case "fluffyalien_asn:storage_cable":
-        return this.connections.cables.some(condition);
-      case "fluffyalien_asn:storage_core":
-        return condition(this.connections.storageCore);
-      case "fluffyalien_asn:storage_drive":
-        return this.connections.storageDrives.some(condition);
-      case "fluffyalien_asn:storage_interface":
-      case "fluffyalien_asn:fluid_interface":
-        return this.connections.interfaces.some(condition);
-      case "fluffyalien_asn:import_bus":
-      case "fluffyalien_asn:export_bus":
-      case "fluffyalien_asn:fluid_import_bus":
-      case "fluffyalien_asn:fluid_export_bus":
-        return this.connections.buses.some(condition);
-      case "fluffyalien_asn:level_emitter":
-        return this.connections.levelEmitters.some(condition);
-      case "fluffyalien_asn:storage_power_bank":
-        return this.connections.powerBanks.some(condition);
-      case "fluffyalien_asn:wireless_transmitter":
-        return this.connections.wirelessTransmitters.some(condition);
-      case "fluffyalien_asn:fluid_drive":
-        return this.connections.fluidDrives.some(condition);
-      default:
-        return false;
-    }
+    this.unindexConnections();
   }
 
   /**
@@ -429,36 +709,45 @@ export class StorageNetwork extends StorageSystem {
    * @returns a result containing an error or undefined
    */
   async updateConnections(): Promise<
-    ErrorResult<DiscoverCableNetworkConnectionsError>
+    Result<void, DiscoverCableNetworkConnectionsError>
   > {
     this.ensureValidity();
 
     const result = await discoverCableNetworkConnections(
       this.connections.storageCore,
     );
-    if (!result.success) {
+    if (result.isErr()) {
       this.destroy();
-      return result;
+      return err(result.error);
     }
 
     this.connections = result.value;
+    this.indexConnections();
 
     // we need to clear storage because a drive may have been removed
     // these will be updated the next time their get function is called
     this.storedItems = undefined;
+    this.storedItemDisks = undefined;
+    this.savedDiskContents = undefined;
     this.storedFluids = undefined;
 
-    return success();
+    // the connected drives (and therefore the stored items) may have changed
+    this.markStoredItemsChanged();
+
+    return ok();
   }
 
   /**
-   * Clear the stored items cache. The cache will be created again when {@link StorageNetwork.getStoredItemStacksMutable} or {@link StorageNetwork.getStoredItemStacks} is called.
-   * @see {@link StorageNetwork.getStoredItemStacks} and {@link StorageNetwork.getStoredItemStacksMutable}
+   * Clear the stored items cache. The cache will be created again when {@link StorageNetwork.getStoredItemStacks} is called.
+   * @see {@link StorageNetwork.getStoredItemStacks}
    * @throws if this object is invalid
    */
   clearStoredItemsCache(): void {
     this.ensureValidity();
     this.storedItems = undefined;
+    this.storedItemDisks = undefined;
+    this.savedDiskContents = undefined;
+    this.markStoredItemsChanged();
   }
 
   /**
@@ -471,15 +760,10 @@ export class StorageNetwork extends StorageSystem {
   }
 
   /**
-   * @throws if this object is not valid
-   */
-  getStoredItemStacks(): readonly StorageSystemItemStack[] {
-    this.ensureValidity();
-
-    return this.getStoredItemStacksMutable();
-  }
-
-  /**
+   * Gets the fluids stored across the network, aggregated over every fluid
+   * drive. The result is cached until {@link StorageNetwork.clearStoredFluidsCache}
+   * (or a connections update) clears it.
+   * @returns the network's stored fluids
    * @throws if this object is not valid
    */
   async getStoredFluids(): Promise<NetworkStoredFluids> {
@@ -515,124 +799,221 @@ export class StorageNetwork extends StorageSystem {
   }
 
   /**
-   * @throws if this object is not valid
-   */
-  getUsedDataLength(): number {
-    this.ensureValidity();
-
-    let length = 0;
-
-    for (const drive of this.connections.storageDrives) {
-      const serialized = getStorageDriveSerializedData(drive);
-      if (!serialized) {
-        continue;
-      }
-
-      length += serialized.length;
-    }
-
-    return length;
-  }
-
-  /**
-   * @throws if this object is not valid
-   */
-  getMaxDataLength(): number {
-    this.ensureValidity();
-
-    return (
-      MAX_STORAGE_DRIVE_DATA_LENGTH * this.connections.storageDrives.length
-    );
-  }
-
-  /**
-   * @throws if this object is not valid
+   * @returns the total fluid capacity across all of the network's fluid drives
    */
   getFluidStorageCapacity(): number {
-    this.ensureValidity();
-
     return FLUID_DRIVE_CAPACITY * this.connections.fluidDrives.length;
   }
 
+  /**
+   * @returns the energy currently stored across the network's power banks, as
+   *   of the last {@link StorageNetwork.standardTick}
+   */
   getStoredEnergy(): number {
-    let energy = 0;
-
-    for (const powerBank of this.connections.powerBanks) {
-      energy += getMachineStorage(powerBank, "energy");
-    }
-
-    return energy;
+    return this.storedEnergy;
   }
 
   /**
-   * @throws if this object is not valid
+   * @returns the energy demand the network could not meet on the last
+   *   {@link StorageNetwork.standardTick}; `0` when fully powered or when energy
+   *   use is disabled
+   */
+  getUnmetEnergyDemand(): number {
+    return this.unmetEnergyDemand;
+  }
+
+  /**
+   * @returns the maximum energy the network can store across all of its power banks
    */
   getMaxStoredEnergy(): number {
-    this.ensureValidity();
-
     return 6400 * this.connections.powerBanks.length;
   }
 
   /**
-   * @throws if this object is not valid
-   * @returns energy consumption per {@link STORAGE_NETWORK_DEVICE_UPDATE_INTERVAL}
+   * @returns energy consumption per {@link STORAGE_NETWORK_STANDARD_TICK_INTERVAL}
    */
   getEnergyConsumption(): number {
-    this.ensureValidity();
-
     return (
-      driveEnergyConsumptionRule.get(world) *
-      (this.connections.storageDrives.length +
-        this.connections.fluidDrives.length)
+      deviceEnergyConsumptionRule.safeGet(world) *
+      (this.connections.buses.length +
+        this.connections.fluidDrives.length +
+        this.connections.levelEmitters.length +
+        this.connections.storageDrives.length)
     );
   }
 
   /**
-   * @throws if this object is not valid
+   * @returns a read-only view of this network's discovered connections (cables,
+   *   drives, buses, etc.)
    */
   getConnections(): DeepReadonly<CableNetworkConnections> {
-    this.ensureValidity();
-
     return this.connections;
   }
 
   /**
+   * Adds an item stack to the in-memory {@link StorageNetwork.storedItems} map
+   * without persisting to disk. Distributes the incoming amount across existing
+   * matching stacks before creating new slots. All-or-nothing: if the full
+   * amount does not fit, nothing is added.
+   *
+   * Callers must have populated the cache via
+   * {@link StorageNetwork.getStoredItemStacks} and are responsible for
+   * persisting afterwards via {@link StorageNetwork.saveStoredItemData}.
+   * @param storedItems the cached stored items map to mutate
+   * @param capacity the network's total item slot capacity
+   * @param itemStack the item stack to add
+   */
+  private addItemStackToMemory(
+    storedItems: Map<string, ItemStack>,
+    capacity: number,
+    itemStack: ItemStack,
+  ): Result<void, AddItemStackToStorageError> {
+    // the items are now stored as real ItemStacks, so each stored stack can
+    // only hold up to its max stack size. before mutating anything, make sure
+    // the whole incoming amount fits so the add is all-or-nothing (a partial
+    // add followed by a failure would duplicate items in the import bus).
+    const maxAmount = itemStack.maxAmount;
+
+    let spaceInExisting = 0;
+    for (const stored of storedItems.values()) {
+      if (!stored.isStackableWith(itemStack)) continue;
+      spaceInExisting += maxAmount - stored.amount;
+    }
+
+    const freeSlots = capacity - storedItems.size;
+    const totalSpace = spaceInExisting + freeSlots * maxAmount;
+
+    if (itemStack.amount > totalSpace) {
+      return err({ type: "insufficientStorage" });
+    }
+
+    // distribute the incoming amount across existing matching stacks first,
+    // then create new slots for any overflow.
+    let amountRemaining = itemStack.amount;
+
+    for (const stored of storedItems.values()) {
+      if (amountRemaining <= 0) break;
+      if (!stored.isStackableWith(itemStack)) continue;
+
+      const space = maxAmount - stored.amount;
+      if (space <= 0) continue;
+
+      const amountToAdd = Math.min(space, amountRemaining);
+      stored.amount += amountToAdd;
+      amountRemaining -= amountToAdd;
+    }
+
+    while (amountRemaining > 0) {
+      const amount = Math.min(maxAmount, amountRemaining);
+      storedItems.set(
+        this.getNextItemId(),
+        cloneItemStackWithAmount(itemStack, amount),
+      );
+      amountRemaining -= amount;
+    }
+
+    return ok();
+  }
+
+  /**
+   * Adds an item stack to storage. Distributes the incoming amount across
+   * existing matching stacks before creating new slots. The add is
+   * all-or-nothing: if the full amount does not fit, nothing is stored.
+   * @param itemStack the item stack to add
+   * @returns a result containing an error if the item could not be stored
    * @throws if this object is not valid
    */
-  addItemStack = (
-    itemStack: StorageSystemItemStack,
-  ): ErrorResult<AddItemStackToStorageError> => {
+  addItemStack = async (
+    itemStack: ItemStack,
+  ): Promise<Result<void, AddItemStackToStorageError>> => {
     this.ensureValidity();
 
-    if (isBannedItem(itemStack)) {
-      return failure({
-        type: "bannedItem",
-        itemId: itemStack.typeId,
+    const storedItemsr = await this.getStoredItemStacks();
+    if (storedItemsr.isErr()) {
+      return err({
+        type: "unknownError",
+        message: `An unknown error occurred while getting stored item stacks: ${storedItemsr.error}`,
+      });
+    }
+    const storedItems = storedItemsr.value;
+
+    // storedItemDisks is guaranteed to be set after a successful
+    // getStoredItemStacks; use it to avoid re-scanning the drives for capacity.
+    const capacity = this.computeItemSlotsCapacity(this.storedItemDisks!);
+
+    const result = this.addItemStackToMemory(storedItems, capacity, itemStack);
+    if (result.isErr()) {
+      return result;
+    }
+
+    const saveResult = await this.saveStoredItemData();
+    if (saveResult.isErr()) {
+      return err({
+        type: "unknownError",
+        message: `An unknown error occurred while saving stored item data: ${saveResult.error.message}`,
       });
     }
 
-    const storedItems = this.getStoredItemStacksMutable();
+    this.markStoredItemsChanged();
 
-    const existingItemStack = storedItems.find((other) =>
-      itemStack.isStackableWith(other),
-    );
+    return ok();
+  };
 
-    if (existingItemStack) {
-      existingItemStack.amount += itemStack.amount;
-    } else {
-      const length = serialize(itemStack).length;
+  /**
+   * Adds multiple item stacks to storage, persisting to disk only once after
+   * all of them have been added. Each stack is added all-or-nothing (see
+   * {@link StorageNetwork.addItemStack}); adding stops at the first stack that
+   * does not fit.
+   * @param itemStacks the item stacks to add, in order
+   * @returns a result containing the number of stacks that were fully added
+   *   (always a prefix of `itemStacks`), or an error if saving failed
+   * @throws if this object is not valid
+   */
+  async addItemStacks(
+    itemStacks: readonly ItemStack[],
+  ): Promise<Result<number, AddItemStackToStorageError>> {
+    this.ensureValidity();
 
-      if (this.getUsedDataLength() + length > this.getMaxDataLength()) {
-        return failure({ type: "insufficientStorage" });
-      }
+    const storedItemsr = await this.getStoredItemStacks();
+    if (storedItemsr.isErr()) {
+      return err({
+        type: "unknownError",
+        message: `An unknown error occurred while getting stored item stacks: ${storedItemsr.error}`,
+      });
+    }
+    const storedItems = storedItemsr.value;
 
-      storedItems.push(itemStack);
+    // storedItemDisks is guaranteed to be set after a successful
+    // getStoredItemStacks; use it to avoid re-scanning the drives for capacity.
+    const capacity = this.computeItemSlotsCapacity(this.storedItemDisks!);
+
+    let addedCount = 0;
+    for (const itemStack of itemStacks) {
+      const result = this.addItemStackToMemory(
+        storedItems,
+        capacity,
+        itemStack,
+      );
+      if (result.isErr()) break;
+      addedCount++;
     }
 
-    this.saveStoredItemData();
+    if (!addedCount) {
+      return ok(0);
+    }
 
-    return success();
-  };
+    const saveResult = await this.saveStoredItemData();
+    if (saveResult.isErr()) {
+      return err({
+        type: "unknownError",
+        message: `An unknown error occurred while saving stored item data: ${saveResult.error.message}`,
+      });
+    }
+
+    this.markStoredItemsChanged();
+
+    return ok(addedCount);
+  }
 
   /**
    * adds a fluid to the storage network. clamps the amount from 0 to the max that can be stored
@@ -683,41 +1064,54 @@ export class StorageNetwork extends StorageSystem {
   }
 
   /**
-   * Removes items from storage. Clamps the amount from 1 to the amount available in storage
+   * Removes an item stack from storage by its unique identifier. Clamps the
+   * requested amount to the amount stored in the target slot.
+   * @param id the unique identifier of the item stack to remove
+   * @param amount the number of items to remove; clamped to the amount stored in the slot
+   * @returns a result containing the removed {@link ItemStack}, or an error if
+   *   the removal failed or the id was not found
    * @throws if this object is not valid
-   * @returns the amount that was removed
    */
-  removeItemStack = (itemStack: StorageSystemItemStack): number => {
+  removeItemStack = async (
+    id: string,
+    amount: number,
+  ): Promise<Result<ItemStack, RemoveItemStackFromStorageError>> => {
     this.ensureValidity();
 
-    const storedItems = this.getStoredItemStacksMutable();
+    const storedItemsr = await this.getStoredItemStacks();
+    if (storedItemsr.isErr()) {
+      return err({
+        type: "unknownError",
+        message: `An unknown error occurred while getting stored item stacks: ${storedItemsr.error}`,
+      });
+    }
+    const storedItems = storedItemsr.value;
 
-    const storedIndex = storedItems.findIndex((other) =>
-      itemStack.isStackableWith(other),
-    );
-
-    if (storedIndex === -1) {
-      logWarn(
-        `couldn't remove item stack (${itemStack.typeId}): no matching StorageSystemItemStack was found`,
-      );
-      return 0;
+    const itemStack = storedItems.get(id);
+    if (!itemStack) {
+      return err({ type: "notFound" });
     }
 
-    const stored = storedItems[storedIndex];
+    const amountToRemove = Math.min(amount, itemStack.amount);
+    const removed = cloneItemStackWithAmount(itemStack, amountToRemove);
 
-    const requestAmount = Math.max(
-      Math.min(itemStack.amount, stored.amount),
-      1,
-    );
-
-    stored.amount -= requestAmount;
-    if (stored.amount <= 0) {
-      storedItems.splice(storedIndex, 1);
+    const newAmount = itemStack.amount - amountToRemove;
+    if (newAmount <= 0) {
+      storedItems.delete(id);
+    } else {
+      itemStack.amount = newAmount;
     }
 
-    // save
-    this.saveStoredItemData();
+    const saveResult = await this.saveStoredItemData();
+    if (saveResult.isErr()) {
+      return err({
+        type: "unknownError",
+        message: `An unknown error occurred while saving stored item data: ${saveResult.error.message}`,
+      });
+    }
 
-    return requestAmount;
+    this.markStoredItemsChanged();
+
+    return ok(removed);
   };
 }

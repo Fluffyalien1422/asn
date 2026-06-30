@@ -1,5 +1,5 @@
 {
-  "format_version": "1.26.0",
+  "format_version": "1.26.20",
   "minecraft:block": {
     "description": {
       "identifier": "fluffyalien_asn:storage_core",
@@ -9,7 +9,7 @@
     },
     "components": {
       "fluffyalien_asn:storage_core": {},
-      "tag:fluffyalien_asn:storage_network_connectable": {},
+      "minecraft:tags": ["fluffyalien_asn:storage_network_connectable"],
 
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {

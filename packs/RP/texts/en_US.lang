@@ -1,34 +1,33 @@
 ## pack.name is added by the simple manifest filter
 pack.description=A fix for your storage problem.
 
-item.fluffyalien_asn:storage_viewer_ui_back=Previous
-item.fluffyalien_asn:storage_viewer_ui_next=Next
-item.fluffyalien_asn:storage_viewer_ui_search=Search
-item.fluffyalien_asn:storage_viewer_ui_cancel_search=Cancel Search
-item.fluffyalien_asn:storage_viewer_ui_sort_insertion=Sorting By: Insertion
-item.fluffyalien_asn:storage_viewer_ui_sort_amount=Sorting By: Amount
-item.fluffyalien_asn:storage_viewer_ui_sort_relevancy=Sorting By: Relevancy
-item.fluffyalien_asn:storage_viewer_ui_stack_size_1=Stack Size: 1
-item.fluffyalien_asn:storage_viewer_ui_stack_size_2=Stack Size: 2
-item.fluffyalien_asn:storage_viewer_ui_stack_size_4=Stack Size: 4
-item.fluffyalien_asn:storage_viewer_ui_stack_size_8=Stack Size: 8
-item.fluffyalien_asn:storage_viewer_ui_stack_size_16=Stack Size: 16
-item.fluffyalien_asn:storage_viewer_ui_stack_size_32=Stack Size: 32
-item.fluffyalien_asn:storage_viewer_ui_stack_size_64=Stack Size: 64
+item.fluffyalien_asn:ui_back=Previous
+item.fluffyalien_asn:ui_next=Next
+item.fluffyalien_asn:ui_search=Search
+item.fluffyalien_asn:ui_search_cancel=Cancel Search
+item.fluffyalien_asn:ui_view_default=All Items View
+item.fluffyalien_asn:ui_view_group=Group View
+item.fluffyalien_asn:ui_view_crafting=Crafting View
+item.fluffyalien_asn:ui_stack_size_1=Stack Size: 1
+item.fluffyalien_asn:ui_stack_size_2=Stack Size: 2
+item.fluffyalien_asn:ui_stack_size_4=Stack Size: 4
+item.fluffyalien_asn:ui_stack_size_8=Stack Size: 8
+item.fluffyalien_asn:ui_stack_size_16=Stack Size: 16
+item.fluffyalien_asn:ui_stack_size_32=Stack Size: 32
+item.fluffyalien_asn:ui_stack_size_64=Stack Size: 64
 
-item.fluffyalien_asn:storage_disk=Storage Disk
-item.fluffyalien_asn:fluid_storage_disk=Fluid Storage Disk §c(Experimental)
-item.fluffyalien_asn:used_storage_disk=Storage Disk
-item.fluffyalien_asn:used_fluid_storage_disk=Fluid Storage Disk §c(Experimental)
+item.fluffyalien_asn:storage_disk_v3_64=High Capacity Storage Disk
+item.fluffyalien_asn:storage_disk_v3_32=Standard Storage Disk
+item.fluffyalien_asn:fluid_storage_disk=Fluid Storage Disk
+item.fluffyalien_asn:used_fluid_storage_disk=Fluid Storage Disk
 item.fluffyalien_asn:storage_disk_casing=Storage Disk Casing
 item.fluffyalien_asn:storage_disk_core=Storage Disk Core
-item.fluffyalien_asn:fluid_storage_disk_core=Fluid Storage Disk Core §c(Experimental)
+item.fluffyalien_asn:fluid_storage_disk_core=Fluid Storage Disk Core
 item.fluffyalien_asn:tutorial_book=Advanced Storage Network Tutorial Book
 item.fluffyalien_asn:wireless_interface=Wireless Storage Interface
 item.fluffyalien_asn:wireless_interface_antenna=Storage Network Wireless Antenna
-item.fluffyalien_asn:portable_storage_network_placer=Portable Storage Network
 
-tile.fluffyalien_asn:storage_drive.name=Storage Drive
+tile.fluffyalien_asn:storage_drive_v3.name=Storage Drive
 tile.fluffyalien_asn:storage_interface.name=Storage Interface
 tile.fluffyalien_asn:storage_core.name=Storage Core
 tile.fluffyalien_asn:storage_cable.name=Storage Cable
@@ -36,82 +35,68 @@ tile.fluffyalien_asn:import_bus.name=Storage Import Bus
 tile.fluffyalien_asn:export_bus.name=Storage Export Bus
 tile.fluffyalien_asn:level_emitter.name=Storage Level Emitter
 tile.fluffyalien_asn:storage_relay.name=Storage Relay
-tile.fluffyalien_asn:storage_power_bank.name=Storage Power Bank §c(Experimental)
-tile.fluffyalien_asn:portable_storage_network.name=Portable Storage Network
+tile.fluffyalien_asn:storage_power_bank.name=Storage Power Bank
 tile.fluffyalien_asn:wireless_transmitter.name=Storage Wireless Transmitter
-tile.fluffyalien_asn:fluid_interface.name=Fluid Storage Interface §c(Experimental)
-tile.fluffyalien_asn:fluid_drive.name=Fluid Storage Drive §c(Experimental)
-tile.fluffyalien_asn:fluid_import_bus.name=Fluid Storage Import Bus §c(Experimental)
-tile.fluffyalien_asn:fluid_export_bus.name=Fluid Storage Export Bus §c(Experimental)
+tile.fluffyalien_asn:fluid_interface.name=Fluid Storage Interface
+tile.fluffyalien_asn:fluid_drive.name=Fluid Storage Drive
+tile.fluffyalien_asn:fluid_import_bus.name=Fluid Storage Import Bus
+tile.fluffyalien_asn:fluid_export_bus.name=Fluid Storage Export Bus
+tile.fluffyalien_asn:autocrafter.name=Autocrafter
+tile.fluffyalien_asn:disk_upgrader.name=Disk Upgrader
 
 fluffyalien_asn.message.wirelessInterface.linked=Wireless storage interface linked.
 fluffyalien_asn.message.wirelessInterface.notLinked=This wireless storage interface is not linked to a storage network.
-fluffyalien_asn.message.wirelessInterface.forceLoadNetworksDisabled=The 'forceLoadNetworks' rule must be enabled to use the wireless storage interface. Enable it with '/scriptevent fluffyalien_asn:rule forceLoadNetworks true'
 fluffyalien_asn.message.wirelessInterface.linkedNetworkNotFound=The linked network could not be accessed.
 fluffyalien_asn.message.wirelessInterface.noTransmittersInRange=There are no wireless transmitters in range.
 fluffyalien_asn.message.wirelessInterface.insufficientEnergy=The wireless storage interface has insufficient energy.
 
-fluffyalien_asn.message.fluidStorage.fluidStorageDisabled=The 'fluidStorage' rule must be enabled to place this block.
-
-fluffyalien_asn.message.scriptEvent.common.invalidScriptEvent=This script event does not exist.
+fluffyalien_asn.message.storageInterface.alreadyOpen=Another player is using this Storage Interface.
 
 fluffyalien_asn.message.scriptEvent.addonRule.invalidRule=This rule does not exist.
 fluffyalien_asn.message.scriptEvent.addonRule.expectedBoolean=Expected "true" or "false" after rule ID.
 fluffyalien_asn.message.scriptEvent.addonRule.expectedNumber=Expected a number after rule ID.
 fluffyalien_asn.message.scriptEvent.addonRule.expectedInt=Expected an integer after rule ID.
-fluffyalien_asn.message.scriptEvent.addonRule.requiresBec=This rule requires the Bedrock Energistics Core build of ASN. The value will be reset to the default.
 fluffyalien_asn.message.scriptEvent.addonRule.requiresPrerequisiteRule=This rule requires the '%s' rule to be set to '%s' but it is currently set to '%s'. The value will be reset to the default.
 fluffyalien_asn.message.scriptEvent.addonRule.deprecatedWarning=WARNING: This rule is deprecated. It may be removed in a future version.
 fluffyalien_asn.message.scriptEvent.addonRule.experimentalWarning=WARNING: This rule is experimental. It may not function properly and may be changed or removed in a future version.
-fluffyalien_asn.message.scriptEvent.addonRule.scriptEventUsageWarning=WARNING: The scriptevent usage of this command is deprecated and may be removed in a future version. Use '/asnrule' or '/fluffyalien_asn:asnrule' instead.
 
-fluffyalien_asn.message.scriptEvent.addonRule.help.forceLoadNetworks=When a storage network extends into unloaded chunks, force those chunks to load so the network can fully load. MAY CAUSE LAG! This will not work if all ticking area slots are used.
-fluffyalien_asn.message.scriptEvent.addonRule.help.showRequestItemDialog=Show the request item dialog when taking an item out of the storage network instead of immediately removing a stack.
 fluffyalien_asn.message.scriptEvent.addonRule.help.wirelessInterfaceRange=The max range a wireless transmitter must be from a player for them to use a wireless interface. Set this to -1 to disable range and dimension checking.
-fluffyalien_asn.message.scriptEvent.addonRule.help.useEnergy=Make storage networks require energy to operate. Requires Bedrock Energistics Core.
-fluffyalien_asn.message.scriptEvent.addonRule.help.driveEnergyConsumption=The amount of energy each storage drive consumes (every 10t). Ignored if 'useEnergy' is false.
+fluffyalien_asn.message.scriptEvent.addonRule.help.useEnergy=Make storage networks require energy to operate.
+fluffyalien_asn.message.scriptEvent.addonRule.help.deviceEnergyConsumption=The amount of energy each device in the network consumes (every 10t). Ignored if 'useEnergy' is false.
 fluffyalien_asn.message.scriptEvent.addonRule.help.wirelessInterfaceEnergyConsumption=The amount of energy a wireless interface consumes on use. Ignored if 'useEnergy' is false.
-fluffyalien_asn.message.scriptEvent.addonRule.help.fluidStorage=Enable the fluid storage experimental feature. Requires Bedrock Energistics Core.
+fluffyalien_asn.message.scriptEvent.addonRule.help.relayMaxGlobalNamespaces=The maximum number of relay namespaces that can exist across the whole world. Note that there is a hard 32,000 char data cap that applies no matter how the maximum limits are configured.
+fluffyalien_asn.message.scriptEvent.addonRule.help.relayMaxPlayerNamespaces=The maximum number of relay namespaces a single player can own. Note that there is a hard 32,000 char data cap that applies no matter how the maximum limits are configured.
+fluffyalien_asn.message.scriptEvent.addonRule.help.relayMaxNamespaceNameChars=The maximum number of characters in a relay namespace's display name. Note that there is a hard 32,000 char data cap that applies no matter how the maximum limits are configured.
+fluffyalien_asn.message.scriptEvent.addonRule.help.relayMaxNamespacePlayerListCount=The maximum number of players in a relay namespace's allowlist or denylist. Note that there is a hard 32,000 char data cap that applies no matter how the maximum limits are configured.
 
 fluffyalien_asn.actionbar.storageInterface.openToViewQueryResults=Open the storage interface again to view search results
 
 fluffyalien_asn.ui.common.error=Error
 fluffyalien_asn.ui.common.close=Close
 
-fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores=Cannot establish a storage network: multiple storage cores found.
-fluffyalien_asn.ui.cableNetwork.error.noStorageCores=Cannot establish a storage network: no storage cores found.
+fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores=Cannot establish a storage network: Multiple storage cores found.
+fluffyalien_asn.ui.cableNetwork.error.noStorageCores=Cannot establish a storage network: No storage cores found.
 
-fluffyalien_asn.ui.storageDrive.title=Storage Drive
-fluffyalien_asn.ui.storageDrive.body.storageUsed=Storage Used (Drive): %s/3000 bytes
-fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk=Cannot add a disk to storage drive with items in it.
-
-fluffyalien_asn.ui.fluidDrive.body.storageUsed=Storage Used (%s) (Drive): %s mL (%s%%)
-fluffyalien_asn.ui.fluidDrive.body.storageUsedTotal=Storage Used (Total) (Drive): %s/6400 mL
+fluffyalien_asn.ui.fluidDrive.body.storageUsed=Stored %s (drive): %s mL (%s%%)
+fluffyalien_asn.ui.fluidDrive.body.storageUsedTotal=Total stored fluids (drive): %s/6400 mL
 
 fluffyalien_asn.ui.storageInterface.title=Storage Interface
-fluffyalien_asn.ui.storageInterface.requestItem.itemDurability=Durability: %s/%s
-fluffyalien_asn.ui.storageInterface.requestItem.itemEnchantments=Enchantments:
-fluffyalien_asn.ui.storageInterface.requestItem.itemLore=Lore:
-fluffyalien_asn.ui.storageInterface.requestItem.itemAmount=Request Amount:
-fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber=Cannot take out this amount. The value must be a valid number, greater than zero, and less than or equal to one thousand.
-fluffyalien_asn.ui.storageInterface.requestItem.error.notEnough=There is not enough of this item stored to take out this amount.
 fluffyalien_asn.ui.storageInterface.search.label=ID Search
-fluffyalien_asn.ui.storageInterface.error.insufficientStorage=Cannot add this item due to insufficient storage. Try connecting more storage drives.
+fluffyalien_asn.ui.storageInterface.craft.button.recipe=Craft %s with
+fluffyalien_asn.ui.storageInterface.craft.button.recipe.withTag=any %s
+fluffyalien_asn.ui.storageInterface.error.insufficientStorage=Cannot add this item due to insufficient storage. Try adding more storage disks.
 fluffyalien_asn.ui.storageInterface.error.insufficientEnergy=The storage network has insufficient energy.
-fluffyalien_asn.ui.storageInterface.error.bannedItem=%s is a banned item.
+fluffyalien_asn.ui.storageInterface.error.unknownError=An unknown error occurred: %s
 
 fluffyalien_asn.ui.storageCore.title=Storage Core
-fluffyalien_asn.ui.storageCore.body.storageUsed=Storage Used (Items) (Network): %s/%s bytes
-fluffyalien_asn.ui.storageCore.body.storedEnergy=Stored Energy: %s/%s
-fluffyalien_asn.ui.storageCore.body.energyConsumption=Energy Consumption: %s/t
-fluffyalien_asn.ui.storageCore.body.storageUsedFluid=Storage Used (%s) (Network): %s mL (%s%%)
-fluffyalien_asn.ui.storageCore.body.storageUsedFluidTotal=Storage Used (Total Fluids) (Network): %s/%s mL
-
-fluffyalien_asn.ui.portableStorageNetwork.body.storageUsed=Storage Used: %s/3000 bytes
-fluffyalien_asn.ui.portableStorageNetwork.body.storedEnergy=Stored Energy: %s/6400
+fluffyalien_asn.ui.storageCore.body.storageUsed=Stored items: %s/%s stacks
+fluffyalien_asn.ui.storageCore.body.storedEnergy=Stored energy: %s/%s
+fluffyalien_asn.ui.storageCore.body.energyConsumption=Energy demand: %s/t
+fluffyalien_asn.ui.storageCore.body.storageUsedFluid=Stored %s: %s mL (%s%%)
+fluffyalien_asn.ui.storageCore.body.storageUsedFluidTotal=Total stored fluids: %s/%s mL
 
 fluffyalien_asn.ui.exportBus.title=Export Bus
-fluffyalien_asn.ui.exportBus.exportItem=Exporting %s
+fluffyalien_asn.ui.exportBus.exportItem=Exporting %s.
 fluffyalien_asn.ui.exportBus.noExportItem=Not exporting anything. Interact while holding an item to export that item.
 fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.label=Enchantments Filter
 fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.ignore=Ignore
@@ -122,6 +107,12 @@ fluffyalien_asn.ui.exportBus.exportItemMaxDamage=Max Damage Filter (Inclusive)
 fluffyalien_asn.ui.exportBus.error.invalidMinDamage=Invalid min damage filter.
 fluffyalien_asn.ui.exportBus.error.invalidMaxDamage=Invalid max damage filter.
 
+fluffyalien_asn.ui.autocrafter.craftingItem=Crafting %s.
+fluffyalien_asn.ui.autocrafter.noRecipe=Not crafting anything. Interact while holding an item to set the recipe.
+fluffyalien_asn.ui.autocrafter.noRecipes=%s cannot be crafted.
+fluffyalien_asn.ui.autocrafter.chooseRecipe=Choose a recipe for %s.
+fluffyalien_asn.ui.autocrafter.changeRecipe=Change Recipe
+
 fluffyalien_asn.ui.levelEmitter.title=Level Emitter
 fluffyalien_asn.ui.levelEmitter.noItem=Not testing anything. Interact while holding an item to test that item.
 fluffyalien_asn.ui.levelEmitter.testItem=Testing %s
@@ -129,119 +120,154 @@ fluffyalien_asn.ui.levelEmitter.operator=Operator
 fluffyalien_asn.ui.levelEmitter.amount=Amount
 fluffyalien_asn.ui.levelEmitter.error.invalidAmount=Invalid value for amount field. Amount must be a valid number and greater than zero.
 
-fluffyalien_asn.ui.relay.title=Storage Relay
-fluffyalien_asn.ui.relay.name=Relay Name
-fluffyalien_asn.ui.relay.error.invalidName=Relay name must be at least one character.
+fluffyalien_asn.ui.relay.currentNamespace=Current namespace: %s
+fluffyalien_asn.ui.relay.noNamespace=None
+fluffyalien_asn.ui.relay.button.yourNamespaces=Your namespaces
+fluffyalien_asn.ui.relay.namespaceList.title=Select Namespace
+fluffyalien_asn.ui.relay.namespaceList.body=Select a namespace.
+fluffyalien_asn.ui.relay.namespaceList.button.new=New namespace
+fluffyalien_asn.ui.relay.config.newTitle=New Namespace
+fluffyalien_asn.ui.relay.config.optionsTitle=Configure Namespace
+fluffyalien_asn.ui.relay.config.label.name=Display name
+fluffyalien_asn.ui.relay.config.label.open=Open (allow all players except the denylist)
+fluffyalien_asn.ui.relay.config.label.allowlist=Allowlist
+fluffyalien_asn.ui.relay.config.label.denylist=Denylist
+fluffyalien_asn.ui.relay.config.tip.playerList=Separate player names with commas or new lines.
+fluffyalien_asn.ui.relay.actions.body=Select an action for this namespace.
+fluffyalien_asn.ui.relay.actions.button.select=Select
+fluffyalien_asn.ui.relay.actions.button.configure=Configure
+fluffyalien_asn.ui.relay.actions.button.delete=Delete
+fluffyalien_asn.ui.relay.deleteConfirm.title=Delete Namespace
+fluffyalien_asn.ui.relay.deleteConfirm.body=Delete the namespace "%s"? All relays using it will be disconnected.
+fluffyalien_asn.ui.relay.deleteConfirm.button.confirm=Delete
+fluffyalien_asn.ui.relay.deleteConfirm.button.cancel=Cancel
+fluffyalien_asn.ui.relay.error.notOwner=You do not own this relay.
+fluffyalien_asn.ui.relay.error.invalidNamespaceName=Namespace display name must be between 1 and %s characters.
+fluffyalien_asn.ui.relay.error.tooManyPlayerListEntries=The allowlist and denylist can each have at most %s players.
+fluffyalien_asn.ui.relay.error.ns.globalLimitReached=The maximum number of namespaces has been reached.
+fluffyalien_asn.ui.relay.error.ns.playerLimitReached=You have reached your maximum number of namespaces.
+fluffyalien_asn.ui.relay.error.ns.storageFull=Namespace storage is full.
+fluffyalien_asn.ui.relay.error.ns.notFound=That namespace no longer exists.
 
 fluffyalien_asn.ui.fluidExportBus.storageType=Storage Type
 
 fluffyalien_asn.ui.tutorialBook.title=Tutorial Book
 
+## fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.icon=textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon
 fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.title=Storage Network
 fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet0=A network of devices that can hold an infinite amount of items.
-fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet1=Comprises one storage core and any number of storage drives and storage interfaces. Can also contain many other optional devices.
+fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet1=Comprises one storage core and any number of storage drives. Can also contain many other optional devices.
 fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet2=Devices in the network must be placed next to each other or be connected with storage cables.
-fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet3=To get started, you will need one storage core, one storage drive, and one storage interface or wireless storage interface. Read their respective tutorial entries for more information.
+fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet3=To get started, you will need one storage core, one storage drive, one storage disk, and one storage interface or wireless storage interface. Read their respective tutorial entries for more information.
 
+## fluffyalien_asn.ui.tutorialBook.entry.storageCore.icon=textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon
 fluffyalien_asn.ui.tutorialBook.entry.storageCore.title=Storage Core
 fluffyalien_asn.ui.tutorialBook.entry.storageCore.bullet0=The core of a storage network.
 fluffyalien_asn.ui.tutorialBook.entry.storageCore.bullet1=Required for a storage network to function.
 fluffyalien_asn.ui.tutorialBook.entry.storageCore.bullet2=Only one of these blocks exists in a network.
 
+## fluffyalien_asn.ui.tutorialBook.entry.storageCable.icon=textures/fluffyalien/asn/ui/tutorial_book/storage_cable_icon
 fluffyalien_asn.ui.tutorialBook.entry.storageCable.title=Storage Cable
 fluffyalien_asn.ui.tutorialBook.entry.storageCable.bullet0=Connects devices in a storage network.
 
+## fluffyalien_asn.ui.tutorialBook.entry.storageDrive.icon=textures/fluffyalien/asn/ui/tutorial_book/storage_drive_icon
 fluffyalien_asn.ui.tutorialBook.entry.storageDrive.title=Storage Drive
-fluffyalien_asn.ui.tutorialBook.entry.storageDrive.bullet0=Provides the network with 3,000u of storage space.
-fluffyalien_asn.ui.tutorialBook.entry.storageDrive.bullet1=Drops a storage disk when destroyed that contains the items the drive had before it was broken.
+fluffyalien_asn.ui.tutorialBook.entry.storageDrive.bullet0=Can store up to eight disks, which are what store items in a network.
 
+## fluffyalien_asn.ui.tutorialBook.entry.storageInterface.icon=textures/fluffyalien/asn/ui/tutorial_book/storage_interface_icon
 fluffyalien_asn.ui.tutorialBook.entry.storageInterface.title=Storage Interface
 fluffyalien_asn.ui.tutorialBook.entry.storageInterface.bullet0=Allows players to add, remove, or view items in a storage network.
 
+## fluffyalien_asn.ui.tutorialBook.entry.importBus.icon=textures/fluffyalien/asn/ui/tutorial_book/import_bus_icon
 fluffyalien_asn.ui.tutorialBook.entry.importBus.title=Storage Import Bus
 fluffyalien_asn.ui.tutorialBook.entry.importBus.bullet0=Imports items from the container it's facing into the storage network.
 fluffyalien_asn.ui.tutorialBook.entry.importBus.bullet1=Stops importing when receiving a redstone current.
 
+## fluffyalien_asn.ui.tutorialBook.entry.exportBus.icon=textures/fluffyalien/asn/ui/tutorial_book/export_bus_icon
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.title=Storage Export Bus
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet0=Exports items from the storage network into the container it's facing.
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet1=More filter options are available when exporting an item that is enchantable or breakable.
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet2=Stops exporting when receiving a redstone current.
 fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet3=Interact with an empty hand to configure.
 
+## fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.icon=textures/fluffyalien/asn/ui/tutorial_book/level_emitter_icon
 fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.title=Storage Level Emitter
 fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet0=Tests that the total amount of a filtered set of item stacks in the storage network matches a query.
 fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet1=Filter options are available when exporting an item that is enchantable or breakable.
 fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet2=Activates the repeater in front of it when the test is true.
 fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet3=Interact with an empty hand to configure.
 
+## fluffyalien_asn.ui.tutorialBook.entry.relay.icon=textures/fluffyalien/asn/ui/tutorial_book/storage_relay_icon
 fluffyalien_asn.ui.tutorialBook.entry.relay.title=Storage Relay
 fluffyalien_asn.ui.tutorialBook.entry.relay.bullet0=Connects storage network devices over long distances.
-fluffyalien_asn.ui.tutorialBook.entry.relay.bullet1=Interact to change the relay name.
-fluffyalien_asn.ui.tutorialBook.entry.relay.bullet2=Connects to all other relays with the same name.
+fluffyalien_asn.ui.tutorialBook.entry.relay.bullet1=Interact to assign the relay to a namespace.
+fluffyalien_asn.ui.tutorialBook.entry.relay.bullet2=Connects to all other relays in the same namespace.
 fluffyalien_asn.ui.tutorialBook.entry.relay.bullet3=Has infinite range and works interdimensionally.
 
+## fluffyalien_asn.ui.tutorialBook.entry.powerBank.icon=textures/fluffyalien/asn/ui/tutorial_book/energy_icon
 fluffyalien_asn.ui.tutorialBook.entry.powerBank.title=Storage Power Bank
 fluffyalien_asn.ui.tutorialBook.entry.powerBank.bullet0=Stores energy for the network.
-fluffyalien_asn.ui.tutorialBook.entry.powerBank.bullet1=Only necessary if energy usage is enabled. See Energy (Experimental) for more information.
 
+## fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.icon=textures/fluffyalien/asn/ui/tutorial_book/wireless_transmitter_icon
 fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.title=Storage Wireless Transmitter
 fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.bullet0=Allows a wireless interface to connect to a network.
 fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.bullet1=The default range is 500 blocks, this can be changed with the 'wirelessInterfaceRange' rule. See Add-On Configuration for more information.
 
+## fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.icon=textures/fluffyalien/asn/items/wireless_interface
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.title=Wireless Storage Interface
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet0=Allows players to add, remove, or view items in a storage network wirelessly.
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet1=Interact with a storage core while holding this item to link it to that network.
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet2=There must be a wireless transmitter connected to the linked network in range (500 blocks by default) to use the wireless interface. The range can be changed using the 'wirelessInterfaceRange' rule. See Add-On Configuration for more information.
 
-fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.title=Portable Storage Network
-fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet0=An entirely self-contained storage network.
-fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet1=Interact to open the interface. Sneak and interact to open the storage core.
-fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet2=Sneak and interact while holding a disk with data to deposit the items into the network.
-fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet3=Has the same capacity as one storage drive.
-fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet4=If energy usage is enabled, consumes energy when adding or removing items. Stored energy is saved when destroyed.
+## fluffyalien_asn.ui.tutorialBook.entry.storageDisks.icon=textures/fluffyalien/asn/items/storage_disk
+fluffyalien_asn.ui.tutorialBook.entry.storageDisks.title=Storage Disks
+fluffyalien_asn.ui.tutorialBook.entry.storageDisks.bullet0=A standard storage disk stores up to 32 item stacks. A high capacity storage disk stores up to 64.
+fluffyalien_asn.ui.tutorialBook.entry.storageDisks.bullet1=Put storage disks in a storage drive.
 
-fluffyalien_asn.ui.tutorialBook.entry.storageDisk.title=Storage Disk
-fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet0=A crafting item.
-fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet1=Can contain data.
-fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet2=Interact with an empty storage drive while holding a disk with data to deposit the items inside of the disk into the drive.
-
+## fluffyalien_asn.ui.tutorialBook.entry.addonRules.icon=textures/fluffyalien/asn/ui/tutorial_book/storage_core_icon
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.title=Add-On Configuration
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet0=Use the '/asnrule <rule> [value]' command to change a rule.
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet1=Use the '/asnrule help' command for a list of rules.
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet2=Omit '[value]' from the command to get the current value of the rule.
 fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet3=Note that numbers must be surrounded in quotation marks when passed to 'value' (eg. "123" instead of 123).
 
-fluffyalien_asn.ui.tutorialBook.entry.energy.title=Energy (Experimental)
-fluffyalien_asn.ui.tutorialBook.entry.energy.bullet0=Energy usage can be enabled using the 'useEnergy' rule. See Add-On Configuration for more information.
+## fluffyalien_asn.ui.tutorialBook.entry.energy.icon=textures/fluffyalien/asn/ui/tutorial_book/energy_icon
+fluffyalien_asn.ui.tutorialBook.entry.energy.title=Energy
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet0=Energy usage is enabled by default, but can be disabled with the 'useEnergy' rule. See Add-On Configuration for more information.
 fluffyalien_asn.ui.tutorialBook.entry.energy.bullet1=Energy is stored in Storage Power Bank blocks.
-fluffyalien_asn.ui.tutorialBook.entry.energy.bullet2=Network energy consumption is determined by the amount of storage drives. Drive energy consumption can be changed using the 'driveEnergyConsumption' rule. See Add-On Configuration for more information.
-fluffyalien_asn.ui.tutorialBook.entry.energy.bullet3=Uses Bedrock Energistics Core energy. Requires the Bedrock Energistics Core add-on to be in the world.
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet2=Network energy consumption is determined by the amount of devices connected to the network. Device energy consumption can be changed using the 'deviceEnergyConsumption' rule. See Add-On Configuration for more information.
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet3=Uses Bedrock Energistics Core energy.
 fluffyalien_asn.ui.tutorialBook.entry.energy.bullet4=This add-on does not add any power generators, you must include another Bedrock Energistics Core powered add-on to generate energy for your system.
 
-fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.title=Fluid Storage (Experimental)
-fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet0=Fluid storage must be enabled using the 'fluidStorage' rule. See Add-On Configuration for more information.
-fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet1=Fluids are stored in Fluid Storage Drives and can be viewed through the Fluid Storage Interface.
-fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet2=Uses Bedrock Energistics Core fluids. Requires the Bedrock Energistics Core add-on to be in the world.
-fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet3=This add-on does not add any way to generate fluids, you must include another Bedrock Energistics Core powered add-on to generate fluids for your system.
+## fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.icon=textures/fluffyalien/asn/ui/tutorial_book/fluid_drive_icon
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.title=Fluid Storage
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet0=Fluids are stored in Fluid Storage Drives and can be viewed through the Fluid Storage Interface.
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet1=Uses Bedrock Energistics Core fluids.
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet2=This add-on does not add any way to generate fluids, you must include another Bedrock Energistics Core powered add-on to generate fluids for your system.
 
-fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.title=Fluid Storage Drive (Experimental)
+## fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.icon=textures/fluffyalien/asn/ui/tutorial_book/fluid_drive_icon
+fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.title=Fluid Storage Drive
 fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.bullet0=Provides the network with 6,400 mL of fluid storage.
 fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.bullet1=Drops a Fluid Storage Disk when destroyed that contains the fluids the drive had before it was broken.
 
-fluffyalien_asn.ui.tutorialBook.entry.fluidInterface.title=Fluid Storage Interface (Experimental)
+## fluffyalien_asn.ui.tutorialBook.entry.fluidInterface.icon=textures/fluffyalien/asn/ui/tutorial_book/fluid_interface_icon
+fluffyalien_asn.ui.tutorialBook.entry.fluidInterface.title=Fluid Storage Interface
 fluffyalien_asn.ui.tutorialBook.entry.fluidInterface.bullet0=Allows players to view fluids in a storage network.
 
-fluffyalien_asn.ui.tutorialBook.entry.fluidImportBus.title=Fluid Storage Import Bus (Experimental)
+## fluffyalien_asn.ui.tutorialBook.entry.fluidImportBus.icon=textures/fluffyalien/asn/ui/tutorial_book/fluid_import_bus_icon
+fluffyalien_asn.ui.tutorialBook.entry.fluidImportBus.title=Fluid Storage Import Bus
 fluffyalien_asn.ui.tutorialBook.entry.fluidImportBus.bullet0=Imports fluids from connected machines into the storage network.
 fluffyalien_asn.ui.tutorialBook.entry.fluidImportBus.bullet1=Stops importing when receiving a redstone current.
 
-fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.title=Fluid Storage Export Bus (Experimental)
+## fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.icon=textures/fluffyalien/asn/ui/tutorial_book/fluid_export_bus_icon
+fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.title=Fluid Storage Export Bus
 fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.bullet0=Exports fluids from the storage network into connected machines.
 fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.bullet1=Stops exporting when receiving a redstone current.
 fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.bullet2=Exports up to 1u/t.
 fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.bullet3=Interact with an empty hand to configure.
 
-fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.title=Fluid Storage Disk (Experimental)
+## fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.icon=textures/fluffyalien/asn/items/fluid_storage_disk
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.title=Fluid Storage Disk
 fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.bullet0=A crafting item.
 fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.bullet1=Can contain data.
 fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.bullet2=Interact with an empty fluid storage drive while holding a disk with data to deposit the fluids inside of the disk into the drive.

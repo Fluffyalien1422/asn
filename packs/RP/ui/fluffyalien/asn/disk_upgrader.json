@@ -1,0 +1,164 @@
+{
+  "namespace": "fluffyalien_asn:disk_upgrader",
+  "root": {
+    "type": "panel",
+    "controls": [
+      {
+        "container_gamepad_helpers@common.container_gamepad_helpers": {}
+      },
+      {
+        "flying_item_renderer@common.flying_item_renderer": {
+          "layer": 14
+        }
+      },
+      {
+        "selected_item_details_factory@common.selected_item_details_factory": {}
+      },
+      {
+        "item_lock_notification_factory@common.item_lock_notification_factory": {}
+      },
+      {
+        "root_panel@common.root_panel": {
+          "layer": 1,
+          "size": [180, 180],
+          "controls": [
+            {
+              "common_panel@common.common_panel": {}
+            },
+            {
+              "chest_panel": {
+                "type": "panel",
+                "layer": 5,
+                "offset": [0, -0.5],
+                "controls": [
+                  {
+                    "small_chest_panel_top_half@fluffyalien_asn:disk_upgrader.top_half": {}
+                  },
+                  {
+                    "inventory_panel_bottom_half_with_label@common.inventory_panel_bottom_half_with_label": {}
+                  },
+                  {
+                    "hotbar_grid@common.hotbar_grid_template": {}
+                  },
+                  {
+                    "inventory_take_progress_icon_button@common.inventory_take_progress_icon_button": {}
+                  }
+                ]
+              }
+            },
+            {
+              "inventory_selected_icon_button@common.inventory_selected_icon_button": {}
+            },
+            {
+              "gamepad_cursor@common.gamepad_cursor_button": {}
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "blaze_powder_placeholder@fluffyalien_asn:common.slot_placeholder": {
+    "texture": "textures/fluffyalien/asn/ui/common/blaze_powder_placeholder"
+  },
+  "quartz_placeholder@fluffyalien_asn:common.slot_placeholder": {
+    "texture": "textures/fluffyalien/asn/ui/common/quartz_placeholder"
+  },
+  "disk_placeholder@fluffyalien_asn:common.slot_placeholder": {
+    "texture": "textures/fluffyalien/asn/ui/common/disk_placeholder"
+  },
+  "top_half": {
+    "type": "panel",
+    "size": ["100%", "50% - 12px"],
+    "offset": [0, 7],
+    "anchor_to": "top_left",
+    "anchor_from": "top_left",
+    "controls": [
+      {
+        "title@fluffyalien_energisticscore:common.container_title": {
+          "text": "Disk Upgrader"
+        }
+      },
+      {
+        "energy_bar@fluffyalien_energisticscore:common.machine_storage_bar": {
+          "offset": [8, 12]
+        }
+      },
+      {
+        "grid_slot_0@fluffyalien_energisticscore:common.container_item_slot": {
+          "$index": 4,
+          "offset": ["50%-53px", "50%-22.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.blaze_powder_placeholder"
+        }
+      },
+      {
+        "grid_slot_1@fluffyalien_energisticscore:common.container_item_slot": {
+          "$index": 5,
+          "offset": ["50%-35px", "50%-22.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.quartz_placeholder"
+        }
+      },
+      {
+        "grid_slot_2@fluffyalien_energisticscore:common.container_item_slot": {
+          "$index": 6,
+          "offset": ["50%-17px", "50%-22.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.blaze_powder_placeholder"
+        }
+      },
+      {
+        "grid_slot_3@fluffyalien_energisticscore:common.container_item_slot": {
+          "$index": 7,
+          "offset": ["50%-53px", "50%-4.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.quartz_placeholder"
+        }
+      },
+      {
+        "grid_slot_4@fluffyalien_energisticscore:common.container_item_slot": {
+          "$index": 8,
+          "offset": ["50%-35px", "50%-4.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.disk_placeholder"
+        }
+      },
+      {
+        "grid_slot_5@fluffyalien_energisticscore:common.container_item_slot": {
+          "$index": 9,
+          "offset": ["50%-17px", "50%-4.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.quartz_placeholder"
+        }
+      },
+      {
+        "grid_slot_6@fluffyalien_energisticscore:common.container_item_slot": {
+          "$index": 10,
+          "offset": ["50%-53px", "50%+13.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.blaze_powder_placeholder"
+        }
+      },
+      {
+        "grid_slot_7@fluffyalien_energisticscore:common.container_item_slot": {
+          "$index": 11,
+          "offset": ["50%-35px", "50%+13.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.quartz_placeholder"
+        }
+      },
+      {
+        "grid_slot_8@fluffyalien_energisticscore:common.container_item_slot": {
+          "$index": 12,
+          "offset": ["50%-17px", "50%+13.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.blaze_powder_placeholder"
+        }
+      },
+      {
+        "arrow@fluffyalien_energisticscore:common.container_slot_icon": {
+          "$index": 13,
+          "offset": ["50%+18px", "50%+4.5px"]
+        }
+      },
+      {
+        "output_slot@fluffyalien_energisticscore:common.container_item_slot": {
+          "$index": 14,
+          "offset": ["50%+35px", "50%-4.5px"],
+          "$cell_overlay_ref": "fluffyalien_asn:disk_upgrader.disk_placeholder"
+        }
+      }
+    ]
+  }
+}
