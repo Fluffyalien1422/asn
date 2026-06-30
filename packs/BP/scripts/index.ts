@@ -11,6 +11,3 @@ import "./wireless_interface";
 //TODO: note that wireless interface needs to be charged in tutorial book
 //TODO: improve all tutorial book entries and update stale info
 //TODO: update disk textures
-
-//TODO: show current namespace in relay ui
-//TODO: make closing relay form go back to the previous menu
