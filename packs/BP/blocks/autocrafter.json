@@ -19,8 +19,12 @@
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {
         "*": {
-          "texture": "missing"
-        }
+          "texture": "fluffyalien_asn:autocrafter_side"
+        },
+        "up": {
+          "texture": "fluffyalien_asn:autocrafter_top"
+        },
+        "down": "up"
       },
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {

@@ -5,6 +5,12 @@
       "identifier": "fluffyalien_asn:disk_upgrader",
       "menu_category": {
         "category": "items"
+      },
+      "traits": {
+        "minecraft:placement_direction": {
+          "enabled_states": ["minecraft:cardinal_direction"],
+          "y_rotation_offset": 180
+        }
       }
     },
     "components": {
@@ -19,8 +25,15 @@
       "minecraft:geometry": "minecraft:geometry.full_block",
       "minecraft:material_instances": {
         "*": {
-          "texture": "missing"
-        }
+          "texture": "fluffyalien_asn:machine_casing_side"
+        },
+        "north": {
+          "texture": "fluffyalien_asn:disk_upgrader_front"
+        },
+        "up": {
+          "texture": "fluffyalien_asn:disk_upgrader_top"
+        },
+        "down": "up"
       },
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {
@@ -32,6 +45,32 @@
       "minecraft:tick": {
         "interval_range": [10, 10]
       }
-    }
+    },
+    "permutations": [
+      {
+        "condition": "q.block_state('minecraft:cardinal_direction') == 'south'",
+        "components": {
+          "minecraft:transformation": {
+            "rotation": [0, 180, 0]
+          }
+        }
+      },
+      {
+        "condition": "q.block_state('minecraft:cardinal_direction') == 'west'",
+        "components": {
+          "minecraft:transformation": {
+            "rotation": [0, 90, 0]
+          }
+        }
+      },
+      {
+        "condition": "q.block_state('minecraft:cardinal_direction') == 'east'",
+        "components": {
+          "minecraft:transformation": {
+            "rotation": [0, -90, 0]
+          }
+        }
+      }
+    ]
   }
 }

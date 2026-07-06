@@ -53,6 +53,18 @@
     },
     "fluffyalien_asn:fluid_import_bus": {
       "textures": "textures/fluffyalien/asn/blocks/fluid_import_bus"
+    },
+    "fluffyalien_asn:autocrafter_side": {
+      "textures": "textures/fluffyalien/asn/blocks/autocrafter_side"
+    },
+    "fluffyalien_asn:autocrafter_top": {
+      "textures": "textures/fluffyalien/asn/blocks/autocrafter_top"
+    },
+    "fluffyalien_asn:disk_upgrader_front": {
+      "textures": "textures/fluffyalien/asn/blocks/disk_upgrader_front"
+    },
+    "fluffyalien_asn:disk_upgrader_top": {
+      "textures": "textures/fluffyalien/asn/blocks/disk_upgrader_top"
     }
   }
 }

@@ -8,7 +8,7 @@
       }
     },
     "components": {
-      "minecraft:icon": "fluffyalien_asn:storage_disk",
+      "minecraft:icon": "fluffyalien_asn:storage_disk_high_capacity",
       "minecraft:max_stack_size": 1
     }
   }

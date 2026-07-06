@@ -1,7 +1,10 @@
 {
   "texture_data": {
-    "fluffyalien_asn:storage_disk": {
-      "textures": "textures/fluffyalien/asn/items/storage_disk"
+    "fluffyalien_asn:storage_disk_standard": {
+      "textures": "textures/fluffyalien/asn/items/storage_disk_standard"
+    },
+    "fluffyalien_asn:storage_disk_high_capacity": {
+      "textures": "textures/fluffyalien/asn/items/storage_disk_high_capacity"
     },
     "fluffyalien_asn:storage_disk_casing": {
       "textures": "textures/fluffyalien/asn/items/storage_disk_casing"

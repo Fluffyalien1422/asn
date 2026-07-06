@@ -35,11 +35,11 @@
 - The **Storage Interface** and **Wireless Storage Interface** UIs have been redesigned.
 - Various improvements to other UIs.
 
-## Changes and Improvements
-
-**Visuals**
+**Brand New Look**
 
 - Remade all textures.
+
+## Changes and Improvements
 
 **Miscellaneous**
 
