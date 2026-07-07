@@ -1,0 +1,248 @@
+pack.name=Advanced Storage Network (Autonome)
+## pack.name is added by the simple manifest filter
+pack.description=Une solution à ton problème de stockage.
+
+item.fluffyalien_asn:storage_viewer_ui_back=Précédent
+item.fluffyalien_asn:storage_viewer_ui_next=Suivant
+item.fluffyalien_asn:storage_viewer_ui_search=Rechercher
+item.fluffyalien_asn:storage_viewer_ui_cancel_search=Annuler la recherche
+item.fluffyalien_asn:storage_viewer_ui_sort_insertion=Tri : Insertion
+item.fluffyalien_asn:storage_viewer_ui_sort_amount=Tri : Quantité
+item.fluffyalien_asn:storage_viewer_ui_sort_relevancy=Tri : Pertinence
+item.fluffyalien_asn:storage_viewer_ui_stack_size_1=Taille de pile : 1
+item.fluffyalien_asn:storage_viewer_ui_stack_size_2=Taille de pile : 2
+item.fluffyalien_asn:storage_viewer_ui_stack_size_4=Taille de pile : 4
+item.fluffyalien_asn:storage_viewer_ui_stack_size_8=Taille de pile : 8
+item.fluffyalien_asn:storage_viewer_ui_stack_size_16=Taille de pile : 16
+item.fluffyalien_asn:storage_viewer_ui_stack_size_32=Taille de pile : 32
+item.fluffyalien_asn:storage_viewer_ui_stack_size_64=Taille de pile : 64
+
+item.fluffyalien_asn:storage_disk=Disque de stockage
+item.fluffyalien_asn:fluid_storage_disk=Disque de stockage de fluide §c(Expérimental)
+item.fluffyalien_asn:used_storage_disk=Disque de stockage
+item.fluffyalien_asn:used_fluid_storage_disk=Disque de stockage de fluide §c(Expérimental)
+item.fluffyalien_asn:storage_disk_casing=Boîtier de disque de stockage
+item.fluffyalien_asn:storage_disk_core=Noyau de disque de stockage
+item.fluffyalien_asn:fluid_storage_disk_core=Noyau de disque de stockage de fluide §c(Expérimental)
+item.fluffyalien_asn:tutorial_book=Manuel de l'Advanced Storage Network
+item.fluffyalien_asn:wireless_interface=Interface de stockage sans fil
+item.fluffyalien_asn:wireless_interface_antenna=Antenne sans fil du réseau de stockage
+item.fluffyalien_asn:portable_storage_network_placer=Réseau de stockage portable
+
+tile.fluffyalien_asn:storage_drive.name=Lecteur de stockage
+tile.fluffyalien_asn:storage_interface.name=Interface de stockage
+tile.fluffyalien_asn:storage_core.name=Cœur de stockage
+tile.fluffyalien_asn:storage_cable.name=Câble de stockage
+tile.fluffyalien_asn:import_bus.name=Bus d'importation de stockage
+tile.fluffyalien_asn:export_bus.name=Bus d'exportation de stockage
+tile.fluffyalien_asn:level_emitter.name=Émetteur de niveau de stockage
+tile.fluffyalien_asn:storage_relay.name=Relais de stockage
+tile.fluffyalien_asn:storage_power_bank.name=Banque d'énergie de stockage §c(Expérimental)
+tile.fluffyalien_asn:portable_storage_network.name=Réseau de stockage portable
+tile.fluffyalien_asn:wireless_transmitter.name=Émetteur sans fil de stockage
+tile.fluffyalien_asn:fluid_interface.name=Interface de stockage de fluide §c(Expérimental)
+tile.fluffyalien_asn:fluid_drive.name=Lecteur de stockage de fluide §c(Expérimental)
+tile.fluffyalien_asn:fluid_import_bus.name=Bus d'importation de fluide §c(Expérimental)
+tile.fluffyalien_asn:fluid_export_bus.name=Bus d'exportation de fluide §c(Expérimental)
+
+fluffyalien_asn.message.wirelessInterface.linked=Interface de stockage sans fil liée.
+fluffyalien_asn.message.wirelessInterface.notLinked=Cette interface de stockage sans fil n'est liée à aucun réseau de stockage.
+fluffyalien_asn.message.wirelessInterface.forceLoadNetworksDisabled=La règle 'forceLoadNetworks' doit être activée pour utiliser l'interface de stockage sans fil. Activez-la avec '/scriptevent fluffyalien_asn:rule forceLoadNetworks true'
+fluffyalien_asn.message.wirelessInterface.linkedNetworkNotFound=Impossible d'accéder au réseau lié.
+fluffyalien_asn.message.wirelessInterface.noTransmittersInRange=Aucun émetteur sans fil à portée.
+fluffyalien_asn.message.wirelessInterface.insufficientEnergy=L'interface de stockage sans fil n'a pas assez d'énergie.
+
+fluffyalien_asn.message.fluidStorage.fluidStorageDisabled=La règle 'fluidStorage' doit être activée pour placer ce bloc.
+
+fluffyalien_asn.message.scriptEvent.common.invalidScriptEvent=Cet évènement de script n'existe pas.
+
+fluffyalien_asn.message.scriptEvent.addonRule.invalidRule=Cette règle n'existe pas.
+fluffyalien_asn.message.scriptEvent.addonRule.expectedBoolean=« true » ou « false » attendu après l'ID de la règle.
+fluffyalien_asn.message.scriptEvent.addonRule.expectedNumber=Un nombre est attendu après l'ID de la règle.
+fluffyalien_asn.message.scriptEvent.addonRule.expectedInt=Un entier est attendu après l'ID de la règle.
+fluffyalien_asn.message.scriptEvent.addonRule.requiresBec=Cette règle nécessite la version Bedrock Energistics Core d'ASN. La valeur sera réinitialisée par défaut.
+fluffyalien_asn.message.scriptEvent.addonRule.requiresPrerequisiteRule=Cette règle nécessite que la règle '%s' soit réglée sur '%s', mais elle est actuellement sur '%s'. La valeur sera réinitialisée par défaut.
+fluffyalien_asn.message.scriptEvent.addonRule.deprecatedWarning=ATTENTION : cette règle est obsolète. Elle pourrait être supprimée dans une future version.
+fluffyalien_asn.message.scriptEvent.addonRule.experimentalWarning=ATTENTION : cette règle est expérimentale. Elle peut ne pas fonctionner correctement et être modifiée ou supprimée dans une future version.
+fluffyalien_asn.message.scriptEvent.addonRule.scriptEventUsageWarning=ATTENTION : l'usage via scriptevent de cette commande est obsolète et pourrait être supprimé dans une future version. Utilisez plutôt '/asnrule' ou '/fluffyalien_asn:asnrule'.
+
+fluffyalien_asn.message.scriptEvent.addonRule.help.forceLoadNetworks=Quand un réseau de stockage s'étend dans des chunks non chargés, force leur chargement pour que le réseau se charge entièrement. PEUT CAUSER DU LAG ! Ne fonctionne pas si tous les emplacements de zone de tick sont utilisés.
+fluffyalien_asn.message.scriptEvent.addonRule.help.showRequestItemDialog=Affiche la fenêtre de demande d'objet lorsqu'on retire un objet du réseau, au lieu de retirer immédiatement une pile.
+fluffyalien_asn.message.scriptEvent.addonRule.help.wirelessInterfaceRange=La portée maximale entre un émetteur sans fil et un joueur pour qu'il puisse utiliser une interface sans fil. Réglez sur -1 pour désactiver la vérification de portée et de dimension.
+fluffyalien_asn.message.scriptEvent.addonRule.help.useEnergy=Oblige les réseaux de stockage à consommer de l'énergie pour fonctionner. Nécessite Bedrock Energistics Core.
+fluffyalien_asn.message.scriptEvent.addonRule.help.driveEnergyConsumption=La quantité d'énergie consommée par chaque lecteur de stockage (toutes les 10t). Ignoré si 'useEnergy' est faux.
+fluffyalien_asn.message.scriptEvent.addonRule.help.wirelessInterfaceEnergyConsumption=La quantité d'énergie consommée par une interface sans fil à chaque usage. Ignoré si 'useEnergy' est faux.
+fluffyalien_asn.message.scriptEvent.addonRule.help.fluidStorage=Active la fonctionnalité expérimentale de stockage de fluides. Nécessite Bedrock Energistics Core.
+
+fluffyalien_asn.actionbar.storageInterface.openToViewQueryResults=Rouvrez l'interface de stockage pour voir les résultats de recherche
+
+fluffyalien_asn.ui.common.error=Erreur
+fluffyalien_asn.ui.common.close=Fermer
+
+fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores=Impossible d'établir un réseau de stockage : plusieurs cœurs de stockage détectés.
+fluffyalien_asn.ui.cableNetwork.error.noStorageCores=Impossible d'établir un réseau de stockage : aucun cœur de stockage détecté.
+
+fluffyalien_asn.ui.storageDrive.title=Lecteur de stockage
+fluffyalien_asn.ui.storageDrive.body.storageUsed=Stockage utilisé (lecteur) : %s/3000 octets
+fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk=Impossible d'ajouter un disque à un lecteur de stockage contenant des objets.
+
+fluffyalien_asn.ui.fluidDrive.body.storageUsed=Stockage utilisé (%s) (lecteur) : %s mL (%s%%)
+fluffyalien_asn.ui.fluidDrive.body.storageUsedTotal=Stockage utilisé (total) (lecteur) : %s/6400 mL
+
+fluffyalien_asn.ui.storageInterface.title=Interface de stockage
+fluffyalien_asn.ui.storageInterface.requestItem.itemDurability=Durabilité : %s/%s
+fluffyalien_asn.ui.storageInterface.requestItem.itemEnchantments=Enchantements :
+fluffyalien_asn.ui.storageInterface.requestItem.itemLore=Description :
+fluffyalien_asn.ui.storageInterface.requestItem.itemAmount=Quantité demandée :
+fluffyalien_asn.ui.storageInterface.requestItem.error.invalidNumber=Impossible de retirer cette quantité. La valeur doit être un nombre valide, supérieur à zéro et inférieur ou égal à mille.
+fluffyalien_asn.ui.storageInterface.requestItem.error.notEnough=Il n'y a pas assez de cet objet en stock pour retirer cette quantité.
+fluffyalien_asn.ui.storageInterface.search.label=Recherche par ID
+fluffyalien_asn.ui.storageInterface.error.insufficientStorage=Impossible d'ajouter cet objet : stockage insuffisant. Essayez de connecter plus de lecteurs de stockage.
+fluffyalien_asn.ui.storageInterface.error.insufficientEnergy=Le réseau de stockage n'a pas assez d'énergie.
+fluffyalien_asn.ui.storageInterface.error.bannedItem=%s est un objet interdit.
+
+fluffyalien_asn.ui.storageCore.title=Cœur de stockage
+fluffyalien_asn.ui.storageCore.body.storageUsed=Stockage utilisé (objets) (réseau) : %s/%s octets
+fluffyalien_asn.ui.storageCore.body.storedEnergy=Énergie stockée : %s/%s
+fluffyalien_asn.ui.storageCore.body.energyConsumption=Consommation d'énergie : %s/t
+fluffyalien_asn.ui.storageCore.body.storageUsedFluid=Stockage utilisé (%s) (réseau) : %s mL (%s%%)
+fluffyalien_asn.ui.storageCore.body.storageUsedFluidTotal=Stockage utilisé (total fluides) (réseau) : %s/%s mL
+
+fluffyalien_asn.ui.portableStorageNetwork.body.storageUsed=Stockage utilisé : %s/3000 octets
+fluffyalien_asn.ui.portableStorageNetwork.body.storedEnergy=Énergie stockée : %s/6400
+
+fluffyalien_asn.ui.exportBus.title=Bus d'exportation
+fluffyalien_asn.ui.exportBus.exportItem=Exportation de %s
+fluffyalien_asn.ui.exportBus.noExportItem=N'exporte rien. Interagissez en tenant un objet pour exporter cet objet.
+fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.label=Filtre d'enchantements
+fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.ignore=Ignorer
+fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.with=Avec
+fluffyalien_asn.ui.exportBus.exportItemEnchantmentsStatus.without=Sans
+fluffyalien_asn.ui.exportBus.exportItemMinDamage=Filtre de dégâts min (inclus)
+fluffyalien_asn.ui.exportBus.exportItemMaxDamage=Filtre de dégâts max (inclus)
+fluffyalien_asn.ui.exportBus.error.invalidMinDamage=Filtre de dégâts min invalide.
+fluffyalien_asn.ui.exportBus.error.invalidMaxDamage=Filtre de dégâts max invalide.
+
+fluffyalien_asn.ui.levelEmitter.title=Émetteur de niveau
+fluffyalien_asn.ui.levelEmitter.noItem=Ne teste rien. Interagissez en tenant un objet pour tester cet objet.
+fluffyalien_asn.ui.levelEmitter.testItem=Test de %s
+fluffyalien_asn.ui.levelEmitter.operator=Opérateur
+fluffyalien_asn.ui.levelEmitter.amount=Quantité
+fluffyalien_asn.ui.levelEmitter.error.invalidAmount=Valeur invalide pour le champ Quantité. La quantité doit être un nombre valide et supérieur à zéro.
+
+fluffyalien_asn.ui.relay.title=Relais de stockage
+fluffyalien_asn.ui.relay.name=Nom du relais
+fluffyalien_asn.ui.relay.error.invalidName=Le nom du relais doit contenir au moins un caractère.
+
+fluffyalien_asn.ui.fluidExportBus.storageType=Type de stockage
+
+fluffyalien_asn.ui.tutorialBook.title=Manuel
+
+fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.title=Réseau de stockage
+fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet0=Un réseau d'appareils pouvant contenir une quantité infinie d'objets.
+fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet1=Comprend un cœur de stockage et un nombre quelconque de lecteurs et d'interfaces de stockage. Peut aussi contenir de nombreux autres appareils optionnels.
+fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet2=Les appareils du réseau doivent être placés côte à côte ou reliés par des câbles de stockage.
+fluffyalien_asn.ui.tutorialBook.entry.storageNetwork.bullet3=Pour commencer, il te faut un cœur de stockage, un lecteur de stockage et une interface de stockage (ou une interface sans fil). Consulte leurs entrées respectives du manuel pour plus d'informations.
+
+fluffyalien_asn.ui.tutorialBook.entry.storageCore.title=Cœur de stockage
+fluffyalien_asn.ui.tutorialBook.entry.storageCore.bullet0=Le cœur d'un réseau de stockage.
+fluffyalien_asn.ui.tutorialBook.entry.storageCore.bullet1=Nécessaire au fonctionnement d'un réseau de stockage.
+fluffyalien_asn.ui.tutorialBook.entry.storageCore.bullet2=Il ne peut y avoir qu'un seul de ces blocs par réseau.
+
+fluffyalien_asn.ui.tutorialBook.entry.storageCable.title=Câble de stockage
+fluffyalien_asn.ui.tutorialBook.entry.storageCable.bullet0=Relie les appareils d'un réseau de stockage.
+
+fluffyalien_asn.ui.tutorialBook.entry.storageDrive.title=Lecteur de stockage
+fluffyalien_asn.ui.tutorialBook.entry.storageDrive.bullet0=Fournit au réseau 3 000 u d'espace de stockage.
+fluffyalien_asn.ui.tutorialBook.entry.storageDrive.bullet1=Lâche un disque de stockage quand il est détruit, contenant les objets qu'il avait avant d'être cassé.
+
+fluffyalien_asn.ui.tutorialBook.entry.storageInterface.title=Interface de stockage
+fluffyalien_asn.ui.tutorialBook.entry.storageInterface.bullet0=Permet aux joueurs d'ajouter, retirer ou consulter les objets d'un réseau de stockage.
+
+fluffyalien_asn.ui.tutorialBook.entry.importBus.title=Bus d'importation de stockage
+fluffyalien_asn.ui.tutorialBook.entry.importBus.bullet0=Importe les objets du conteneur qu'il regarde vers le réseau de stockage.
+fluffyalien_asn.ui.tutorialBook.entry.importBus.bullet1=Arrête l'importation lorsqu'il reçoit un signal de redstone.
+
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.title=Bus d'exportation de stockage
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet0=Exporte les objets du réseau de stockage vers le conteneur qu'il regarde.
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet1=Plus d'options de filtre sont disponibles lors de l'exportation d'un objet enchantable ou cassable.
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet2=Arrête l'exportation lorsqu'il reçoit un signal de redstone.
+fluffyalien_asn.ui.tutorialBook.entry.exportBus.bullet3=Interagis à mains nues pour le configurer.
+
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.title=Émetteur de niveau de stockage
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet0=Vérifie que la quantité totale d'un ensemble filtré d'objets dans le réseau correspond à une requête.
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet1=Des options de filtre sont disponibles pour un objet enchantable ou cassable.
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet2=Active le répéteur devant lui lorsque le test est vrai.
+fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet3=Interagis à mains nues pour le configurer.
+
+fluffyalien_asn.ui.tutorialBook.entry.relay.title=Relais de stockage
+fluffyalien_asn.ui.tutorialBook.entry.relay.bullet0=Relie les appareils du réseau sur de longues distances.
+fluffyalien_asn.ui.tutorialBook.entry.relay.bullet1=Interagis pour changer le nom du relais.
+fluffyalien_asn.ui.tutorialBook.entry.relay.bullet2=Se connecte à tous les autres relais portant le même nom.
+fluffyalien_asn.ui.tutorialBook.entry.relay.bullet3=Portée infinie et fonctionne entre les dimensions.
+
+fluffyalien_asn.ui.tutorialBook.entry.powerBank.title=Banque d'énergie de stockage
+fluffyalien_asn.ui.tutorialBook.entry.powerBank.bullet0=Stocke l'énergie pour le réseau.
+fluffyalien_asn.ui.tutorialBook.entry.powerBank.bullet1=Nécessaire uniquement si la consommation d'énergie est activée. Voir Énergie (Expérimental) pour plus d'informations.
+
+fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.title=Émetteur sans fil de stockage
+fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.bullet0=Permet à une interface sans fil de se connecter à un réseau.
+fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.bullet1=La portée par défaut est de 500 blocs, modifiable avec la règle 'wirelessInterfaceRange'. Voir Configuration de l'add-on pour plus d'informations.
+
+fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.title=Interface de stockage sans fil
+fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet0=Permet aux joueurs d'ajouter, retirer ou consulter les objets d'un réseau de stockage sans fil.
+fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet1=Interagis avec un cœur de stockage en tenant cet objet pour le lier à ce réseau.
+fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet2=Un émetteur sans fil connecté au réseau lié doit être à portée (500 blocs par défaut) pour utiliser l'interface sans fil. La portée est modifiable avec la règle 'wirelessInterfaceRange'. Voir Configuration de l'add-on pour plus d'informations.
+
+fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.title=Réseau de stockage portable
+fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet0=Un réseau de stockage entièrement autonome.
+fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet1=Interagis pour ouvrir l'interface. Accroupis-toi et interagis pour ouvrir le cœur de stockage.
+fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet2=Accroupis-toi et interagis en tenant un disque contenant des données pour déposer les objets dans le réseau.
+fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet3=A la même capacité qu'un lecteur de stockage.
+fluffyalien_asn.ui.tutorialBook.entry.portableStorageNetwork.bullet4=Si la consommation d'énergie est activée, consomme de l'énergie lors de l'ajout ou du retrait d'objets. L'énergie stockée est conservée à la destruction.
+
+fluffyalien_asn.ui.tutorialBook.entry.storageDisk.title=Disque de stockage
+fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet0=Un objet de fabrication.
+fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet1=Peut contenir des données.
+fluffyalien_asn.ui.tutorialBook.entry.storageDisk.bullet2=Interagis avec un lecteur de stockage vide en tenant un disque contenant des données pour y déposer les objets du disque.
+
+fluffyalien_asn.ui.tutorialBook.entry.addonRules.title=Configuration de l'add-on
+fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet0=Utilise la commande '/asnrule <rule> [value]' pour modifier une règle.
+fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet1=Utilise la commande '/asnrule help' pour la liste des règles.
+fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet2=Omets '[value]' de la commande pour obtenir la valeur actuelle de la règle.
+fluffyalien_asn.ui.tutorialBook.entry.addonRules.bullet3=Note que les nombres doivent être entre guillemets quand ils sont passés à 'value' (ex. "123" au lieu de 123).
+
+fluffyalien_asn.ui.tutorialBook.entry.energy.title=Énergie (Expérimental)
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet0=La consommation d'énergie s'active avec la règle 'useEnergy'. Voir Configuration de l'add-on pour plus d'informations.
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet1=L'énergie est stockée dans les blocs Banque d'énergie de stockage.
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet2=La consommation d'énergie du réseau dépend du nombre de lecteurs de stockage. La consommation par lecteur se modifie avec la règle 'driveEnergyConsumption'. Voir Configuration de l'add-on pour plus d'informations.
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet3=Utilise l'énergie de Bedrock Energistics Core. Nécessite l'add-on Bedrock Energistics Core dans le monde.
+fluffyalien_asn.ui.tutorialBook.entry.energy.bullet4=Cet add-on n'ajoute aucun générateur d'énergie ; tu dois inclure un autre add-on compatible Bedrock Energistics Core pour produire de l'énergie.
+
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.title=Stockage de fluides (Expérimental)
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet0=Le stockage de fluides doit être activé avec la règle 'fluidStorage'. Voir Configuration de l'add-on pour plus d'informations.
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet1=Les fluides sont stockés dans les Lecteurs de stockage de fluide et consultables via l'Interface de stockage de fluide.
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet2=Utilise les fluides de Bedrock Energistics Core. Nécessite l'add-on Bedrock Energistics Core dans le monde.
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet3=Cet add-on n'ajoute aucun moyen de produire des fluides ; tu dois inclure un autre add-on compatible Bedrock Energistics Core pour en produire.
+
+fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.title=Lecteur de stockage de fluide (Expérimental)
+fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.bullet0=Fournit au réseau 6 400 mL de stockage de fluide.
+fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.bullet1=Lâche un Disque de stockage de fluide à la destruction, contenant les fluides qu'il avait avant d'être cassé.
+
+fluffyalien_asn.ui.tutorialBook.entry.fluidInterface.title=Interface de stockage de fluide (Expérimental)
+fluffyalien_asn.ui.tutorialBook.entry.fluidInterface.bullet0=Permet aux joueurs de consulter les fluides d'un réseau de stockage.
+
+fluffyalien_asn.ui.tutorialBook.entry.fluidImportBus.title=Bus d'importation de fluide (Expérimental)
+fluffyalien_asn.ui.tutorialBook.entry.fluidImportBus.bullet0=Importe les fluides des machines connectées vers le réseau de stockage.
+fluffyalien_asn.ui.tutorialBook.entry.fluidImportBus.bullet1=Arrête l'importation lorsqu'il reçoit un signal de redstone.
+
+fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.title=Bus d'exportation de fluide (Expérimental)
+fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.bullet0=Exporte les fluides du réseau vers les machines connectées.
+fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.bullet1=Arrête l'exportation lorsqu'il reçoit un signal de redstone.
+fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.bullet2=Exporte jusqu'à 1 u/t.
+fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.bullet3=Interagis à mains nues pour le configurer.
+
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.title=Disque de stockage de fluide (Expérimental)
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.bullet0=Un objet de fabrication.
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.bullet1=Peut contenir des données.
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.bullet2=Interagis avec un lecteur de stockage de fluide vide en tenant un disque contenant des données pour y déposer les fluides du disque.
