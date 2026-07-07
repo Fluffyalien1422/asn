@@ -311,14 +311,19 @@ async function showNamespaceActionsForm(
     .title(namespace.name)
     .body({ translate: "fluffyalien_asn.ui.relay.actions.body" });
 
-  form.button({ translate: "fluffyalien_asn.ui.relay.actions.button.select" });
+  form.button(
+    { translate: "fluffyalien_asn.ui.relay.actions.button.select" },
+    "textures/fluffyalien/asn/ui/relay/select",
+  );
   if (isOwner) {
-    form.button({
-      translate: "fluffyalien_asn.ui.relay.actions.button.configure",
-    });
-    form.button({
-      translate: "fluffyalien_asn.ui.relay.actions.button.delete",
-    });
+    form.button(
+      { translate: "fluffyalien_asn.ui.relay.actions.button.configure" },
+      "textures/fluffyalien/asn/ui/relay/configure",
+    );
+    form.button(
+      { translate: "fluffyalien_asn.ui.relay.actions.button.delete" },
+      "textures/fluffyalien/asn/ui/relay/delete",
+    );
   }
 
   const response = await form.show(player);
@@ -408,13 +413,16 @@ async function showNamespaceListForm(
   // namespace buttons by one.
   const offset = isOwn ? 1 : 0;
   if (isOwn) {
-    form.button({
-      translate: "fluffyalien_asn.ui.relay.namespaceList.button.new",
-    });
+    form.button(
+      {
+        translate: "fluffyalien_asn.ui.relay.namespaceList.button.new",
+      },
+      "textures/fluffyalien/asn/ui/relay/new_namespace",
+    );
   }
 
   for (const ns of namespaces) {
-    form.button(ns.name);
+    form.button(ns.name, "textures/fluffyalien/asn/ui/relay/namespace");
   }
 
   const response = await form.show(player);
@@ -486,11 +494,17 @@ async function showRelayForm(
         ],
       },
     })
-    .button({ translate: "fluffyalien_asn.ui.relay.button.yourNamespaces" });
+    .button(
+      { translate: "fluffyalien_asn.ui.relay.button.yourNamespaces" },
+      "textures/fluffyalien/asn/ui/relay/your_namespaces",
+    );
 
   const ownerIds = [...otherOwnerNames.keys()];
   for (const ownerId of ownerIds) {
-    form.button(otherOwnerNames.get(ownerId)!);
+    form.button(
+      otherOwnerNames.get(ownerId)!,
+      "textures/fluffyalien/asn/ui/relay/player",
+    );
   }
 
   const response = await form.show(player);
