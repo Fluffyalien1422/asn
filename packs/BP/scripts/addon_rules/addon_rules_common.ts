@@ -1,4 +1,4 @@
-import { Player, world } from "@minecraft/server";
+import { Player } from "@minecraft/server";
 import { AddonRuleCommand } from "./set_addon_rule";
 
 export function sendRuleValueMessage(
@@ -14,5 +14,5 @@ export function sendCurrentRuleValueMessage(
   rule: string,
   ruleCommand: AddonRuleCommand,
 ): void {
-  sendRuleValueMessage(player, rule, ruleCommand.property.safeGet(world));
+  sendRuleValueMessage(player, rule, ruleCommand.property.safeGet());
 }

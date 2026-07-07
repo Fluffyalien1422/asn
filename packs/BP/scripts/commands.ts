@@ -10,25 +10,28 @@ import {
   resetAllAddonRules,
 } from "./addon_rules/set_addon_rule";
 import { ADDON_RULE_COMMANDS } from "./addon_rules/addon_rules";
+import { CONFIG } from "./config_manager";
 
 system.beforeEvents.startup.subscribe((e) => {
-  e.customCommandRegistry.registerEnum("fluffyalien_asn:AsnRuleIdOrHelp", [
+  const ns = CONFIG.customCommandNamespace;
+
+  e.customCommandRegistry.registerEnum(`${ns}:AsnRuleIdOrHelp`, [
     "help",
     ...Object.keys(ADDON_RULE_COMMANDS),
   ]);
-  e.customCommandRegistry.registerEnum("fluffyalien_asn:AsnRuleIdOrAll", [
+  e.customCommandRegistry.registerEnum(`${ns}:AsnRuleIdOrAll`, [
     "all",
     ...Object.keys(ADDON_RULE_COMMANDS),
   ]);
 
   e.customCommandRegistry.registerCommand(
     {
-      name: "fluffyalien_asn:asnrule",
+      name: `${ns}:asnrule`,
       description: "Read or set an ASN add-on rule.",
       permissionLevel: CommandPermissionLevel.GameDirectors,
       mandatoryParameters: [
         {
-          name: "fluffyalien_asn:AsnRuleIdOrHelp",
+          name: `${ns}:AsnRuleIdOrHelp`,
           type: CustomCommandParamType.Enum,
         },
       ],
@@ -58,12 +61,12 @@ system.beforeEvents.startup.subscribe((e) => {
 
   e.customCommandRegistry.registerCommand(
     {
-      name: "fluffyalien_asn:asnrulereset",
+      name: `${ns}:asnrulereset`,
       description: "Reset an ASN add-on rule.",
       permissionLevel: CommandPermissionLevel.GameDirectors,
       mandatoryParameters: [
         {
-          name: "fluffyalien_asn:AsnRuleIdOrAll",
+          name: `${ns}:AsnRuleIdOrAll`,
           type: CustomCommandParamType.Enum,
         },
       ],

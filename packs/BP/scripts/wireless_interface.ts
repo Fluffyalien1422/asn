@@ -197,7 +197,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
 
     const network = networkResult.value;
 
-    const maxDistance = wirelessInterfaceRangeRule.safeGet(world);
+    const maxDistance = wirelessInterfaceRangeRule.safeGet();
 
     const anyTransmittersInRange =
       maxDistance === -1
@@ -218,7 +218,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
       return;
     }
 
-    if (useEnergyRule.safeGet(world)) {
+    if (useEnergyRule.safeGet()) {
       const itemMachine = new ItemMachine(playerInv, playerMainHandSlotIndex);
 
       const storedEnergy = await itemMachine.getStorage(
@@ -226,7 +226,7 @@ world.afterEvents.playerInteractWithEntity.subscribe((e) => {
       );
 
       const energyConsumption =
-        wirelessInterfaceEnergyConsumptionRule.safeGet(world);
+        wirelessInterfaceEnergyConsumptionRule.safeGet();
 
       if (storedEnergy < energyConsumption) {
         errInsufficientEnergy();

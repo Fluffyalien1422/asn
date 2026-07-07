@@ -202,7 +202,7 @@ function tick(block: Block): void {
     return;
   }
 
-  if (useEnergyRule.safeGet(world)) {
+  if (useEnergyRule.safeGet()) {
     const storedEnergy = getMachineStorage(block, "energy");
     if (storedEnergy < ENERGY_PER_STEP * (MAX_PROGRESS - progress)) return;
     void setMachineStorage(block, "energy", storedEnergy - ENERGY_PER_STEP);
@@ -236,7 +236,7 @@ export const diskUpgraderMachine: MachineDefinition = {
   },
   handlers: {
     updateUi({ blockLocation }) {
-      const useEnergy = useEnergyRule.safeGet(world);
+      const useEnergy = useEnergyRule.safeGet();
       return {
         progressIndicators: {
           arrow: progressMap.get(getBlockUid(blockLocation)) ?? 0,

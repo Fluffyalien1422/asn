@@ -1,7 +1,8 @@
 import { ItemStack, Player, RawMessage, world } from "@minecraft/server";
-import { createMessageForm, showForm } from "./utils/ui";
+import { createMessageForm } from "./utils/ui";
 import { ActionFormData } from "@minecraft/server-ui";
 import TUTORIAL_ENTRIES, { TutorialEntry } from "./generated/tutorial_entries";
+import { CONFIG } from "./config_manager";
 
 const NOT_FIRST_JOIN_DYNAMIC_PROPERTY_ID = "fluffyalien_asn:not_first_join";
 
@@ -19,7 +20,7 @@ export async function showTutorialBookUi(player: Player): Promise<void> {
     );
   }
 
-  const response = await showForm(form, player);
+  const response = await form.show(player);
   if (response.selection === undefined) return;
 
   const entry = TUTORIAL_ENTRIES[response.selection];
@@ -49,21 +50,24 @@ async function showTutorialBookEntryUi(
     { rawtext },
   );
 
-  await showForm(form, player);
+  await form.show(player);
   return showTutorialBookUi(player);
 }
 
 world.afterEvents.playerSpawn.subscribe((e) => {
   if (
+    !CONFIG.giveTutorialBookOnSpawn ||
     !e.initialSpawn ||
     e.player.getDynamicProperty(NOT_FIRST_JOIN_DYNAMIC_PROPERTY_ID)
-  )
+  ) {
     return;
+  }
 
   e.player.setDynamicProperty(NOT_FIRST_JOIN_DYNAMIC_PROPERTY_ID, true);
-
-  const tutorialBook = new ItemStack("fluffyalien_asn:tutorial_book");
-  e.player.dimension.spawnItem(tutorialBook, e.player.location);
+  e.player.dimension.spawnItem(
+    new ItemStack("fluffyalien_asn:tutorial_book"),
+    e.player.location,
+  );
 });
 
 world.afterEvents.itemUse.subscribe((e) => {

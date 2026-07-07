@@ -1,47 +1,55 @@
-import { Player, world } from "@minecraft/server";
+import { Player } from "@minecraft/server";
 import { AddonRuleCommand } from "./set_addon_rule";
-import { DynamicPropertyAccessor } from "../utils/dynamic_property_v3";
+import { CONFIG } from "../config_manager";
+import { RuleAccessor } from "./accessor";
 
-export const wirelessInterfaceRangeRule = new DynamicPropertyAccessor<
-  number,
-  number
->("fluffyalien_asn:rule_wireless_intf_range", 500);
-
-export const useEnergyRule = new DynamicPropertyAccessor<boolean, boolean>(
-  "fluffyalien_asn:rule_use_energy",
-  true,
+export const wirelessInterfaceRangeRule = new RuleAccessor<number>(
+  "fluffyalien_asn:rule_wireless_intf_range",
+  CONFIG.rules.wirelessInterfaceRange.default,
+  CONFIG.rules.wirelessInterfaceRange.lock,
 );
 
-export const deviceEnergyConsumptionRule = new DynamicPropertyAccessor<
-  number,
-  number
->("fluffyalien_asn:rule_device_energy", 10);
+export const useEnergyRule = new RuleAccessor<boolean>(
+  "fluffyalien_asn:rule_use_energy",
+  CONFIG.rules.useEnergy.default,
+  CONFIG.rules.useEnergy.lock,
+);
 
-export const wirelessInterfaceEnergyConsumptionRule =
-  new DynamicPropertyAccessor<number, number>(
-    "fluffyalien_asn:rule_wireless_intf_energy",
-    10,
-  );
+export const deviceEnergyConsumptionRule = new RuleAccessor<number>(
+  "fluffyalien_asn:rule_device_energy",
+  CONFIG.rules.deviceEnergyConsumption.default,
+  CONFIG.rules.deviceEnergyConsumption.lock,
+);
 
-export const relayMaxGlobalNamespacesRule = new DynamicPropertyAccessor<
-  number,
-  number
->("fluffyalien_asn:rule_relay_max_global_ns", 128);
+export const wirelessInterfaceEnergyConsumptionRule = new RuleAccessor<number>(
+  "fluffyalien_asn:rule_wireless_intf_energy",
+  CONFIG.rules.wirelessInterfaceEnergyConsumption.default,
+  CONFIG.rules.wirelessInterfaceEnergyConsumption.lock,
+);
 
-export const relayMaxPlayerNamespacesRule = new DynamicPropertyAccessor<
-  number,
-  number
->("fluffyalien_asn:rule_relay_max_player_ns", 16);
+export const relayMaxGlobalNamespacesRule = new RuleAccessor<number>(
+  "fluffyalien_asn:rule_relay_max_global_ns",
+  CONFIG.rules.relayMaxGlobalNamespaces.default,
+  CONFIG.rules.relayMaxGlobalNamespaces.lock,
+);
 
-export const relayMaxNamespaceNameCharsRule = new DynamicPropertyAccessor<
-  number,
-  number
->("fluffyalien_asn:rule_relay_max_ns_name_chars", 32);
+export const relayMaxPlayerNamespacesRule = new RuleAccessor<number>(
+  "fluffyalien_asn:rule_relay_max_player_ns",
+  CONFIG.rules.relayMaxPlayerNamespaces.default,
+  CONFIG.rules.relayMaxPlayerNamespaces.lock,
+);
 
-export const relayMaxNamespacePlayerListCountRule = new DynamicPropertyAccessor<
-  number,
-  number
->("fluffyalien_asn:rule_relay_max_ns_player_list_count", 8);
+export const relayMaxNamespaceNameCharsRule = new RuleAccessor<number>(
+  "fluffyalien_asn:rule_relay_max_ns_name_chars",
+  CONFIG.rules.relayMaxNamespaceNameChars.default,
+  CONFIG.rules.relayMaxNamespaceNameChars.lock,
+);
+
+export const relayMaxNamespacePlayerListCountRule = new RuleAccessor<number>(
+  "fluffyalien_asn:rule_relay_max_ns_player_list_count",
+  CONFIG.rules.relayMaxNamespacePlayerListCount.default,
+  CONFIG.rules.relayMaxNamespacePlayerListCount.lock,
+);
 
 export const ADDON_RULE_COMMANDS: Record<string, AddonRuleCommand> = {
   wirelessInterfaceRange: {
@@ -91,7 +99,7 @@ function requireUseEnergy<T>(
   player: Player | undefined,
   value: T,
 ): T {
-  if (value === defaultValue || useEnergyRule.safeGet(world)) return value;
+  if (value === defaultValue || useEnergyRule.safeGet()) return value;
 
   player?.sendMessage({
     rawtext: [

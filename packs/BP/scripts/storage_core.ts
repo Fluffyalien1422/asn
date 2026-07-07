@@ -51,7 +51,7 @@ async function showStorageCoreUi(
     },
   ];
 
-  if (useEnergyRule.safeGet(world)) {
+  if (useEnergyRule.safeGet()) {
     rawtext.push(
       {
         text: "\n\n",

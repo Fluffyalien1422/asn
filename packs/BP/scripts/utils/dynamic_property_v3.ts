@@ -7,7 +7,7 @@ import {
 
 export type DynamicPropertyValue = boolean | number | string | Vector3;
 
-interface HasDynamicProperties {
+export interface HasDynamicProperties {
   getDynamicProperty(id: string): DynamicPropertyValue | undefined;
   setDynamicProperty(id: string, value?: DynamicPropertyValue): unknown;
 }

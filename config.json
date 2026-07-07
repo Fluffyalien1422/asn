@@ -18,9 +18,13 @@
         "runWith": "nodejs",
         "script": "scripts/filters/tutorial_entries.ts"
       },
+      "copy_default_config": {
+        "runWith": "shell",
+        "command": "Copy-Item ./BP/scripts/__config.js ./BP/scripts/default_config.js"
+      },
       "build_scripts": {
         "runWith": "shell",
-        "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --log-level=warning --preserve-symlinks --external:./BP/scripts/generated/__recipes.js --external:@minecraft/server --external:@minecraft/server-ui"
+        "command": "npx esbuild ./BP/scripts/index.ts --outfile=./BP/scripts/__bundle.js --bundle --format=esm --log-level=warning --preserve-symlinks --external:./BP/scripts/generated/__recipes.js --external:./BP/scripts/__config.js --external:@minecraft/server --external:@minecraft/server-ui"
       },
       "minify_and_clean_scripts": {
         "runWith": "shell",
@@ -47,6 +51,9 @@
           },
           {
             "filter": "tutorial_entries"
+          },
+          {
+            "filter": "copy_default_config"
           },
           {
             "filter": "build_scripts"

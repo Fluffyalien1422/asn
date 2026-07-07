@@ -248,7 +248,7 @@ async function showNamespaceConfigForm(
   const allowlist = parsePlayerNameList(response.formValues[2] as string);
   const denylist = parsePlayerNameList(response.formValues[3] as string);
 
-  const maxNameChars = relayMaxNamespaceNameCharsRule.safeGet(world);
+  const maxNameChars = relayMaxNamespaceNameCharsRule.safeGet();
   if (!name || name.length > maxNameChars) {
     void createErrorMessageForm({
       translate: "fluffyalien_asn.ui.relay.error.invalidNamespaceName",
@@ -257,7 +257,7 @@ async function showNamespaceConfigForm(
     return;
   }
 
-  const maxListCount = relayMaxNamespacePlayerListCountRule.safeGet(world);
+  const maxListCount = relayMaxNamespacePlayerListCountRule.safeGet();
   if (allowlist.length > maxListCount || denylist.length > maxListCount) {
     void createErrorMessageForm({
       translate: "fluffyalien_asn.ui.relay.error.tooManyPlayerListEntries",

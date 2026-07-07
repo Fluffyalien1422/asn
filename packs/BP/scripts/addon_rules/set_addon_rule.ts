@@ -1,8 +1,8 @@
-import { Player, world } from "@minecraft/server";
+import { Player } from "@minecraft/server";
 import { ADDON_RULE_COMMANDS } from "./addon_rules";
-import { DynamicPropertyAccessor } from "../utils/dynamic_property_v3";
 import { sendCurrentRuleValueMessage } from "./addon_rules_common";
 import { logWarn } from "../log";
+import { RuleAccessor } from "./accessor";
 
 interface BaseAddonRuleCommand<T> {
   deprecated?: boolean;
@@ -12,12 +12,12 @@ interface BaseAddonRuleCommand<T> {
 
 interface BoolAddonRuleCommand extends BaseAddonRuleCommand<boolean> {
   type: "bool";
-  property: DynamicPropertyAccessor<boolean, boolean>;
+  property: RuleAccessor<boolean>;
 }
 
 interface NumberAddonRuleCommand extends BaseAddonRuleCommand<number> {
   type: "float" | "int";
-  property: DynamicPropertyAccessor<number, number>;
+  property: RuleAccessor<number>;
 }
 
 export type AddonRuleCommand = BoolAddonRuleCommand | NumberAddonRuleCommand;
@@ -29,18 +29,18 @@ function processBoolAddonRuleCommand(
 ): boolean {
   if (rawValue === "true") {
     ruleCommand.property
-      .set(world, ruleCommand.beforeSet?.(player, true) ?? true)
+      .setRule(ruleCommand.beforeSet?.(player, true) ?? true)
       .mapErr((e) => {
-        logWarn(`Failed to set addon rule: ${e}`);
+        logWarn(`Failed to set add-on rule: ${e}`);
       });
     return true;
   }
 
   if (rawValue === "false") {
     ruleCommand.property
-      .set(world, ruleCommand.beforeSet?.(player, false) ?? false)
+      .setRule(ruleCommand.beforeSet?.(player, false) ?? false)
       .mapErr((e) => {
-        logWarn(`Failed to set addon rule: ${e}`);
+        logWarn(`Failed to set add-on rule: ${e}`);
       });
     return true;
   }
@@ -100,9 +100,9 @@ function processNumberAddonRuleCommand(
   }
 
   ruleCommand.property
-    .set(world, ruleCommand.beforeSet?.(player, numVal) ?? numVal)
+    .setRule(ruleCommand.beforeSet?.(player, numVal) ?? numVal)
     .mapErr((e) => {
-      logWarn(`Failed to set addon rule: ${e}`);
+      logWarn(`Failed to set add-on rule: ${e}`);
     });
 
   return true;
@@ -152,10 +152,27 @@ export function processAddonRuleCommand(
 
   const ruleCommand = ADDON_RULE_COMMANDS[rule];
 
+  // Reading a rule's value is always allowed, but changing it (setting a new
+  // value, or resetting it with null) is rejected when the rule is locked.
+  const isChangingRule = value === null || !!value;
+  if (isChangingRule && ruleCommand.property.isLocked) {
+    player?.sendMessage({
+      rawtext: [
+        {
+          text: "§c",
+        },
+        {
+          translate: "fluffyalien_asn.message.scriptEvent.addonRule.locked",
+        },
+      ],
+    });
+    return false;
+  }
+
   if (!value) {
     if (value === null)
-      ruleCommand.property.set(world).mapErr((e) => {
-        logWarn(`Failed to set addon rule: ${e}`);
+      ruleCommand.property.setRule().mapErr((e) => {
+        logWarn(`Failed to set add-on rule: ${e}`);
       });
     if (player) sendCurrentRuleValueMessage(player, rule, ruleCommand);
     return true;
@@ -210,8 +227,9 @@ export function processAddonRuleCommand(
 
 export function resetAllAddonRules(): void {
   for (const ruleCommand of Object.values(ADDON_RULE_COMMANDS)) {
-    ruleCommand.property.set(world).mapErr((e) => {
-      logWarn(`Failed to set addon rule: ${e}`);
+    if (ruleCommand.property.isLocked) continue;
+    ruleCommand.property.setRule().mapErr((e) => {
+      logWarn(`Failed to set add-on rule: ${e}`);
     });
   }
 }

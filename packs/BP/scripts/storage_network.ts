@@ -1,4 +1,4 @@
-import { system, Block, world, ItemStack } from "@minecraft/server";
+import { system, Block, ItemStack } from "@minecraft/server";
 import {
   CableNetworkConnections,
   DiscoverCableNetworkConnectionsError,
@@ -359,7 +359,7 @@ export class StorageNetwork extends StorageSystem {
    * any devices update.
    */
   private readonly standardTick = (): void => {
-    if (useEnergyRule.safeGet(world)) {
+    if (useEnergyRule.safeGet()) {
       // drain the power banks one at a time to cover this tick's consumption,
       // tallying what remains in each so storedEnergy reflects the post-drain
       // total and unmetEnergyDemand reflects any shortfall.
@@ -834,7 +834,7 @@ export class StorageNetwork extends StorageSystem {
    */
   getEnergyConsumption(): number {
     return (
-      deviceEnergyConsumptionRule.safeGet(world) *
+      deviceEnergyConsumptionRule.safeGet() *
       (this.connections.buses.length +
         this.connections.fluidDrives.length +
         this.connections.levelEmitters.length +

@@ -142,12 +142,12 @@ export function createRelayNamespace(
   const registry = loadRegistry();
   const all = Object.values(registry.namespaces);
 
-  if (all.length >= relayMaxGlobalNamespacesRule.safeGet(world)) {
+  if (all.length >= relayMaxGlobalNamespacesRule.safeGet()) {
     return err("globalLimitReached");
   }
 
   const ownedCount = all.filter((ns) => ns.owner === owner.id).length;
-  if (ownedCount >= relayMaxPlayerNamespacesRule.safeGet(world)) {
+  if (ownedCount >= relayMaxPlayerNamespacesRule.safeGet()) {
     return err("playerLimitReached");
   }
 
