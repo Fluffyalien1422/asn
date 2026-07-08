@@ -39,6 +39,10 @@
 
 - Remade all textures.
 
+**Configuration file**
+
+- Added a config file at `BP/scripts/__config.js` that you can edit to configure the add-on without commands. It sets the default value of every add-on rule and can lock rules so they can't be changed in-game, plus options like whether to give the Tutorial Book on spawn and the custom command namespace. See the [README](https://github.com/Fluffyalien1422/asn/blob/main/README.md) for details.
+
 ## Changes and Improvements
 
 **Miscellaneous**
