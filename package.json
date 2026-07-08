@@ -5,8 +5,7 @@
   "scripts": {
     "check": "tsc && tsc -p ./scripts && eslint .",
     "fmt": "prettier . -w",
-    "fmt-check": "npm run fmt && npm run check",
-    "docgen": "tsx scripts/docgen"
+    "docgen": "node scripts/docgen.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
