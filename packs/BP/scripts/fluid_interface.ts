@@ -157,18 +157,6 @@ export const fluidInterfaceComponent: BlockCustomComponent = {
   },
 };
 
-world.afterEvents.entityHitEntity.subscribe((e) => {
-  if (
-    e.damagingEntity.typeId !== "minecraft:player" ||
-    e.hitEntity.typeId !== "fluffyalien_asn:fluid_interface"
-  ) {
-    return;
-  }
-
-  e.hitEntity.runCommand("setblock ~~~ air destroy");
-  e.hitEntity.remove();
-});
-
 world.afterEvents.playerInteractWithEntity.subscribe((e) => {
   if (e.target.typeId !== "fluffyalien_asn:fluid_interface") return;
 

@@ -20,7 +20,6 @@ import {
   Container,
   ContainerSlot,
   Entity,
-  world,
 } from "@minecraft/server";
 import {
   getMachineStorage,
@@ -252,26 +251,21 @@ export const diskUpgraderMachine: MachineDefinition = {
   },
 };
 
-world.afterEvents.entityHitEntity.subscribe((e) => {
-  if (
-    e.damagingEntity.typeId !== "minecraft:player" ||
-    e.hitEntity.typeId !== MACHINE_ID
-  ) {
-    return;
-  }
-
-  const container = e.hitEntity.getComponent("inventory")!.container;
+/**
+ * Drops the machine's grid and output items into the world at `entity`'s
+ * location, so they aren't lost when the machine is broken. Used by the shared
+ * persistent-entity break handler.
+ */
+export function dropDiskUpgraderContents(entity: Entity): void {
+  const container = entity.getComponent("inventory")!.container;
   for (let i = GRID_START_INDEX; i < GRID_START_INDEX + GRID_SIZE; i++) {
     const item = container.getItem(i);
     if (item) {
-      e.hitEntity.dimension.spawnItem(item, e.hitEntity.location);
+      entity.dimension.spawnItem(item, entity.location);
     }
   }
   const output = container.getItem(OUTPUT_INDEX);
   if (output) {
-    e.hitEntity.dimension.spawnItem(output, e.hitEntity.location);
+    entity.dimension.spawnItem(output, entity.location);
   }
-
-  e.hitEntity.runCommand("setblock ~~~ air destroy");
-  e.hitEntity.remove();
-});
+}

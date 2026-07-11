@@ -50,18 +50,6 @@ export const storageInterfaceComponent: BlockCustomComponent = {
   },
 };
 
-world.afterEvents.entityHitEntity.subscribe((e) => {
-  if (
-    e.damagingEntity.typeId !== "minecraft:player" ||
-    e.hitEntity.typeId !== "fluffyalien_asn:storage_interface_entity"
-  ) {
-    return;
-  }
-
-  e.hitEntity.runCommand("setblock ~~~ air destroy");
-  e.hitEntity.remove();
-});
-
 world.afterEvents.entityContainerOpened.subscribe(
   (e) => {
     const target = e.entity;

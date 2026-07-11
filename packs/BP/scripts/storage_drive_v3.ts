@@ -1,9 +1,9 @@
 import {
+  Block,
   BlockCustomComponent,
   ContainerSlot,
   DimensionLocation,
   Entity,
-  world,
 } from "@minecraft/server";
 import { err, ok, Result } from "neverthrow";
 import {
@@ -82,14 +82,22 @@ export function getDisksInDrive(
   return ok(disks);
 }
 
+/**
+ * Clears the cached data for the drive at `block`. Runs whenever the drive is
+ * broken, whether by the block's own break handler or the shared
+ * persistent-entity break handler.
+ */
+export function clearStorageDriveData(block: Block): void {
+  driveData.delete(getBlockUid(block));
+}
+
 export const storageDriveV3Component: BlockCustomComponent = {
   onPlace(e) {
     e.dimension.spawnEntity(ENTITY_ID, e.block.bottomCenter()).nameTag =
       e.block.typeId;
   },
   onBreak(e) {
-    const uid = getBlockUid(e.block);
-    driveData.delete(uid);
+    clearStorageDriveData(e.block);
   },
   onTick(e) {
     const uid = getBlockUid(e.block);
@@ -125,21 +133,16 @@ export const storageDriveV3Component: BlockCustomComponent = {
   },
 };
 
-world.afterEvents.entityHitEntity.subscribe((e) => {
-  if (
-    e.damagingEntity.typeId !== "minecraft:player" ||
-    e.hitEntity.typeId !== ENTITY_ID
-  ) {
-    return;
-  }
-
-  const disks = getDisksInDrive(
-    dimensionLocationFromEntity(e.hitEntity),
-  ).unwrapOr([]);
+/**
+ * Drops the drive's disks into the world at `entity`'s location, so they aren't
+ * lost when the drive is broken. Used by the shared persistent-entity break
+ * handler.
+ */
+export function dropStorageDriveContents(entity: Entity): void {
+  const disks = getDisksInDrive(dimensionLocationFromEntity(entity)).unwrapOr(
+    [],
+  );
   for (const disk of disks) {
-    e.hitEntity.dimension.spawnItem(disk.getItem()!, e.hitEntity.location);
+    entity.dimension.spawnItem(disk.getItem()!, entity.location);
   }
-
-  e.hitEntity.runCommand("setblock ~~~ air destroy");
-  e.hitEntity.remove();
-});
+}
