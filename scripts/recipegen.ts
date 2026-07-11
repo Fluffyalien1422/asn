@@ -1,5 +1,21 @@
 /**
- * Generates the packs/BP/scripts/generated/recipes.js file
+ * Generates the `packs/BP/scripts/generated/__recipes.js` file, which maps each
+ * result item ID to the crafting recipes that produce it. Only shaped and
+ * shapeless recipes tagged `crafting_table` are included.
+ *
+ * Run with two or three positional arguments, each a path to a directory of
+ * recipe JSON files:
+ *
+ *   node scripts/recipegen.ts <vanilla recipes> <asn recipes> [additional recipes]
+ *
+ *   0. Vanilla recipes path    (required) Vanilla crafting recipe JSON files.
+ *   1. ASN recipes path        (required) This add-on's recipe JSON files.
+ *   2. Additional recipes path (optional) Extra recipe JSON files to include,
+ *      e.g. when bundling ASN in a modpack (see the "Bundling in Modpacks"
+ *      section of the README).
+ *
+ * Recipes from every provided directory are merged into a single output. Legacy
+ * item references with data values are resolved to flattened IDs via OVERRIDES.
  */
 
 import * as fs from "fs";
@@ -108,9 +124,20 @@ interface VanillaRecipeShaped extends VanillaRecipe {
 //#region Prepare
 console.log("Preparing...");
 
-const readPathArg = (argIndex: number, name: string): string => {
+function readPathArg(argIndex: number, name: string): string;
+function readPathArg(
+  argIndex: number,
+  name: string,
+  optional: boolean,
+): string | undefined;
+function readPathArg(
+  argIndex: number,
+  name: string,
+  optional = false,
+): string | undefined {
   const argvIndex = argIndex + 2;
   if (process.argv.length <= argvIndex) {
+    if (optional) return;
     throw new Error(
       `Invalid argument ${argIndex.toString()} (${name}): Argument does not exist.`,
     );
@@ -123,9 +150,10 @@ const readPathArg = (argIndex: number, name: string): string => {
     );
   }
   return p;
-};
+}
 const recipesPath = readPathArg(0, "Vanilla recipes path");
 const asnRecipesPath = readPathArg(1, "ASN recipes path");
+const additionalRecipesPath = readPathArg(2, "Additional recipes path", true);
 
 const scriptsGeneratedDirPath = "packs/BP/scripts/generated";
 if (!fs.existsSync(scriptsGeneratedDirPath)) {
@@ -240,6 +268,11 @@ for (const fileName of fs.readdirSync(recipesPath)) {
 }
 for (const fileName of fs.readdirSync(asnRecipesPath)) {
   readAndParseFile(asnRecipesPath, fileName);
+}
+if (additionalRecipesPath !== undefined) {
+  for (const fileName of fs.readdirSync(additionalRecipesPath)) {
+    readAndParseFile(additionalRecipesPath, fileName);
+  }
 }
 
 //#endregion Generate
