@@ -208,7 +208,7 @@ fluffyalien_asn.ui.tutorialBook.entry.levelEmitter.bullet3=Interact with an empt
 ## fluffyalien_asn.ui.tutorialBook.entry.autocrafter.targets=fluffyalien_asn:autocrafter
 ## fluffyalien_asn.ui.tutorialBook.entry.autocrafter.icon=textures/fluffyalien/asn/block_renders/autocrafter
 fluffyalien_asn.ui.tutorialBook.entry.autocrafter.title=Autocrafter
-fluffyalien_asn.ui.tutorialBook.entry.autocrafter.bullet0=Automatically crafts an item using ingredients stored in the network, then adds the result back into the network.
+fluffyalien_asn.ui.tutorialBook.entry.autocrafter.bullet0=Automatically crafts an item using ingredients stored in the storage network, then adds the result back into the network.
 fluffyalien_asn.ui.tutorialBook.entry.autocrafter.bullet1=Interact while holding an item to set the recipe to craft that item. If the item has more than one recipe, you can choose which one to use.
 fluffyalien_asn.ui.tutorialBook.entry.autocrafter.bullet2=Interact with an empty hand to see what it is crafting, or to change the recipe.
 fluffyalien_asn.ui.tutorialBook.entry.autocrafter.bullet3=Only crafts when every ingredient is available in the network and there is room to store the result.
@@ -231,14 +231,14 @@ fluffyalien_asn.ui.tutorialBook.entry.powerBank.bullet1=Each power bank holds up
 ## fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.targets=fluffyalien_asn:wireless_transmitter
 ## fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.icon=textures/fluffyalien/asn/block_renders/wireless_transmitter
 fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.title=Storage Wireless Transmitter
-fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.bullet0=Allows a wireless interface to connect to a network.
+fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.bullet0=Allows a wireless storage interface to connect to a network.
 fluffyalien_asn.ui.tutorialBook.entry.wirelessTransmitter.bullet1=The default range is 500 blocks, this can be changed with the 'wirelessInterfaceRange' rule. See Add-On Configuration for more information.
 
 ## fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.icon=textures/fluffyalien/asn/items/wireless_interface
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.title=Wireless Storage Interface
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet0=Allows players to add, remove, or view items in a storage network wirelessly.
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet1=Interact with a storage core while holding this item to link it to that network.
-fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet2=There must be a wireless transmitter connected to the linked network in range (500 blocks by default) to use the wireless interface. The range can be changed using the 'wirelessInterfaceRange' rule. See Add-On Configuration for more information.
+fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet2=There must be a storage wireless transmitter connected to the linked network in range (500 blocks by default) to use the wireless interface. The range can be changed using the 'wirelessInterfaceRange' rule. See Add-On Configuration for more information.
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet3=When energy usage is enabled, it consumes energy each time you use it to open a network, so it must be charged first.
 fluffyalien_asn.ui.tutorialBook.entry.wirelessInterface.bullet4=This add-on does not add a way to charge it. Charge it using a Bedrock Energistics Core charger from another add-on.
 

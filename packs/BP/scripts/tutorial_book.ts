@@ -7,7 +7,6 @@ import {
   system,
   world,
 } from "@minecraft/server";
-import { createMessageForm } from "./utils/ui";
 import { ActionFormData } from "@minecraft/server-ui";
 import TUTORIAL_ENTRIES, { TutorialEntry } from "./generated/tutorial_entries";
 import { CONFIG } from "./config_manager";
@@ -53,12 +52,37 @@ async function showTutorialBookEntryUi(
     });
   }
 
-  const form = createMessageForm(
-    { translate: "fluffyalien_asn.ui.tutorialBook.title" },
-    { rawtext },
-  );
+  const form = new ActionFormData()
+    .title({ translate: "fluffyalien_asn.ui.tutorialBook.title" })
+    .body({ rawtext });
 
-  await form.show(player);
+  const relatedEntries: TutorialEntry[] = [];
+  for (const related of entry.related) {
+    const relatedEntry = TUTORIAL_ENTRIES.find((ent) => ent.id === related);
+    if (!relatedEntry) continue;
+    relatedEntries.push(relatedEntry);
+    form.button(
+      {
+        translate: `fluffyalien_asn.ui.tutorialBook.entry.${relatedEntry.id}.title`,
+      },
+      relatedEntry.icon,
+    );
+  }
+
+  form.button({
+    translate: "fluffyalien_asn.ui.common.close",
+  });
+
+  const response = await form.show(player);
+  if (
+    response.selection !== undefined &&
+    response.selection < relatedEntries.length
+  ) {
+    return void showTutorialBookEntryUi(
+      player,
+      relatedEntries[response.selection],
+    );
+  }
 }
 
 world.afterEvents.playerSpawn.subscribe((e) => {

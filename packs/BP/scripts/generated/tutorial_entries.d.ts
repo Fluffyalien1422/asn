@@ -3,6 +3,7 @@ interface TutorialEntry {
   icon: string;
   bullets: number;
   targets: string[];
+  related: string[];
 }
 
 export { TutorialEntry };
