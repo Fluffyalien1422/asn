@@ -9,6 +9,10 @@
  *   in-game, so they are defined in `##` comments (the lang comment marker) to
  *   keep them out of the player-facing strings, e.g.:
  *     ## fluffyalien_asn.ui.tutorialBook.entry.storageCore.icon=textures/...
+ * - `...entry.<id>.targets` optionally gives a comma-separated list of block or
+ *   entity identifiers the entry documents. Like icons, these are not player-facing
+ *   strings, so they are defined in `##` comments, e.g.:
+ *     ## fluffyalien_asn.ui.tutorialBook.entry.storageCore.targets=fluffyalien_asn:storage_core
  *
  * Must run before the scripts are bundled so the generated file is included.
  */
@@ -25,6 +29,7 @@ interface TutorialEntry {
   id: string;
   icon: string;
   bullets: number;
+  targets: string[];
 }
 
 const lang = fs.readFileSync(LANG_FILE_PATH, "utf8");
@@ -36,6 +41,9 @@ const entryOrder: string[] = [];
 const bulletCounts = new Map<string, number>();
 // Entry ID -> icon texture path (parsed from `##` comments).
 const icons = new Map<string, string>();
+// Entry ID -> block/entity identifiers the entry documents (parsed from `##`
+// comments as a comma-separated list).
+const targets = new Map<string, string[]>();
 
 function registerEntry(id: string): void {
   if (bulletCounts.has(id)) return;
@@ -59,6 +67,17 @@ for (const rawLine of langLines) {
     continue;
   }
 
+  if (subKey === "targets") {
+    targets.set(
+      id,
+      value
+        .split(",")
+        .map((target) => target.trim())
+        .filter((target) => target.length > 0),
+    );
+    continue;
+  }
+
   if (subKey === "title") continue;
 
   const bulletNum = Number(subKey.slice("bullet".length));
@@ -78,6 +97,7 @@ const entries: TutorialEntry[] = entryOrder.map((id) => {
     id,
     icon: icon ?? "",
     bullets: bulletCounts.get(id) ?? 0,
+    targets: targets.get(id) ?? [],
   };
 });
 

@@ -1,4 +1,12 @@
-import { ItemStack, Player, RawMessage, world } from "@minecraft/server";
+import {
+  Block,
+  Entity,
+  ItemStack,
+  Player,
+  RawMessage,
+  system,
+  world,
+} from "@minecraft/server";
 import { createMessageForm } from "./utils/ui";
 import { ActionFormData } from "@minecraft/server-ui";
 import TUTORIAL_ENTRIES, { TutorialEntry } from "./generated/tutorial_entries";
@@ -51,7 +59,6 @@ async function showTutorialBookEntryUi(
   );
 
   await form.show(player);
-  return showTutorialBookUi(player);
 }
 
 world.afterEvents.playerSpawn.subscribe((e) => {
@@ -74,4 +81,39 @@ world.afterEvents.itemUse.subscribe((e) => {
   if (e.itemStack.typeId !== "fluffyalien_asn:tutorial_book") return;
 
   void showTutorialBookUi(e.source);
+});
+
+function onPlayerInteractEvent(
+  player: Player,
+  target: Block | Entity,
+  itemStack?: ItemStack,
+): boolean {
+  if (
+    itemStack?.typeId !== "fluffyalien_asn:tutorial_book" ||
+    !target.typeId.startsWith("fluffyalien_asn:")
+  ) {
+    return false;
+  }
+
+  const entry = TUTORIAL_ENTRIES.find((ent) =>
+    ent.targets.includes(target.typeId),
+  );
+  if (!entry) return false;
+
+  system.run(() => {
+    void showTutorialBookEntryUi(player, entry);
+  });
+  return true;
+}
+
+world.beforeEvents.playerInteractWithBlock.subscribe((e) => {
+  if (onPlayerInteractEvent(e.player, e.block, e.itemStack)) {
+    e.cancel = true;
+  }
+});
+
+world.beforeEvents.playerInteractWithEntity.subscribe((e) => {
+  if (onPlayerInteractEvent(e.player, e.target, e.itemStack)) {
+    e.cancel = true;
+  }
 });
