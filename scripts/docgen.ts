@@ -5,13 +5,16 @@
  * - A "book" window with a list of entries, each with its icon and title.
  * - Selecting an entry shows its content (green title, white bullets), exactly
  *   like the in-game `ActionFormData` message form.
+ * - Each entry also links to its related entries (as icon + title buttons),
+ *   like the in-game book.
  *
  * View switching is done entirely with CSS `:target` (no JavaScript), so each
  * entry is deep-linkable at `#entry-<id>`.
  *
  * Content comes from the same sources as the in-game book:
- * - `RP/texts/en_US.lang` (parsed the same way as the `tutorial_entries` filter,
- *   including the `##`-comment icon definitions).
+ * - `RP/texts/en_US.lang`, parsed by the shared `tutorial_book_lang` module (the
+ *   same one the `tutorial_entries` filter uses), including the `##`-comment icon
+ *   and targets definitions and the derived related entries.
  * - Icon textures are copied out of `RP/textures/` into `site/icons/`.
  *
  * Config lives in `docgen.json` (see the `SiteConfig` interface).
@@ -21,6 +24,10 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import {
+  parseTutorialBookEntries,
+  type TutorialBookEntry,
+} from "./tutorial_book_lang_parser.ts";
 
 interface SimpleManifest {
   version: [number, number, number];
@@ -61,14 +68,6 @@ interface SiteConfig {
   onlineEntries?: OnlineEntry[];
 }
 
-interface Entry {
-  id: string;
-  title: string;
-  /** Icon texture path as written in the lang file, e.g. `textures/.../storage_core`. */
-  icon: string;
-  bullets: string[];
-}
-
 const CONFIG_FILE_PATH = "docgen.json";
 const MANIFEST_FILE_PATH = "packs/data/simple_manifest.json";
 const LANG_FILE_PATH = "packs/RP/texts/en_US.lang";
@@ -83,51 +82,12 @@ const manifest = JSON.parse(
   fs.readFileSync(MANIFEST_FILE_PATH, "utf8"),
 ) as SimpleManifest;
 
-const ENTRY_KEY_PREFIX = `${config.namespace}.ui.tutorialBook.entry.`;
-
-function parseEntries(): Entry[] {
-  const lang = fs.readFileSync(LANG_FILE_PATH, "utf8");
-  const lines = lang.split("\n");
-
-  // Entry ID -> partially-built entry, in first-seen order.
-  const entries = new Map<string, Entry>();
-
-  function getOrCreate(id: string): Entry {
-    let entry = entries.get(id);
-    if (entry === undefined) {
-      entry = { id, title: id, icon: "", bullets: [] };
-      entries.set(id, entry);
-    }
-    return entry;
-  }
-
-  for (const rawLine of lines) {
-    // Strip the leading comment marker (##) so icon definitions in comments are
-    // parsed the same way as regular keys.
-    const line = rawLine.replace(/^\s*##\s*/, "");
-
-    const [key, value] = line.split(/=(.*)/);
-    if (!key.startsWith(ENTRY_KEY_PREFIX)) continue;
-
-    const [id, subKey] = key.slice(ENTRY_KEY_PREFIX.length).split(".");
-    const entry = getOrCreate(id);
-
-    if (subKey === "icon") {
-      entry.icon = value.trim();
-    } else if (subKey === "title") {
-      entry.title = value;
-    } else if (subKey.startsWith("bullet")) {
-      entry.bullets[Number(subKey.slice("bullet".length))] = value;
-    }
-  }
-
-  return [...entries.values()];
-}
-
 /** Builds the online-only entries defined in the config. */
-function buildOnlineEntries(inGameEntries: Entry[]): Entry[] {
+function buildOnlineEntries(
+  inGameEntries: TutorialBookEntry[],
+): TutorialBookEntry[] {
   const usedIds = new Set(inGameEntries.map((entry) => entry.id));
-  const entries: Entry[] = [];
+  const entries: TutorialBookEntry[] = [];
 
   for (const online of config.onlineEntries ?? []) {
     if (usedIds.has(online.id)) {
@@ -142,14 +102,16 @@ function buildOnlineEntries(inGameEntries: Entry[]): Entry[] {
       id: online.id,
       title: online.title,
       icon: online.icon ?? "",
+      targets: [],
       bullets: online.bullets,
+      related: [],
     });
   }
 
   return entries;
 }
 
-function copyIcons(entries: Entry[]): void {
+function copyIcons(entries: TutorialBookEntry[]): void {
   const iconsDir = path.join(OUTPUT_DIR_PATH, ICONS_OUTPUT_DIR_NAME);
   fs.mkdirSync(iconsDir, { recursive: true });
 
@@ -175,11 +137,11 @@ function esc(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function iconSrc(entry: Entry): string {
+function iconSrc(entry: TutorialBookEntry): string {
   return `${ICONS_OUTPUT_DIR_NAME}/${entry.id}.png`;
 }
 
-function renderListRow(entry: Entry): string {
+function renderListRow(entry: TutorialBookEntry): string {
   const icon =
     entry.icon !== "" ? `<img src="${esc(iconSrc(entry))}" alt="" />` : "";
   return `<a class="row" href="#entry-${esc(entry.id)}">
@@ -192,15 +154,28 @@ function renderBullet(text: string): string {
   return `<p class="bullet"><span class="dash">-</span><span class="text">${esc(text)}</span></p>`;
 }
 
-function renderEntry(entry: Entry): string {
+function renderEntry(
+  entry: TutorialBookEntry,
+  relatedEntries: TutorialBookEntry[],
+): string {
   // `Object.values` drops any holes from non-contiguous bullet indices.
   const bullets = Object.values(entry.bullets)
     .map(renderBullet)
     .join("\n        ");
 
+  // Related entries appear as icon + title buttons, like the in-game book.
+  const related =
+    relatedEntries.length > 0
+      ? `<div class="related">
+          <h2 class="related-heading">Related</h2>
+          ${relatedEntries.map(renderListRow).join("\n          ")}
+        </div>`
+      : "";
+
   return `<article class="entry" id="entry-${esc(entry.id)}">
         <h1>${esc(entry.title)}</h1>
         ${bullets}
+        ${related}
         <a class="close-btn" href="#list">Close</a>
       </article>`;
 }
@@ -421,6 +396,22 @@ img {
   color: #fff;
 }
 
+/* --- Related entries (icon + title buttons, like the in-game book) --- */
+
+.related {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 22px;
+}
+
+.related-heading {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
 .close-btn {
   display: flex;
   align-items: center;
@@ -465,9 +456,17 @@ footer a {
 }
 `;
 
-function buildHtml(entries: Entry[]): string {
+function buildHtml(entries: TutorialBookEntry[]): string {
   const version = `v${manifest.version[0].toString()}.${manifest.version[1].toString()}.x`;
   const faviconEntry = entries.find((entry) => entry.icon !== "");
+
+  const entriesById = new Map<string, TutorialBookEntry>(
+    entries.map((entry) => [entry.id, entry]),
+  );
+  const relatedEntriesFor = (entry: TutorialBookEntry): TutorialBookEntry[] =>
+    entry.related
+      .map((id) => entriesById.get(id))
+      .filter((related): related is TutorialBookEntry => related !== undefined);
 
   const links: string[] = [];
   if (config.repoUrl !== undefined) {
@@ -503,7 +502,9 @@ function buildHtml(entries: Entry[]): string {
         <a class="close-x" href="#list" aria-label="Back to entry list">&times;</a>
       </div>
       <div class="body">
-        ${entries.map(renderEntry).join("\n        ")}
+        ${entries
+          .map((entry) => renderEntry(entry, relatedEntriesFor(entry)))
+          .join("\n        ")}
         <div id="list">
           ${entries.map(renderListRow).join("\n          ")}
         </div>
@@ -523,7 +524,10 @@ function buildHtml(entries: Entry[]): string {
 fs.rmSync(OUTPUT_DIR_PATH, { recursive: true, force: true });
 fs.mkdirSync(OUTPUT_DIR_PATH, { recursive: true });
 
-const inGameEntries = parseEntries();
+const inGameEntries = parseTutorialBookEntries(
+  fs.readFileSync(LANG_FILE_PATH, "utf8"),
+  config.namespace,
+);
 const entries = [...inGameEntries, ...buildOnlineEntries(inGameEntries)];
 copyIcons(entries);
 
