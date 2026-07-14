@@ -33,7 +33,7 @@ import {
 } from "@minecraft/server";
 import { DynamicPropertyAccessor } from "./utils/dynamic_property_v3";
 import { err, ok, Result } from "neverthrow";
-import { getUniqueEntityAtBlockLocation } from "./utils/location";
+import { getEntityAtBlockLocation } from "./utils/location";
 import { abbreviateNumber } from "./utils/string";
 import { createItemStack } from "./utils/item";
 
@@ -210,7 +210,7 @@ function getEntityFromDisk(diskId: string): Result<Entity, Error> {
     );
   }
 
-  const entity = getUniqueEntityAtBlockLocation(location, diskId);
+  const entity = getEntityAtBlockLocation(location, DISK_ENTITY_ID);
   if (!entity) {
     return err(
       new Error("Failed to get entity from storage disk: Entity not found."),
