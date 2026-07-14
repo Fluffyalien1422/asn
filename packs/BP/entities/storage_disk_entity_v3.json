@@ -11,7 +11,7 @@
         "container_type": "container",
         "inventory_size": 64
       },
-      "minecraft:persistent": {},
+      "minecraft:transient": {},
       "minecraft:knockback_resistance": {
         "value": 1
       },

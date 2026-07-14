@@ -33,8 +33,9 @@ import {
 } from "@minecraft/server";
 import { DynamicPropertyAccessor } from "./utils/dynamic_property_v3";
 import { err, ok, Result } from "neverthrow";
-import { getEntityAtBlockLocation } from "./utils/location";
+import { getUniqueEntityAtBlockLocation } from "./utils/location";
 import { abbreviateNumber } from "./utils/string";
+import { createItemStack } from "./utils/item";
 
 /** Id of the ticking area that keeps {@link DATA_LOCATION} loaded. */
 const TICKING_AREA_ID = "fluffyalien_asn:disk_data_area";
@@ -209,7 +210,7 @@ function getEntityFromDisk(diskId: string): Result<Entity, Error> {
     );
   }
 
-  const entity = getEntityAtBlockLocation(location, DISK_ENTITY_ID);
+  const entity = getUniqueEntityAtBlockLocation(location, diskId);
   if (!entity) {
     return err(
       new Error("Failed to get entity from storage disk: Entity not found."),
@@ -238,7 +239,7 @@ export async function saveItemsToDisk<T extends ItemStack | ContainerSlot>(
   items: ItemStack[],
   capacity_: number,
 ): Promise<Result<T, Error>> {
-  // an entity inventory holds at most 64 slots, so cap capacity there.
+  // the entity inventory holds at most 64 slots, so cap capacity there.
   const capacity = Math.min(capacity_, 64);
   if (items.length > capacity) {
     return err(
@@ -295,44 +296,50 @@ export async function saveItemsToDisk<T extends ItemStack | ContainerSlot>(
     diskIdProperty.set(disk, entity.id);
   }
 
-  // overwrite the entity's inventory with the new contents.
-  const container = entity.getComponent("inventory")?.container;
-  if (!container) {
-    return err(
-      new Error(
-        "Failed to save items to storage disk: Cannot get entity container.",
-      ),
-    );
-  }
-  container.clearAll();
-  for (let i = 0; i < items.length; i++) {
-    container.setItem(i, items[i]);
-  }
-
-  // re-save the entity into its structure (replacing the old one) so the
-  // contents persist across reloads.
   try {
-    world.structureManager.delete(structId);
-    world.structureManager.createFromWorld(
-      structId,
-      location.dimension,
-      location,
-      location,
-      {
-        includeBlocks: false,
-        includeEntities: true,
-        saveMode: StructureSaveMode.World,
-      },
-    );
-  } catch (e) {
-    return err(new Error(`Failed to save items to storage disk: ${String(e)}`));
+    // overwrite the entity's inventory with the new contents.
+    const container = entity.getComponent("inventory")?.container;
+    if (!container) {
+      return err(
+        new Error(
+          "Failed to save items to storage disk: Cannot get entity container.",
+        ),
+      );
+    }
+    container.clearAll();
+    for (let i = 0; i < items.length; i++) {
+      container.setItem(i, items[i]);
+    }
+
+    // re-save the entity into its structure (replacing the old one) so the
+    // contents persist across reloads.
+    try {
+      world.structureManager.delete(structId);
+      world.structureManager.createFromWorld(
+        structId,
+        location.dimension,
+        location,
+        location,
+        {
+          includeBlocks: false,
+          includeEntities: true,
+          saveMode: StructureSaveMode.World,
+        },
+      );
+    } catch (e) {
+      return err(
+        new Error(`Failed to save items to storage disk: ${String(e)}`),
+      );
+    }
+
+    setDiskLore(disk, items);
+
+    return ok(disk);
+  } finally {
+    // whether the save succeeded or bailed out early, the live entity is no
+    // longer needed (the structure, if written, now holds the data).
+    entity.remove();
   }
-
-  // the structure now holds the data; the live entity is no longer needed.
-  entity.remove();
-  setDiskLore(disk, items);
-
-  return ok(disk);
 }
 
 /**
@@ -350,22 +357,35 @@ export async function upgradeDisk(
   source: ItemStack,
   resultTypeId: string,
 ): Promise<Result<ItemStack, Error>> {
-  const result = new ItemStack(resultTypeId);
+  if (!getDiskCapacity(resultTypeId)) {
+    return err(
+      new Error(`Failed to upgrade disk: Invalid disk type '${resultTypeId}'.`),
+    );
+  }
+
+  const itemStackr = createItemStack(resultTypeId);
+  if (itemStackr.isErr()) {
+    return err(
+      new Error(`Failed to create upgraded disk: ${itemStackr.error}`),
+    );
+  }
+  const itemStack = itemStackr.value;
 
   const diskId = diskIdProperty.safeGet(source);
   if (diskId === undefined) {
-    return ok(result);
+    return ok(itemStack);
   }
 
-  diskIdProperty.set(result, diskId);
-
-  const itemsr = await loadItemsFromDisk(result);
+  diskIdProperty.set(itemStack, diskId);
+  const itemsr = await loadItemsFromDisk(itemStack);
   if (itemsr.isErr()) {
-    return err(new Error(`Failed to upgrade disk: ${itemsr.error.message}`));
+    return err(new Error(`Failed to upgrade disk: ${itemsr.error}`));
   }
-  setDiskLore(result, itemsr.value);
+  const items = itemsr.value;
 
-  return ok(result);
+  setDiskLore(itemStack, items);
+
+  return ok(itemStack);
 }
 
 /**
@@ -400,15 +420,18 @@ export async function loadItemsFromDisk(
   }
   const entity = entityr.value;
 
-  // collect the non-empty slots from the storage entity's inventory.
-  const items: ItemStack[] = [];
-  const container = entity.getComponent("inventory")!.container;
-  for (let i = 0; i < container.size; i++) {
-    const item = container.getItem(i);
-    if (item) items.push(item);
-  }
+  try {
+    // collect the non-empty slots from the storage entity's inventory.
+    const items: ItemStack[] = [];
+    const container = entity.getComponent("inventory")!.container;
+    for (let i = 0; i < container.size; i++) {
+      const item = container.getItem(i);
+      if (item) items.push(item);
+    }
 
-  // the read is complete; remove the transient entity.
-  entity.remove();
-  return ok(items);
+    return ok(items);
+  } finally {
+    // the read is complete (or threw); remove the transient entity either way.
+    entity.remove();
+  }
 }
