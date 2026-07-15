@@ -19,6 +19,18 @@
  *
  * The data location is deep underground in the overworld at a fixed point, far
  * from where players build, so the transient entity is never seen.
+ *
+ * CONCURRENCY INVARIANT: every disk operation shares the single
+ * {@link DATA_LOCATION}, so correctness relies on each read/write critical
+ * section being atomic. Between spawning/placing the storage entity and calling
+ * `entity.remove()`, {@link saveItemsToDisk} and {@link loadItemsFromDisk} must
+ * not `await` anything. Because the scripting runtime is single-threaded, a
+ * fully synchronous critical section guarantees no other operation's entity can
+ * coexist at {@link DATA_LOCATION}; if an `await` were introduced there, a
+ * concurrent operation could run in the gap and its entity would be captured by
+ * this one's `structureManager.createFromWorld` (or read out by the wrong
+ * caller), corrupting or duplicating disk contents. Keep those sections free of
+ * `await`.
  */
 
 import {
@@ -273,6 +285,9 @@ export async function saveItemsToDisk<T extends ItemStack | ContainerSlot>(
   // always spawn a fresh storage entity; any previously stored entity is
   // discarded and its structure overwritten below, so there's no need to bring
   // the old one back.
+  //
+  // CONCURRENCY: there must be no `await` from here until `entity.remove()` in
+  // the finally below - see the concurrency invariant in the module doc.
   let entity: Entity;
   try {
     entity = location.dimension.spawnEntity(DISK_ENTITY_ID, location);
@@ -280,11 +295,9 @@ export async function saveItemsToDisk<T extends ItemStack | ContainerSlot>(
     return err(new Error(`Failed to save items to storage disk: ${String(e)}`));
   }
 
-  // a fresh disk (no id yet) adopts the new entity's id, so the disk only gets
-  // an id the first time it is written to.
-  if (!diskId) {
-    diskIdProperty.set(disk, entity.id);
-  }
+  // a fresh disk has no id yet; it adopts the new entity's id, but only once its
+  // structure has actually been written (below), so a failed first write can't
+  // leave the disk pointing at a structure that doesn't exist.
   const structId = structureIdFromDiskId(diskId ?? entity.id);
 
   try {
@@ -316,6 +329,22 @@ export async function saveItemsToDisk<T extends ItemStack | ContainerSlot>(
         saveMode: StructureSaveMode.World,
       },
     );
+
+    // the structure now exists, so it's safe to commit the id to a fresh disk.
+    // doing this only after a successful write ensures the disk never references
+    // a missing structure.
+    if (!diskId) {
+      const setResult = diskIdProperty.set(disk, entity.id);
+      if (setResult.isErr()) {
+        // couldn't record the id on the disk (eg. the slot became invalid), so
+        // the structure we just wrote would be orphaned; delete it so it doesn't
+        // leak.
+        world.structureManager.delete(structId);
+        return err(
+          new Error(`Failed to save items to storage disk: ${setResult.error}`),
+        );
+      }
+    }
 
     setDiskLore(disk, items);
 
@@ -411,16 +440,32 @@ export async function loadItemsFromDisk(
   }
   const entity = entityr.value;
 
+  // CONCURRENCY: there must be no `await` from here until `entity.remove()` in
+  // the finally below - see the concurrency invariant in the module doc.
   try {
     // collect the non-empty slots from the storage entity's inventory.
+    const container = entity.getComponent("inventory")?.container;
+    if (!container) {
+      return err(
+        new Error(
+          "Failed to load items from storage disk: Cannot get entity container.",
+        ),
+      );
+    }
+
     const items: ItemStack[] = [];
-    const container = entity.getComponent("inventory")!.container;
     for (let i = 0; i < container.size; i++) {
       const item = container.getItem(i);
       if (item) items.push(item);
     }
 
     return ok(items);
+  } catch (e) {
+    // as with saveItemsToDisk, any failure reading the container is returned as
+    // an error rather than thrown, so callers can rely on the Result contract.
+    return err(
+      new Error(`Failed to load items from storage disk: ${String(e)}`),
+    );
   } finally {
     // the read is complete (or threw); remove the transient entity either way.
     entity.remove();
