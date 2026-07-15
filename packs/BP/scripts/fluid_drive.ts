@@ -126,7 +126,7 @@ export const fluidDriveComponent: BlockCustomComponent = {
           setBlockDynamicProperty(e.block, id, value);
         }
         // clear the cache so it will be forced to update
-        StorageNetwork.getNetwork(e.block)?.clearStoredFluidsCache();
+        void StorageNetwork.getNetwork(e.block)?.clearStoredFluidsCache();
       }
 
       mainHandSlot.setItem();

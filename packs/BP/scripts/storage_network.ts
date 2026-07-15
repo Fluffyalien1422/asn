@@ -40,6 +40,7 @@ import { cloneItemStackWithAmount } from "./utils/item";
 import { getBlockUid } from "./utils/block";
 import { ContainerSlot } from "@minecraft/server";
 import { err, ok, Result } from "neverthrow";
+import { MaybePromise } from "./utils/async";
 
 /**
  * How often (in ticks) {@link StorageNetwork.standardTick} runs. Energy
@@ -334,6 +335,15 @@ export class StorageNetwork extends StorageSystem {
   private unmetEnergyDemand = 0;
 
   /**
+   * Serializes storage operations so only one runs at a time (see
+   * {@link StorageNetwork.runExclusive}). Concurrent triggers - several buses
+   * updating in one tick, a player acting in the storage UI, a drive change
+   * clearing the cache - would otherwise interleave their read-modify-write
+   * cycles and produce torn disk writes or a cache that disagrees with disk.
+   */
+  private opQueue: Promise<unknown> = Promise.resolve();
+
+  /**
    * Use {@link StorageNetwork.establishNetwork} or
    * {@link StorageNetwork.getOrEstablishNetwork} to create a network. Indexes
    * the connections and starts the standard and fast tick intervals.
@@ -441,6 +451,27 @@ export class StorageNetwork extends StorageSystem {
   }
 
   /**
+   * Runs `fn` once every previously-queued exclusive operation has settled, so
+   * only one runs at a time for this network. A failing operation never poisons
+   * the queue: the chain continues regardless of outcome, while the caller
+   * still receives `fn`'s own result (or rejection).
+   *
+   * IMPORTANT: `fn` must not call another method that also acquires the queue
+   * (eg. the public {@link StorageNetwork.getStoredItemStacks}); use the
+   * unlocked internal helpers ({@link StorageNetwork.loadStoredItemStacks},
+   * {@link StorageNetwork.loadStoredFluids}, {@link StorageNetwork.saveStoredItemData},
+   * {@link StorageNetwork.saveStoredFluidData}) instead, or it will deadlock.
+   */
+  private runExclusive<T>(fn: () => MaybePromise<T>): Promise<T> {
+    const run = this.opQueue.then(fn, fn);
+    this.opQueue = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  }
+
+  /**
    * Allocates a fresh unique id for a stored item stack. Ids are only unique
    * within this network's lifetime; they are not persisted.
    */
@@ -515,6 +546,25 @@ export class StorageNetwork extends StorageSystem {
    * @returns a result containing the stored items map, or an error
    */
   async getStoredItemStacks(): Promise<Result<Map<string, ItemStack>, Error>> {
+    // fast path: an already-populated cache can be returned without waiting on
+    // the op queue, so per-tick reads (level emitters, UI refreshes) stay cheap.
+    if (this.storedItems) {
+      return ok(this.storedItems);
+    }
+
+    return this.runExclusive(() => this.loadStoredItemStacks());
+  }
+
+  /**
+   * Loads every disk's items into the cache and records the disks and their
+   * per-disk snapshots for change detection. Assumes it runs inside
+   * {@link StorageNetwork.runExclusive}; callers elsewhere must use the public
+   * {@link StorageNetwork.getStoredItemStacks}.
+   */
+  private async loadStoredItemStacks(): Promise<
+    Result<Map<string, ItemStack>, Error>
+  > {
+    // another queued operation may have populated the cache while we waited.
     if (this.storedItems) {
       return ok(this.storedItems);
     }
@@ -577,12 +627,11 @@ export class StorageNetwork extends StorageSystem {
    * Writes the in-memory item data ({@link StorageNetwork.storedItems}) back to
    * the network's disks. Items are distributed across the disks that they were
    * loaded from, up to the capacity of each disk.
-   * @returns a result containing an error if the data area could not be loaded
    */
-  private async saveStoredItemData(): Promise<Result<void, Error>> {
+  private async saveStoredItemData(): Promise<void> {
     // nothing to save if items were never loaded
     if (!this.storedItems || !this.storedItemDisks || !this.savedDiskContents) {
-      return ok();
+      return;
     }
 
     const storedItemsArray = [...this.storedItems.values()];
@@ -611,7 +660,7 @@ export class StorageNetwork extends StorageSystem {
 
     // nothing changed, so there's no need to touch the data area at all
     if (!dirtyDiskIndexes.length) {
-      return ok();
+      return;
     }
 
     for (const i of dirtyDiskIndexes) {
@@ -629,8 +678,6 @@ export class StorageNetwork extends StorageSystem {
       // record what we just persisted so future saves can skip this disk
       savedDiskContents[i] = snapshotDiskContents(diskItems);
     }
-
-    return ok();
   }
 
   /**
@@ -640,7 +687,8 @@ export class StorageNetwork extends StorageSystem {
   private async saveStoredFluidData(): Promise<void> {
     if (!this.connections.fluidDrives.length) return;
 
-    const fluidBudget = new Map((await this.getStoredFluids()).types);
+    // uses the unlocked loader because callers already hold the op queue.
+    const fluidBudget = new Map((await this.loadStoredFluids()).types);
 
     for (const drive of this.connections.fluidDrives) {
       let remainingCapacity = FLUID_DRIVE_CAPACITY;
@@ -713,6 +761,9 @@ export class StorageNetwork extends StorageSystem {
   > {
     this.ensureValidity();
 
+    // discovery is slow and doesn't touch the caches, so run it outside the op
+    // queue; only the state swap below needs to be exclusive so it can't clobber
+    // an in-flight mutation's cache.
     const result = await discoverCableNetworkConnections(
       this.connections.storageCore,
     );
@@ -720,43 +771,62 @@ export class StorageNetwork extends StorageSystem {
       this.destroy();
       return err(result.error);
     }
+    const connections = result.value;
 
-    this.connections = result.value;
-    this.indexConnections();
+    return this.runExclusive<
+      Result<void, DiscoverCableNetworkConnectionsError>
+    >(() => {
+      // the network may have been destroyed while this was queued; re-indexing
+      // it then would resurrect it in the static index, so bail out.
+      if (!this.internalIsValid) {
+        return ok();
+      }
 
-    // we need to clear storage because a drive may have been removed
-    // these will be updated the next time their get function is called
-    this.storedItems = undefined;
-    this.storedItemDisks = undefined;
-    this.savedDiskContents = undefined;
-    this.storedFluids = undefined;
+      this.connections = connections;
+      this.indexConnections();
 
-    // the connected drives (and therefore the stored items) may have changed
-    this.markStoredItemsChanged();
+      // we need to clear storage because a drive may have been removed
+      // these will be updated the next time their get function is called
+      this.storedItems = undefined;
+      this.storedItemDisks = undefined;
+      this.savedDiskContents = undefined;
+      this.storedFluids = undefined;
 
-    return ok();
+      // the connected drives (and therefore the stored items) may have changed
+      this.markStoredItemsChanged();
+
+      return ok();
+    });
   }
 
   /**
-   * Clear the stored items cache. The cache will be created again when {@link StorageNetwork.getStoredItemStacks} is called.
+   * Clear the stored items cache. The cache will be created again when
+   * {@link StorageNetwork.getStoredItemStacks} is called. Routed through the op
+   * queue so it can't discard a mutation's cache mid-write; a no-op if this
+   * object has been destroyed.
    * @see {@link StorageNetwork.getStoredItemStacks}
-   * @throws if this object is invalid
    */
-  clearStoredItemsCache(): void {
-    this.ensureValidity();
-    this.storedItems = undefined;
-    this.storedItemDisks = undefined;
-    this.savedDiskContents = undefined;
-    this.markStoredItemsChanged();
+  clearStoredItemsCache(): Promise<void> {
+    return this.runExclusive(() => {
+      if (!this.internalIsValid) return;
+      this.storedItems = undefined;
+      this.storedItemDisks = undefined;
+      this.savedDiskContents = undefined;
+      this.markStoredItemsChanged();
+    });
   }
 
   /**
-   * Clear the stored fluids cache. The cache will be created again when {@link StorageNetwork.getStoredFluids} is called.
-   * @throws if this object is invalid
+   * Clear the stored fluids cache. The cache will be created again when
+   * {@link StorageNetwork.getStoredFluids} is called. Routed through the op
+   * queue for the same reason as {@link StorageNetwork.clearStoredItemsCache};
+   * a no-op if this object has been destroyed.
    */
-  clearStoredFluidsCache(): void {
-    this.ensureValidity();
-    this.storedFluids = undefined;
+  clearStoredFluidsCache(): Promise<void> {
+    return this.runExclusive(() => {
+      if (!this.internalIsValid) return;
+      this.storedFluids = undefined;
+    });
   }
 
   /**
@@ -769,6 +839,21 @@ export class StorageNetwork extends StorageSystem {
   async getStoredFluids(): Promise<NetworkStoredFluids> {
     this.ensureValidity();
 
+    // fast path: return the populated cache without waiting on the op queue.
+    if (this.storedFluids) {
+      return this.storedFluids;
+    }
+
+    return this.runExclusive(() => this.loadStoredFluids());
+  }
+
+  /**
+   * Aggregates the fluids across every fluid drive into the cache. Assumes it
+   * runs inside {@link StorageNetwork.runExclusive}; callers elsewhere must use
+   * the public {@link StorageNetwork.getStoredFluids}.
+   */
+  private async loadStoredFluids(): Promise<NetworkStoredFluids> {
+    // another queued operation may have populated the cache while we waited.
     if (this.storedFluids) {
       return this.storedFluids;
     }
@@ -923,41 +1008,39 @@ export class StorageNetwork extends StorageSystem {
    * @returns a result containing an error if the item could not be stored
    * @throws if this object is not valid
    */
-  addItemStack = async (
+  addItemStack = (
     itemStack: ItemStack,
-  ): Promise<Result<void, AddItemStackToStorageError>> => {
-    this.ensureValidity();
+  ): Promise<Result<void, AddItemStackToStorageError>> =>
+    this.runExclusive<Result<void, AddItemStackToStorageError>>(async () => {
+      this.ensureValidity();
 
-    const storedItemsr = await this.getStoredItemStacks();
-    if (storedItemsr.isErr()) {
-      return err({
-        type: "unknownError",
-        message: `An unknown error occurred while getting stored item stacks: ${storedItemsr.error}`,
-      });
-    }
-    const storedItems = storedItemsr.value;
+      const storedItemsr = await this.loadStoredItemStacks();
+      if (storedItemsr.isErr()) {
+        return err({
+          type: "unknownError",
+          message: `An unknown error occurred while getting stored item stacks: ${storedItemsr.error}`,
+        });
+      }
+      const storedItems = storedItemsr.value;
 
-    // storedItemDisks is guaranteed to be set after a successful
-    // getStoredItemStacks; use it to avoid re-scanning the drives for capacity.
-    const capacity = this.computeItemSlotsCapacity(this.storedItemDisks!);
+      // storedItemDisks is guaranteed to be set after a successful load; use it
+      // to avoid re-scanning the drives for capacity.
+      const capacity = this.computeItemSlotsCapacity(this.storedItemDisks!);
 
-    const result = this.addItemStackToMemory(storedItems, capacity, itemStack);
-    if (result.isErr()) {
-      return result;
-    }
+      const result = this.addItemStackToMemory(
+        storedItems,
+        capacity,
+        itemStack,
+      );
+      if (result.isErr()) {
+        return result;
+      }
 
-    const saveResult = await this.saveStoredItemData();
-    if (saveResult.isErr()) {
-      return err({
-        type: "unknownError",
-        message: `An unknown error occurred while saving stored item data: ${saveResult.error.message}`,
-      });
-    }
+      await this.saveStoredItemData();
+      this.markStoredItemsChanged();
 
-    this.markStoredItemsChanged();
-
-    return ok();
-  };
+      return ok();
+    });
 
   /**
    * Adds multiple item stacks to storage, persisting to disk only once after
@@ -972,47 +1055,44 @@ export class StorageNetwork extends StorageSystem {
   async addItemStacks(
     itemStacks: readonly ItemStack[],
   ): Promise<Result<number, AddItemStackToStorageError>> {
-    this.ensureValidity();
+    return this.runExclusive<Result<number, AddItemStackToStorageError>>(
+      async () => {
+        this.ensureValidity();
 
-    const storedItemsr = await this.getStoredItemStacks();
-    if (storedItemsr.isErr()) {
-      return err({
-        type: "unknownError",
-        message: `An unknown error occurred while getting stored item stacks: ${storedItemsr.error}`,
-      });
-    }
-    const storedItems = storedItemsr.value;
+        const storedItemsr = await this.loadStoredItemStacks();
+        if (storedItemsr.isErr()) {
+          return err({
+            type: "unknownError",
+            message: `An unknown error occurred while getting stored item stacks: ${storedItemsr.error}`,
+          });
+        }
+        const storedItems = storedItemsr.value;
 
-    // storedItemDisks is guaranteed to be set after a successful
-    // getStoredItemStacks; use it to avoid re-scanning the drives for capacity.
-    const capacity = this.computeItemSlotsCapacity(this.storedItemDisks!);
+        // storedItemDisks is guaranteed to be set after a successful load; use
+        // it to avoid re-scanning the drives for capacity.
+        const capacity = this.computeItemSlotsCapacity(this.storedItemDisks!);
 
-    let addedCount = 0;
-    for (const itemStack of itemStacks) {
-      const result = this.addItemStackToMemory(
-        storedItems,
-        capacity,
-        itemStack,
-      );
-      if (result.isErr()) break;
-      addedCount++;
-    }
+        let addedCount = 0;
+        for (const itemStack of itemStacks) {
+          const result = this.addItemStackToMemory(
+            storedItems,
+            capacity,
+            itemStack,
+          );
+          if (result.isErr()) break;
+          addedCount++;
+        }
 
-    if (!addedCount) {
-      return ok(0);
-    }
+        if (!addedCount) {
+          return ok(0);
+        }
 
-    const saveResult = await this.saveStoredItemData();
-    if (saveResult.isErr()) {
-      return err({
-        type: "unknownError",
-        message: `An unknown error occurred while saving stored item data: ${saveResult.error.message}`,
-      });
-    }
+        await this.saveStoredItemData();
+        this.markStoredItemsChanged();
 
-    this.markStoredItemsChanged();
-
-    return ok(addedCount);
+        return ok(addedCount);
+      },
+    );
   }
 
   /**
@@ -1021,22 +1101,24 @@ export class StorageNetwork extends StorageSystem {
    * @throws throws if this object is not valid
    */
   async addFluid(id: string, amount: number): Promise<number> {
-    this.ensureValidity();
+    return this.runExclusive(async () => {
+      this.ensureValidity();
 
-    const storedFluids = await this.getStoredFluids();
+      const storedFluids = await this.loadStoredFluids();
 
-    const capacity = this.getFluidStorageCapacity();
-    const remainingStorage = capacity - storedFluids.total;
-    const amountToAdd = Math.min(amount, remainingStorage);
-    if (amountToAdd <= 0) return 0;
+      const capacity = this.getFluidStorageCapacity();
+      const remainingStorage = capacity - storedFluids.total;
+      const amountToAdd = Math.min(amount, remainingStorage);
+      if (amountToAdd <= 0) return 0;
 
-    const currentAmount = storedFluids.types.get(id) ?? 0;
-    storedFluids.types.set(id, currentAmount + amountToAdd);
-    storedFluids.total += amountToAdd;
+      const currentAmount = storedFluids.types.get(id) ?? 0;
+      storedFluids.types.set(id, currentAmount + amountToAdd);
+      storedFluids.total += amountToAdd;
 
-    void this.saveStoredFluidData();
+      await this.saveStoredFluidData();
 
-    return amountToAdd;
+      return amountToAdd;
+    });
   }
 
   /**
@@ -1045,22 +1127,24 @@ export class StorageNetwork extends StorageSystem {
    * @returns the amount that was removed
    */
   async removeFluid(id: string, amount: number): Promise<number> {
-    this.ensureValidity();
+    return this.runExclusive(async () => {
+      this.ensureValidity();
 
-    const storedFluids = await this.getStoredFluids();
-    const stored = storedFluids.types.get(id) ?? 0;
-    const amountToRemove = Math.min(amount, stored);
+      const storedFluids = await this.loadStoredFluids();
+      const stored = storedFluids.types.get(id) ?? 0;
+      const amountToRemove = Math.min(amount, stored);
 
-    if (amountToRemove <= 0) {
-      return 0;
-    }
+      if (amountToRemove <= 0) {
+        return 0;
+      }
 
-    storedFluids.types.set(id, stored - amountToRemove);
-    storedFluids.total -= amountToRemove;
+      storedFluids.types.set(id, stored - amountToRemove);
+      storedFluids.total -= amountToRemove;
 
-    void this.saveStoredFluidData();
+      await this.saveStoredFluidData();
 
-    return amountToRemove;
+      return amountToRemove;
+    });
   }
 
   /**
@@ -1072,46 +1156,42 @@ export class StorageNetwork extends StorageSystem {
    *   the removal failed or the id was not found
    * @throws if this object is not valid
    */
-  removeItemStack = async (
+  removeItemStack = (
     id: string,
     amount: number,
-  ): Promise<Result<ItemStack, RemoveItemStackFromStorageError>> => {
-    this.ensureValidity();
+  ): Promise<Result<ItemStack, RemoveItemStackFromStorageError>> =>
+    this.runExclusive<Result<ItemStack, RemoveItemStackFromStorageError>>(
+      async () => {
+        this.ensureValidity();
 
-    const storedItemsr = await this.getStoredItemStacks();
-    if (storedItemsr.isErr()) {
-      return err({
-        type: "unknownError",
-        message: `An unknown error occurred while getting stored item stacks: ${storedItemsr.error}`,
-      });
-    }
-    const storedItems = storedItemsr.value;
+        const storedItemsr = await this.loadStoredItemStacks();
+        if (storedItemsr.isErr()) {
+          return err({
+            type: "unknownError",
+            message: `An unknown error occurred while getting stored item stacks: ${storedItemsr.error}`,
+          });
+        }
+        const storedItems = storedItemsr.value;
 
-    const itemStack = storedItems.get(id);
-    if (!itemStack) {
-      return err({ type: "notFound" });
-    }
+        const itemStack = storedItems.get(id);
+        if (!itemStack) {
+          return err({ type: "notFound" });
+        }
 
-    const amountToRemove = Math.min(amount, itemStack.amount);
-    const removed = cloneItemStackWithAmount(itemStack, amountToRemove);
+        const amountToRemove = Math.min(amount, itemStack.amount);
+        const removed = cloneItemStackWithAmount(itemStack, amountToRemove);
 
-    const newAmount = itemStack.amount - amountToRemove;
-    if (newAmount <= 0) {
-      storedItems.delete(id);
-    } else {
-      itemStack.amount = newAmount;
-    }
+        const newAmount = itemStack.amount - amountToRemove;
+        if (newAmount <= 0) {
+          storedItems.delete(id);
+        } else {
+          itemStack.amount = newAmount;
+        }
 
-    const saveResult = await this.saveStoredItemData();
-    if (saveResult.isErr()) {
-      return err({
-        type: "unknownError",
-        message: `An unknown error occurred while saving stored item data: ${saveResult.error.message}`,
-      });
-    }
+        await this.saveStoredItemData();
+        this.markStoredItemsChanged();
 
-    this.markStoredItemsChanged();
-
-    return ok(removed);
-  };
+        return ok(removed);
+      },
+    );
 }

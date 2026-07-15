@@ -126,7 +126,7 @@ export const storageDriveV3Component: BlockCustomComponent = {
     }
 
     if (changed) {
-      StorageNetwork.getNetwork(e.block)?.clearStoredItemsCache();
+      void StorageNetwork.getNetwork(e.block)?.clearStoredItemsCache();
     }
 
     data.diskSignatures = diskSignatures;
