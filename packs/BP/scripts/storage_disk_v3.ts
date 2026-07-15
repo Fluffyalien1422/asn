@@ -20,6 +20,7 @@
  * The data location is deep underground in the overworld at a fixed point, far
  * from where players build, so the transient entity is never seen.
  */
+
 import {
   ContainerSlot,
   Dimension,
@@ -222,10 +223,12 @@ function getEntityFromDisk(diskId: string): Result<Entity, Error> {
 
 /**
  * Persists `items` as the full contents of a disk. The given items replace
- * whatever the disk held before. On a fresh disk (one with no id yet) this
- * spawns a new storage entity and assigns the disk its id; otherwise it loads
- * the existing entity and overwrites its inventory. Either way the entity is
- * re-saved into the disk's structure and then removed.
+ * whatever the disk held before. This always spawns a fresh storage entity,
+ * fills it with `items`, and saves it into the disk's structure, overwriting
+ * any previously stored structure. On a fresh disk (one with no id yet) the new
+ * entity's id becomes the disk's id, so the disk only gets an id the first time
+ * it is written to. Either way the live entity is removed once the structure is
+ * written.
  *
  * Also refreshes the disk's lore tooltip via {@link setDiskLore}.
  * @param disk the disk ItemStack (or slot) to write to
@@ -267,34 +270,22 @@ export async function saveItemsToDisk<T extends ItemStack | ContainerSlot>(
     );
   }
 
+  // always spawn a fresh storage entity; any previously stored entity is
+  // discarded and its structure overwritten below, so there's no need to bring
+  // the old one back.
   let entity: Entity;
-  let structId: string;
-  if (diskId) {
-    // existing disk: bring back its storage entity to overwrite.
-    structId = structureIdFromDiskId(diskId);
-    const loadedEntityr = getEntityFromDisk(diskId);
-    if (loadedEntityr.isErr()) {
-      return err(
-        new Error(
-          `Failed to save items to storage disk: ${loadedEntityr.error}`,
-        ),
-      );
-    }
-    const loadedEntity = loadedEntityr.value;
-    entity = loadedEntity;
-  } else {
-    // fresh disk: spawn a new storage entity and adopt its id as the disk id,
-    // so the disk only gets an id the first time it is written to.
-    try {
-      entity = location.dimension.spawnEntity(DISK_ENTITY_ID, location);
-    } catch (e) {
-      return err(
-        new Error(`Failed to save items to storage disk: ${String(e)}`),
-      );
-    }
-    structId = structureIdFromDiskId(entity.id);
+  try {
+    entity = location.dimension.spawnEntity(DISK_ENTITY_ID, location);
+  } catch (e) {
+    return err(new Error(`Failed to save items to storage disk: ${String(e)}`));
+  }
+
+  // a fresh disk (no id yet) adopts the new entity's id, so the disk only gets
+  // an id the first time it is written to.
+  if (!diskId) {
     diskIdProperty.set(disk, entity.id);
   }
+  const structId = structureIdFromDiskId(diskId ?? entity.id);
 
   try {
     // overwrite the entity's inventory with the new contents.
@@ -313,28 +304,28 @@ export async function saveItemsToDisk<T extends ItemStack | ContainerSlot>(
 
     // re-save the entity into its structure (replacing the old one) so the
     // contents persist across reloads.
-    try {
-      world.structureManager.delete(structId);
-      world.structureManager.createFromWorld(
-        structId,
-        location.dimension,
-        location,
-        location,
-        {
-          includeBlocks: false,
-          includeEntities: true,
-          saveMode: StructureSaveMode.World,
-        },
-      );
-    } catch (e) {
-      return err(
-        new Error(`Failed to save items to storage disk: ${String(e)}`),
-      );
-    }
+    world.structureManager.delete(structId);
+    world.structureManager.createFromWorld(
+      structId,
+      location.dimension,
+      location,
+      location,
+      {
+        includeBlocks: false,
+        includeEntities: true,
+        saveMode: StructureSaveMode.World,
+      },
+    );
 
     setDiskLore(disk, items);
 
     return ok(disk);
+  } catch (e) {
+    // Any failure while writing the container, saving the structure, or setting
+    // the lore (eg. the disk slot became invalid) is returned as an error
+    // rather than thrown, so callers can rely on the Result contract instead of
+    // having to guard against a rejected promise.
+    return err(new Error(`Failed to save items to storage disk: ${String(e)}`));
   } finally {
     // whether the save succeeded or bailed out early, the live entity is no
     // longer needed (the structure, if written, now holds the data).

@@ -12,10 +12,10 @@ export function logWarn(message: string): void {
   console.warn(makeLogString("WARN", message));
 }
 
-export function makeErrorString(message: string): string {
-  return makeLogString("ERROR", message);
+export function logError(message: string): void {
+  console.error(makeLogString("ERROR", message));
 }
 
 export function panic(message: string): never {
-  throw new Error(makeErrorString(message));
+  throw new Error(makeLogString("PANIC", message));
 }
