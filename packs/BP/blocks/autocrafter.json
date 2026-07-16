@@ -24,7 +24,9 @@
         "up": {
           "texture": "fluffyalien_asn:autocrafter_top"
         },
-        "down": "up"
+        "down": {
+          "texture": "fluffyalien_asn:machine_casing_top"
+        }
       },
       "minecraft:destructible_by_explosion": false,
       "minecraft:destructible_by_mining": {

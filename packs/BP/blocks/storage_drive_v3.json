@@ -8,8 +8,7 @@
       },
       "traits": {
         "minecraft:placement_direction": {
-          "enabled_states": ["minecraft:cardinal_direction"],
-          "y_rotation_offset": 180
+          "enabled_states": ["minecraft:cardinal_direction"]
         }
       }
     },
@@ -23,7 +22,7 @@
         "*": {
           "texture": "fluffyalien_asn:machine_casing_side"
         },
-        "north": {
+        "south": {
           "texture": "fluffyalien_asn:storage_drive_front"
         },
         "up": {

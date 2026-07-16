@@ -100,12 +100,20 @@ export function getDiskId(disk: ItemStack | ContainerSlot): string | undefined {
  * the used/total stack count and total item count, followed by the
  * {@link DISK_LORE_MAX_DISPLAY_TYPES} most numerous item types and a
  * "and N more..." line if there are additional types.
+ *
+ * Clears the lore if `itemStacks` is an empty array or `undefined`.
+ *
  * @returns the same disk, for chaining
  */
 function setDiskLore<T extends ItemStack | ContainerSlot>(
   disk: T,
-  itemStacks: readonly ItemStack[],
+  itemStacks?: readonly ItemStack[],
 ): T {
+  if (!itemStacks?.length) {
+    disk.setLore();
+    return disk;
+  }
+
   // sum the amounts per item type (keyed by localization key) so the tooltip
   // can show a per-type breakdown rather than one line per stack.
   const localizationToAmount = new Map<string, number>();
@@ -235,12 +243,20 @@ function getEntityFromDisk(diskId: string): Result<Entity, Error> {
 
 /**
  * Persists `items` as the full contents of a disk. The given items replace
- * whatever the disk held before. This always spawns a fresh storage entity,
- * fills it with `items`, and saves it into the disk's structure, overwriting
- * any previously stored structure. On a fresh disk (one with no id yet) the new
- * entity's id becomes the disk's id, so the disk only gets an id the first time
- * it is written to. Either way the live entity is removed once the structure is
- * written.
+ * whatever the disk held before.
+ *
+ * Saving an empty `items` array stores nothing: rather than persist an empty
+ * storage entity, the disk's backing structure (if any) is deleted and the disk
+ * is reset to the fresh, never-written state (its id is cleared). This keeps an
+ * emptied disk indistinguishable from a brand-new one, so a later
+ * {@link loadItemsFromDisk} short-circuits to empty instead of trying to place
+ * a now-missing structure.
+ *
+ * Otherwise this spawns a fresh storage entity, fills it with `items`, and saves
+ * it into the disk's structure, overwriting any previously stored structure. On
+ * a fresh disk (one with no id yet) the new entity's id becomes the disk's id,
+ * so the disk only gets an id the first time non-empty contents are written to
+ * it. Either way the live entity is removed once the structure is written.
  *
  * Also refreshes the disk's lore tooltip via {@link setDiskLore}.
  * @param disk the disk ItemStack (or slot) to write to
@@ -264,6 +280,33 @@ export async function saveItemsToDisk<T extends ItemStack | ContainerSlot>(
     );
   }
 
+  const diskId = diskIdProperty.safeGet(disk);
+
+  // saving nothing: there's no point persisting an empty storage entity, so
+  // instead reset the disk to the fresh, never-written state and drop its
+  // backing structure. this touches neither the data area nor a live entity.
+  if (items.length === 0) {
+    if (diskId) {
+      // clear the id before deleting the structure so the disk never references
+      // a missing structure: if clearing fails, the disk keeps pointing at its
+      // still-present structure (and the caller can retry), mirroring the
+      // "commit the id only after the write succeeds" ordering used below.
+      const clearResult = diskIdProperty.set(disk);
+      if (clearResult.isErr()) {
+        return err(
+          new Error(
+            `Failed to save items to storage disk: ${clearResult.error}`,
+          ),
+        );
+      }
+      // a no-op (returns false) if the structure was never actually written.
+      world.structureManager.delete(structureIdFromDiskId(diskId));
+    }
+
+    setDiskLore(disk);
+    return ok(disk);
+  }
+
   const locationr = getDataDimensionLocation();
   if (locationr.isErr()) {
     return err(
@@ -271,7 +314,6 @@ export async function saveItemsToDisk<T extends ItemStack | ContainerSlot>(
     );
   }
   const location = locationr.value;
-  const diskId = diskIdProperty.safeGet(disk);
 
   const loadDataAreaResult = await loadDataArea();
   if (loadDataAreaResult.isErr()) {
