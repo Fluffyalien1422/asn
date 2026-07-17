@@ -52,9 +52,13 @@ export async function forceCloseStorageViewerInventory(
   entity: Entity,
 ): Promise<void> {
   entity.addTag(STORAGE_VIEWER_FORCE_CLOSE_TAG);
+  entity.addTag("fluffyalien_energisticscore:no_update_ui");
+
   const ogLocation = { ...entity.location };
   entity.teleport(Vector3Utils.add(entity.location, { y: 99 }));
   await system.waitTicks(4);
   entity.teleport(ogLocation);
+
+  entity.removeTag("fluffyalien_energisticscore:no_update_ui");
   entity.removeTag(STORAGE_VIEWER_FORCE_CLOSE_TAG);
 }
