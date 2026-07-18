@@ -24,5 +24,14 @@
         "target_property_name": "#visible"
       }
     ]
+  },
+  "blaze_powder_placeholder@fluffyalien_asn:common.slot_placeholder": {
+    "texture": "textures/fluffyalien/asn/ui/common/blaze_powder_placeholder"
+  },
+  "quartz_placeholder@fluffyalien_asn:common.slot_placeholder": {
+    "texture": "textures/fluffyalien/asn/ui/common/quartz_placeholder"
+  },
+  "disk_placeholder@fluffyalien_asn:common.slot_placeholder": {
+    "texture": "textures/fluffyalien/asn/ui/common/disk_placeholder"
   }
 }

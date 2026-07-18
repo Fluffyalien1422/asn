@@ -56,6 +56,9 @@
       }
     ]
   },
+  "grid_item@chest.chest_grid_item": {
+    "$cell_overlay_ref": "fluffyalien_asn:common.disk_placeholder"
+  },
   "top_half": {
     "type": "panel",
     "size": ["100%", "50% - 12px"],
@@ -72,7 +75,8 @@
         "grid@fluffyalien_asn:common.container_grid": {
           "size": [72, 36],
           "grid_dimensions": [4, 2],
-          "offset": ["50%-36px", 19]
+          "offset": ["50%-36px", 19],
+          "grid_item_template": "fluffyalien_asn:storage_drive.grid_item"
         }
       }
     ]

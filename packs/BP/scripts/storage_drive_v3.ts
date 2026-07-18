@@ -6,10 +6,7 @@ import {
   Entity,
 } from "@minecraft/server";
 import { err, ok, Result } from "neverthrow";
-import {
-  dimensionLocationFromEntity,
-  getEntityAtBlockLocation,
-} from "./utils/location";
+import { getEntityAtBlockLocation } from "./utils/location";
 import { getBlockUid } from "./utils/block";
 import { logWarn } from "./log";
 import { StorageNetwork } from "./storage_network";
@@ -134,15 +131,16 @@ export const storageDriveV3Component: BlockCustomComponent = {
 };
 
 /**
- * Drops the drive's disks into the world at `entity`'s location, so they aren't
- * lost when the drive is broken. Used by the shared persistent-entity break
- * handler.
+ * Drops all of the drive's items into the world at `entity`'s location, so they
+ * aren't lost when the drive is broken. Includes non-disk items. Used by the
+ * shared persistent-entity break handler.
  */
 export function dropStorageDriveContents(entity: Entity): void {
-  const disks = getDisksInDrive(dimensionLocationFromEntity(entity)).unwrapOr(
-    [],
-  );
-  for (const disk of disks) {
-    entity.dimension.spawnItem(disk.getItem()!, entity.location);
+  const container = entity.getComponent("inventory")!.container;
+  for (let i = 0; i < container.size; i++) {
+    const item = container.getItem(i);
+    if (item) {
+      entity.dimension.spawnItem(item, entity.location);
+    }
   }
 }
