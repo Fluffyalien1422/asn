@@ -12,7 +12,6 @@ import { logWarn, panic } from "./log";
 import { updateLevelEmitter } from "./level_emitter";
 import {
   getMachineStorage,
-  RegisteredStorageType,
   setMachineStorage,
 } from "bedrock-energistics-core-api";
 import {
@@ -24,11 +23,6 @@ import {
   RemoveItemStackFromStorageError,
   StorageSystem,
 } from "./storage_system";
-import { FLUID_DRIVE_CAPACITY } from "./fluid_drive";
-import {
-  getBlockDynamicProperty,
-  setBlockDynamicProperty,
-} from "./utils/block_dynamic_property";
 import { updateFluidExportBus } from "./fluid_export_bus";
 import { getDisksInDrive } from "./storage_drive_v3";
 import {
@@ -36,6 +30,16 @@ import {
   loadItemsFromDisk,
   saveItemsToDisk,
 } from "./storage_disk_v3";
+import { FluidDiskRef, getFluidDisksInDrive } from "./fluid_drive";
+import {
+  getFluidDiskCapacity,
+  getFluidDiskId,
+  getFluidDiskSignature,
+  getFluidStorageTypeIds,
+  readDiskFluids,
+  setFluidDiskLore,
+  writeDiskFluids,
+} from "./fluid_disk";
 import { cloneItemStackWithAmount } from "./utils/item";
 import { getBlockUid } from "./utils/block";
 import { ContainerSlot } from "@minecraft/server";
@@ -99,6 +103,67 @@ function diskContentsMatch(
 /** Captures a snapshot of the given disk slice for {@link diskContentsMatch}. */
 function snapshotDiskContents(items: readonly ItemStack[]): DiskSlotSnapshot[] {
   return items.map((stack) => ({ stack, amount: stack.amount }));
+}
+
+/** Whether two per-disk fluid maps hold exactly the same type→amount entries. */
+function fluidsEqual(
+  a: ReadonlyMap<string, number> | undefined,
+  b: ReadonlyMap<string, number>,
+): boolean {
+  if (a === undefined) return false;
+  if (a.size !== b.size) return false;
+  for (const [type, amount] of b) {
+    if (a.get(type) !== amount) return false;
+  }
+  return true;
+}
+
+/**
+ * Greedily packs a fluid budget across fluid disks, respecting each disk's
+ * total-volume (`maxTotal`) and distinct-type (`maxTypes`) caps. Each type is
+ * poured into the disks in order and may span several disks (each counts it
+ * toward its type cap). Any amount that doesn't fit is dropped.
+ *
+ * @returns `placement` — the fluids assigned to each disk, parallel to `disks`;
+ *   and `stored` — the aggregate that actually fit, keyed by type.
+ */
+function distributeFluids(
+  disks: readonly FluidDiskRef[],
+  budget: ReadonlyMap<string, number>,
+): { placement: Map<string, number>[]; stored: Map<string, number> } {
+  const placement: Map<string, number>[] = disks.map(
+    () => new Map<string, number>(),
+  );
+  const remainingVolume: number[] = [];
+  const remainingTypes: number[] = [];
+  for (const disk of disks) {
+    const capacity = getFluidDiskCapacity(disk.containerSlot.typeId);
+    remainingVolume.push(capacity?.maxTotal ?? 0);
+    remainingTypes.push(capacity?.maxTypes ?? 0);
+  }
+
+  const stored = new Map<string, number>();
+  for (const [type, amount] of budget) {
+    let toPlace = amount;
+    for (let i = 0; i < disks.length && toPlace > 0; i++) {
+      if (remainingVolume[i] <= 0) continue;
+
+      const diskFluids = placement[i];
+      const alreadyHasType = diskFluids.has(type);
+      if (!alreadyHasType && remainingTypes[i] <= 0) continue;
+
+      const place = Math.min(toPlace, remainingVolume[i]);
+      diskFluids.set(type, (diskFluids.get(type) ?? 0) + place);
+      remainingVolume[i] -= place;
+      if (!alreadyHasType) remainingTypes[i] -= 1;
+      toPlace -= place;
+    }
+
+    const placed = amount - toPlace;
+    if (placed > 0) stored.set(type, placed);
+  }
+
+  return { placement, stored };
 }
 
 /**
@@ -321,6 +386,26 @@ export class StorageNetwork extends StorageSystem {
    * until then.
    */
   private storedFluids?: NetworkStoredFluids;
+  /**
+   * The fluid disks that {@link StorageNetwork.storedFluids} were loaded from,
+   * in discovery order. Used to write fluids back to the same disks in
+   * {@link StorageNetwork.saveStoredFluidData}. Parallel to
+   * {@link StorageNetwork.savedDiskFluids} and {@link StorageNetwork.storedFluidDiskIds}.
+   */
+  private storedFluidDisks?: FluidDiskRef[];
+  /**
+   * The fluids last persisted to each disk in {@link StorageNetwork.storedFluidDisks},
+   * parallel by index. Used to skip rewriting disks whose fluids have not
+   * changed. An entry is `undefined` if that disk's fluids are unknown.
+   */
+  private savedDiskFluids?: (Map<string, number> | undefined)[];
+  /**
+   * The swap-detection id of each disk in {@link StorageNetwork.storedFluidDisks}
+   * captured at load, parallel by index. Re-checked before writing so a disk
+   * swapped into the same slot (of the same type) during a load isn't written
+   * with the previous disk's fluids.
+   */
+  private storedFluidDiskIds?: string[];
   /**
    * The total amount of energy stored across the network's power banks.
    * Recalcualated every `standardTick` if `useEnergy` is enabled.
@@ -681,52 +766,56 @@ export class StorageNetwork extends StorageSystem {
   }
 
   /**
-   * Writes in-memory fluid data to dynamic properties on drives.
-   * use saveData instead to save all data.
+   * Writes the in-memory fluid budget ({@link StorageNetwork.storedFluids}) back
+   * to the network's fluid disks. The budget is distributed across the disks it
+   * was loaded from, respecting each disk's total-volume and distinct-type caps
+   * (see {@link distributeFluids}); only disks whose contents changed are
+   * rewritten. Reconciles {@link StorageNetwork.storedFluids} to what actually
+   * fit. use saveData instead to save all data.
    */
   private async saveStoredFluidData(): Promise<void> {
-    if (!this.connections.fluidDrives.length) return;
-
-    // uses the unlocked loader because callers already hold the op queue.
-    const fluidBudget = new Map((await this.loadStoredFluids()).types);
-
-    for (const drive of this.connections.fluidDrives) {
-      let remainingCapacity = FLUID_DRIVE_CAPACITY;
-      for (const [type, amount] of fluidBudget) {
-        const amountToSave = Math.min(amount, remainingCapacity);
-        remainingCapacity -= amountToSave;
-
-        setBlockDynamicProperty(drive, `fluid${type}`, amountToSave);
-
-        const newBudget = amount - amountToSave;
-        if (newBudget <= 0) {
-          fluidBudget.delete(type);
-        } else {
-          fluidBudget.set(type, newBudget);
-        }
-
-        if (remainingCapacity <= 0) {
-          break;
-        }
-      }
-    }
-
-    // if we have extra, then just add it all to the first drive
-    if (!fluidBudget.size) {
+    if (!this.storedFluids || !this.storedFluidDisks || !this.savedDiskFluids) {
       return;
     }
 
-    const drive = this.connections.fluidDrives[0];
-    for (const [type, amount] of fluidBudget) {
-      const dynamicPropId = `fluid${type}`;
-      setBlockDynamicProperty(
-        drive,
-        dynamicPropId,
-        ((getBlockDynamicProperty(drive, dynamicPropId) as
-          | number
-          | undefined) ?? 0) + amount,
+    const disks = this.storedFluidDisks;
+    const savedDiskFluids = this.savedDiskFluids;
+    const loadedDiskIds = this.storedFluidDiskIds ?? [];
+
+    const { placement, stored } = distributeFluids(
+      disks,
+      this.storedFluids.types,
+    );
+
+    // reconcile the aggregate to what actually fit across the disks
+    let total = 0;
+    for (const amount of stored.values()) total += amount;
+    this.storedFluids = { total, types: stored };
+
+    const lorePromises: Promise<void>[] = [];
+    for (let i = 0; i < disks.length; i++) {
+      const newFluids = placement[i];
+      if (fluidsEqual(savedDiskFluids[i], newFluids)) continue;
+
+      // a disk swapped into this slot during the load (of the same type, so the
+      // item machine still looks valid) must not be written the old disk's
+      // fluids; leave its snapshot unknown so it is rewritten after the reload.
+      if (getFluidDiskId(disks[i].containerSlot) !== loadedDiskIds[i]) {
+        savedDiskFluids[i] = undefined;
+        continue;
+      }
+
+      writeDiskFluids(
+        disks[i].inventory,
+        disks[i].slot,
+        newFluids,
+        savedDiskFluids[i] ?? new Map(),
       );
+      savedDiskFluids[i] = new Map(newFluids);
+      lorePromises.push(setFluidDiskLore(disks[i].containerSlot, newFluids));
     }
+
+    await Promise.all(lorePromises);
   }
 
   /**
@@ -791,6 +880,9 @@ export class StorageNetwork extends StorageSystem {
       this.storedItemDisks = undefined;
       this.savedDiskContents = undefined;
       this.storedFluids = undefined;
+      this.storedFluidDisks = undefined;
+      this.savedDiskFluids = undefined;
+      this.storedFluidDiskIds = undefined;
 
       // the connected drives (and therefore the stored items) may have changed
       this.markStoredItemsChanged();
@@ -826,6 +918,9 @@ export class StorageNetwork extends StorageSystem {
     return this.runExclusive(() => {
       if (!this.internalIsValid) return;
       this.storedFluids = undefined;
+      this.storedFluidDisks = undefined;
+      this.savedDiskFluids = undefined;
+      this.storedFluidDiskIds = undefined;
     });
   }
 
@@ -848,9 +943,31 @@ export class StorageNetwork extends StorageSystem {
   }
 
   /**
-   * Aggregates the fluids across every fluid drive into the cache. Assumes it
-   * runs inside {@link StorageNetwork.runExclusive}; callers elsewhere must use
-   * the public {@link StorageNetwork.getStoredFluids}.
+   * Gets all fluid disks across every fluid drive in this network, located so
+   * each can be addressed by a BEC `ItemMachine`.
+   */
+  private getFluidDisks(): FluidDiskRef[] {
+    const disks: FluidDiskRef[] = [];
+
+    for (const drive of this.connections.fluidDrives) {
+      const disksr = getFluidDisksInDrive(drive);
+      if (disksr.isErr()) {
+        logWarn(`Failed to get fluid disks in drive: ${disksr.error}`);
+        continue;
+      }
+      disks.push(...disksr.value);
+    }
+
+    return disks;
+  }
+
+  /**
+   * Reads the fluids from every fluid disk into the cache, recording the disks
+   * they came from ({@link StorageNetwork.storedFluidDisks}), a snapshot of each
+   * disk's fluids ({@link StorageNetwork.savedDiskFluids}) for change detection,
+   * and each disk's id ({@link StorageNetwork.storedFluidDiskIds}) for write-time
+   * validation. Assumes it runs inside {@link StorageNetwork.runExclusive};
+   * callers elsewhere must use the public {@link StorageNetwork.getStoredFluids}.
    */
   private async loadStoredFluids(): Promise<NetworkStoredFluids> {
     // another queued operation may have populated the cache while we waited.
@@ -862,32 +979,44 @@ export class StorageNetwork extends StorageSystem {
       total: 0,
       types: new Map(),
     };
+    const disks = this.getFluidDisks();
+    const savedDiskFluids: (Map<string, number> | undefined)[] = [];
+    const diskIds: string[] = [];
 
-    const storageTypes = await RegisteredStorageType.getAllIds();
+    const typeIds = await getFluidStorageTypeIds();
 
-    for (const drive of this.connections.fluidDrives) {
-      for (const type of storageTypes) {
-        const amount = (getBlockDynamicProperty(drive, `fluid${type}`) ??
-          0) as number;
-        if (amount <= 0) continue;
-
+    for (const disk of disks) {
+      const fluids = await readDiskFluids(disk.inventory, disk.slot, typeIds);
+      for (const [type, amount] of fluids) {
         storedFluids.types.set(
           type,
           (storedFluids.types.get(type) ?? 0) + amount,
         );
         storedFluids.total += amount;
       }
+      savedDiskFluids.push(new Map(fluids));
+      // assigns an id if the disk lacks one, so the drive can detect swaps and
+      // so save-time validation has a stable id to compare against.
+      diskIds.push(getFluidDiskSignature(disk.containerSlot));
     }
 
     this.storedFluids = storedFluids;
+    this.storedFluidDisks = disks;
+    this.savedDiskFluids = savedDiskFluids;
+    this.storedFluidDiskIds = diskIds;
     return this.storedFluids;
   }
 
   /**
-   * @returns the total fluid capacity across all of the network's fluid drives
+   * @returns the total fluid volume capacity across every fluid disk in the
+   *   network's fluid drives (the sum of each disk's `maxTotal`)
    */
   getFluidStorageCapacity(): number {
-    return FLUID_DRIVE_CAPACITY * this.connections.fluidDrives.length;
+    let total = 0;
+    for (const disk of this.getFluidDisks()) {
+      total += getFluidDiskCapacity(disk.containerSlot.typeId)?.maxTotal ?? 0;
+    }
+    return total;
   }
 
   /**
@@ -1103,21 +1232,22 @@ export class StorageNetwork extends StorageSystem {
   async addFluid(id: string, amount: number): Promise<number> {
     return this.runExclusive(async () => {
       this.ensureValidity();
+      if (amount <= 0) return 0;
 
-      const storedFluids = await this.loadStoredFluids();
+      await this.loadStoredFluids();
+      if (!this.storedFluids) return 0;
 
-      const capacity = this.getFluidStorageCapacity();
-      const remainingStorage = capacity - storedFluids.total;
-      const amountToAdd = Math.min(amount, remainingStorage);
-      if (amountToAdd <= 0) return 0;
-
-      const currentAmount = storedFluids.types.get(id) ?? 0;
-      storedFluids.types.set(id, currentAmount + amountToAdd);
-      storedFluids.total += amountToAdd;
+      const previous = this.storedFluids.types.get(id) ?? 0;
+      // optimistically add the full amount; saveStoredFluidData redistributes
+      // across the disks under both the volume and type caps and reconciles
+      // storedFluids to what actually fit.
+      this.storedFluids.types.set(id, previous + amount);
+      this.storedFluids.total += amount;
 
       await this.saveStoredFluidData();
 
-      return amountToAdd;
+      const stored = this.storedFluids.types.get(id) ?? 0;
+      return stored - previous;
     });
   }
 
@@ -1130,16 +1260,20 @@ export class StorageNetwork extends StorageSystem {
     return this.runExclusive(async () => {
       this.ensureValidity();
 
-      const storedFluids = await this.loadStoredFluids();
-      const stored = storedFluids.types.get(id) ?? 0;
+      await this.loadStoredFluids();
+      if (!this.storedFluids) return 0;
+
+      const stored = this.storedFluids.types.get(id) ?? 0;
       const amountToRemove = Math.min(amount, stored);
+      if (amountToRemove <= 0) return 0;
 
-      if (amountToRemove <= 0) {
-        return 0;
+      const newAmount = stored - amountToRemove;
+      if (newAmount <= 0) {
+        this.storedFluids.types.delete(id);
+      } else {
+        this.storedFluids.types.set(id, newAmount);
       }
-
-      storedFluids.types.set(id, stored - amountToRemove);
-      storedFluids.total -= amountToRemove;
+      this.storedFluids.total -= amountToRemove;
 
       await this.saveStoredFluidData();
 

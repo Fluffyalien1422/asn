@@ -1,154 +1,146 @@
+/**
+ * Fluid storage drive.
+ *
+ * A fluid drive is a block backed by an 8-slot container entity that holds up to
+ * eight fluid disks (mirroring the item {@link ./storage_drive_v3 storage drive}).
+ * The disks store the fluids (see {@link ./fluid_disk}); the drive is just the
+ * container. Right-clicking the drive opens the container entity's native
+ * inventory, skinned by `chest_screen.json` via the entity's name tag.
+ */
+
 import {
   Block,
   BlockCustomComponent,
+  ContainerSlot,
   DimensionLocation,
-  ItemStack,
-  Player,
-  RawMessage,
+  Entity,
+  EntityInventoryComponent,
 } from "@minecraft/server";
-import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
-import { createErrorMessageForm, showForm } from "./utils/ui";
-import { RegisteredStorageType } from "bedrock-energistics-core-api";
-import {
-  getBlockDynamicProperties,
-  getBlockDynamicProperty,
-  removeAllDynamicPropertiesForBlock,
-  setBlockDynamicProperty,
-} from "./utils/block_dynamic_property";
-import { NetworkStoredFluids, StorageNetwork } from "./storage_network";
-import { getPlayerMainhandSlot } from "./utils/item";
+import { err, ok, Result } from "neverthrow";
+import { getEntityAtBlockLocation } from "./utils/location";
+import { getBlockUid } from "./utils/block";
+import { logWarn } from "./log";
+import { StorageNetwork } from "./storage_network";
+import { getFluidDiskCapacity, getFluidDiskSignature } from "./fluid_disk";
 
-export const FLUID_DRIVE_CAPACITY = 6400;
+const ENTITY_ID = "fluffyalien_asn:fluid_drive";
 
-async function getFluidDriveStorage(
-  drive: DimensionLocation,
-): Promise<NetworkStoredFluids> {
-  let total = 0;
-  const types = new Map<string, number>();
+interface DriveData {
+  /**
+   * A stable signature per drive slot describing which disk it held last tick,
+   * so {@link fluidDriveComponent.onTick} can detect disks being inserted,
+   * removed, or swapped. `null` means the slot held no disk.
+   */
+  diskSignatures: (string | null)[];
+}
+const driveData = new Map<string, DriveData>();
 
-  for (const id of await RegisteredStorageType.getAllIds()) {
-    const amount = (getBlockDynamicProperty(drive, `fluid${id}`) ??
-      0) as number;
-    if (amount <= 0) continue;
-
-    total += amount;
-    types.set(id, amount);
-  }
-
-  return { total, types };
+/** A fluid disk held in a drive, located for building an `ItemMachine`. */
+export interface FluidDiskRef {
+  /** The drive entity's inventory component (the item machine's inventory). */
+  inventory: EntityInventoryComponent;
+  /** The slot index the disk occupies. */
+  slot: number;
+  /** The disk's container slot, for reading its type/lore/id. */
+  containerSlot: ContainerSlot;
 }
 
-async function showFluidDriveUi(
-  player: Player,
-  drive: Block,
-): Promise<ActionFormResponse> {
-  const form = new ActionFormData();
+function getFluidDriveEntity(location: DimensionLocation): Entity | undefined {
+  return getEntityAtBlockLocation(location, ENTITY_ID);
+}
 
-  const storage = await getFluidDriveStorage(drive);
+/**
+ * Gets all fluid disks across the drive at `location`, located so each can be
+ * addressed by a BEC `ItemMachine` (inventory component + slot index).
+ */
+export function getFluidDisksInDrive(
+  location: DimensionLocation,
+): Result<FluidDiskRef[], Error> {
+  const entity = getFluidDriveEntity(location);
+  if (!entity) {
+    return err(
+      new Error(
+        "Failed to get disks in fluid drive: Associated entity not found.",
+      ),
+    );
+  }
 
-  form.title({
-    translate: "tile.fluffyalien_asn:fluid_drive.name",
-  });
+  const inventory = entity.getComponent("inventory")!;
+  const container = inventory.container;
+  const disks: FluidDiskRef[] = [];
+  for (let i = 0; i < container.size; i++) {
+    const containerSlot = container.getSlot(i);
+    if (containerSlot.hasItem() && getFluidDiskCapacity(containerSlot.typeId)) {
+      disks.push({ inventory, slot: i, containerSlot });
+    }
+  }
 
-  const storageUsedRawMessages: RawMessage[] = (
-    await Promise.all(
-      [...storage.types.entries()].map(async ([id, amount]) => [
-        {
-          translate: "fluffyalien_asn.ui.fluidDrive.body.storageUsed",
-          with: {
-            rawtext: [
-              {
-                text: (await RegisteredStorageType.get(id))!.name,
-              },
-              {
-                text: amount.toString(),
-              },
-              {
-                text: Math.floor((amount / storage.total) * 100).toString(),
-              },
-            ],
-          },
-        },
-        { text: "\n\n" },
-      ]),
-    )
-  ).flat();
+  return ok(disks);
+}
 
-  form.body({
-    rawtext: [
-      ...storageUsedRawMessages,
-      {
-        translate: "fluffyalien_asn.ui.fluidDrive.body.storageUsedTotal",
-        with: {
-          rawtext: [
-            {
-              text: storage.total.toString(),
-            },
-          ],
-        },
-      },
-    ],
-  });
+/**
+ * Clears the cached data for the drive at `block`. Runs whenever the drive is
+ * broken, whether by the block's own break handler or the shared
+ * persistent-entity break handler.
+ */
+export function clearFluidDriveData(block: Block): void {
+  driveData.delete(getBlockUid(block));
+}
 
-  form.button({
-    translate: "fluffyalien_asn.ui.common.close",
-  });
-
-  return showForm(form, player);
+/**
+ * Builds the per-slot swap-detection signatures for a drive's container: the
+ * disk's id for a valid fluid disk (assigning one if needed), otherwise `null`.
+ */
+function getDriveDiskSignatures(entity: Entity): (string | null)[] {
+  const container = entity.getComponent("inventory")!.container;
+  const signatures: (string | null)[] = [];
+  for (let i = 0; i < container.size; i++) {
+    const slot = container.getSlot(i);
+    signatures.push(
+      slot.hasItem() && getFluidDiskCapacity(slot.typeId)
+        ? getFluidDiskSignature(slot)
+        : null,
+    );
+  }
+  return signatures;
 }
 
 export const fluidDriveComponent: BlockCustomComponent = {
-  onPlayerInteract(e) {
-    if (!e.player) return;
+  onPlace(e) {
+    e.dimension.spawnEntity(ENTITY_ID, e.block.bottomCenter()).nameTag =
+      e.block.typeId;
+  },
+  onBreak(e) {
+    clearFluidDriveData(e.block);
+  },
+  onTick(e) {
+    const uid = getBlockUid(e.block);
+    const entity = getFluidDriveEntity(e.block);
+    if (!entity) {
+      logWarn(`Failed to tick fluid drive (uid: '${uid}'): entity not found.`);
+      return;
+    }
+    const diskSignatures = getDriveDiskSignatures(entity);
 
-    const mainHandSlot = getPlayerMainhandSlot(e.player);
-    const heldItem = mainHandSlot.getItem();
-
-    if (heldItem?.typeId === "fluffyalien_asn:used_fluid_storage_disk") {
-      const existingData = getBlockDynamicProperties(e.block);
-      if (existingData.length) {
-        void showForm(
-          createErrorMessageForm({
-            translate:
-              "fluffyalien_asn.ui.storageDrive.error.mustBeEmptyToAddDisk",
-          }),
-          e.player,
-        );
-
-        return;
-      }
-
-      const data = heldItem.getDynamicPropertyIds();
-
-      if (data.length) {
-        for (const id of data) {
-          const value = heldItem.getDynamicProperty(id);
-          setBlockDynamicProperty(e.block, id, value);
-        }
-        // clear the cache so it will be forced to update
-        void StorageNetwork.getNetwork(e.block)?.clearStoredFluidsCache();
-      }
-
-      mainHandSlot.setItem();
+    if (!driveData.has(uid)) {
+      driveData.set(uid, { diskSignatures });
       return;
     }
 
-    void showFluidDriveUi(e.player, e.block);
-  },
-  onBreak(e) {
-    const data = getBlockDynamicProperties(e.block);
+    const data = driveData.get(uid)!;
 
-    if (data.length) {
-      const itemStack = new ItemStack(
-        "fluffyalien_asn:used_fluid_storage_disk",
-      );
-      for (const id of data) {
-        const value = getBlockDynamicProperty(e.block, id);
-        itemStack.setDynamicProperty(id, value);
+    // a disk was inserted, removed, or swapped if any slot's signature changed
+    let changed = diskSignatures.length !== data.diskSignatures.length;
+    for (let i = 0; !changed && i < diskSignatures.length; i++) {
+      if (diskSignatures[i] !== data.diskSignatures[i]) {
+        changed = true;
       }
-      e.block.dimension.spawnItem(itemStack, e.block.location);
     }
 
-    removeAllDynamicPropertiesForBlock(e.block);
+    if (changed) {
+      void StorageNetwork.getNetwork(e.block)?.clearStoredFluidsCache();
+    }
+
+    data.diskSignatures = diskSignatures;
   },
 };

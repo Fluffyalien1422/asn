@@ -14,6 +14,7 @@
  * only carries type/amount/name/damage/lore/enchantments, so routing the disk
  * through it would strip the id and break the data transfer.
  */
+
 import {
   Block,
   BlockCustomComponent,
@@ -31,6 +32,14 @@ import { getBlockUid } from "./utils/block";
 import { logWarn } from "./log";
 import { upgradeDisk } from "./storage_disk_v3";
 import { useEnergyRule } from "./addon_rules/addon_rules";
+import {
+  getFluidDiskCapacity,
+  getFluidStorageTypeIds,
+  readDiskFluids,
+  setFluidDiskLore,
+  writeDiskFluids,
+} from "./fluid_disk";
+import { createItemStack } from "./utils/item";
 
 const MACHINE_ID = "fluffyalien_asn:disk_upgrader";
 
@@ -85,6 +94,21 @@ const DISK_UPGRADE_RECIPES: DiskUpgradeRecipe[] = [
       Q: "minecraft:quartz",
     },
     result: "fluffyalien_asn:storage_disk_v3_64",
+  },
+  {
+    // prettier-ignore
+    pattern: [
+      "BQB",
+      "QDQ",
+      "BQB"
+    ],
+    diskCell: "D",
+    key: {
+      D: "fluffyalien_asn:fluid_storage_disk",
+      B: "minecraft:blaze_powder",
+      Q: "minecraft:quartz",
+    },
+    result: "fluffyalien_asn:high_capacity_fluid_storage_disk",
   },
 ];
 
@@ -148,9 +172,17 @@ async function finalizeUpgrade(
   entity: Entity,
   recipe: DiskUpgradeRecipe,
 ): Promise<void> {
-  const container = entity.getComponent("inventory")!.container;
+  const inventory = entity.getComponent("inventory")!;
+  const container = inventory.container;
 
   if (!recipeMatches(container, recipe) || container.getItem(OUTPUT_INDEX)) {
+    return;
+  }
+
+  // Fluid disks store their fluids on the item via BEC item machines, so they
+  // can't use the item disks' shared-id upgrade; transfer the fluids instead.
+  if (getFluidDiskCapacity(recipe.result)) {
+    await finalizeFluidDiskUpgrade(entity, recipe);
     return;
   }
 
@@ -174,6 +206,52 @@ async function finalizeUpgrade(
   }
 
   container.setItem(OUTPUT_INDEX, resultr.value);
+}
+
+/**
+ * Finalizes an upgrade whose result is a fluid disk: reads the source disk's
+ * fluids first (the only async step), then, after re-validating the grid,
+ * synchronously consumes the ingredients, places the result, and writes the
+ * transferred fluids onto it. Doing all async work before the commit mirrors the
+ * item path's dupe-safety — the result never sits in the output during an await.
+ */
+async function finalizeFluidDiskUpgrade(
+  entity: Entity,
+  recipe: DiskUpgradeRecipe,
+): Promise<void> {
+  const inventory = entity.getComponent("inventory")!;
+  const container = inventory.container;
+
+  const typeIds = await getFluidStorageTypeIds();
+  const fluids = await readDiskFluids(
+    inventory,
+    diskSlotIndex(recipe),
+    typeIds,
+  );
+
+  // Re-check after the await, since the player may have changed the grid.
+  if (!recipeMatches(container, recipe) || container.getItem(OUTPUT_INDEX)) {
+    return;
+  }
+
+  const resultr = createItemStack(recipe.result);
+  if (resultr.isErr()) {
+    logWarn(`Failed to create upgraded fluid disk: ${resultr.error.message}`);
+    return;
+  }
+
+  for (let i = 0; i < GRID_SIZE; i++) {
+    if (patternCell(recipe, i) === " ") continue;
+    decrementSlot(container.getSlot(GRID_START_INDEX + i));
+  }
+
+  container.setItem(OUTPUT_INDEX, resultr.value);
+  writeDiskFluids(inventory, OUTPUT_INDEX, fluids, new Map());
+
+  const outputSlot = container.getSlot(OUTPUT_INDEX);
+  if (outputSlot.hasItem()) {
+    await setFluidDiskLore(outputSlot, fluids);
+  }
 }
 
 function tick(block: Block): void {

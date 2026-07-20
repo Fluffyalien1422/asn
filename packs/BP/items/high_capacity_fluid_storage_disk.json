@@ -2,13 +2,13 @@
   "format_version": "1.26.20",
   "minecraft:item": {
     "description": {
-      "identifier": "fluffyalien_asn:fluid_storage_disk",
+      "identifier": "fluffyalien_asn:high_capacity_fluid_storage_disk",
       "menu_category": {
         "category": "items"
       }
     },
     "components": {
-      "minecraft:icon": "fluffyalien_asn:fluid_storage_disk",
+      "minecraft:icon": "fluffyalien_asn:fluid_storage_disk_high_capacity",
       "minecraft:max_stack_size": 1
     }
   }

@@ -18,8 +18,8 @@ item.fluffyalien_asn:ui_stack_size_64=Stack Size: 64
 
 item.fluffyalien_asn:storage_disk_v3_64=High Capacity Storage Disk
 item.fluffyalien_asn:storage_disk_v3_32=Standard Storage Disk
-item.fluffyalien_asn:fluid_storage_disk=Fluid Storage Disk
-item.fluffyalien_asn:used_fluid_storage_disk=Fluid Storage Disk
+item.fluffyalien_asn:fluid_storage_disk=Standard Fluid Storage Disk
+item.fluffyalien_asn:high_capacity_fluid_storage_disk=High Capacity Fluid Storage Disk
 item.fluffyalien_asn:storage_disk_casing=Storage Disk Casing
 item.fluffyalien_asn:storage_disk_core=Storage Disk Core
 item.fluffyalien_asn:fluid_storage_disk_core=Fluid Storage Disk Core
@@ -77,9 +77,6 @@ fluffyalien_asn.ui.common.close=Close
 
 fluffyalien_asn.ui.cableNetwork.error.multipleStorageCores=Cannot establish a storage network: Multiple storage cores found.
 fluffyalien_asn.ui.cableNetwork.error.noStorageCores=Cannot establish a storage network: No storage cores found.
-
-fluffyalien_asn.ui.fluidDrive.body.storageUsed=Stored %s (drive): %s mL (%s%%)
-fluffyalien_asn.ui.fluidDrive.body.storageUsedTotal=Total stored fluids (drive): %s/6400 mL
 
 fluffyalien_asn.ui.storageInterface.title=Storage Interface
 fluffyalien_asn.ui.storageInterface.search.label=ID Search
@@ -251,7 +248,7 @@ fluffyalien_asn.ui.tutorialBook.entry.storageDisks.bullet2=Upgrade a standard st
 ## fluffyalien_asn.ui.tutorialBook.entry.diskUpgrader.targets=fluffyalien_asn:disk_upgrader
 ## fluffyalien_asn.ui.tutorialBook.entry.diskUpgrader.icon=textures/fluffyalien/asn/block_renders/disk_upgrader
 fluffyalien_asn.ui.tutorialBook.entry.diskUpgrader.title=Disk Upgrader
-fluffyalien_asn.ui.tutorialBook.entry.diskUpgrader.bullet0=Upgrades a standard storage disk into a high capacity storage disk without losing its stored items.
+fluffyalien_asn.ui.tutorialBook.entry.diskUpgrader.bullet0=Upgrades a standard storage disk or a standard fluid storage disk into its high capacity version without losing its stored contents.
 fluffyalien_asn.ui.tutorialBook.entry.diskUpgrader.bullet1=Works like a crafting table: arrange the ingredients in the 3x3 grid, then take the upgraded disk from the output slot.
 fluffyalien_asn.ui.tutorialBook.entry.diskUpgrader.bullet2=To upgrade a standard storage disk, place it in the center with quartz on the four edges and blaze powder in the four corners.
 fluffyalien_asn.ui.tutorialBook.entry.diskUpgrader.bullet3=Requires energy to run, unless energy usage is disabled with the 'useEnergy' rule. Uses Bedrock Energistics Core energy. See the Energy and Add-On Configuration entries for more information.
@@ -274,15 +271,15 @@ fluffyalien_asn.ui.tutorialBook.entry.energy.bullet4=This add-on does not add an
 
 ## fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.icon=textures/fluffyalien/asn/block_renders/fluid_drive
 fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.title=Fluid Storage
-fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet0=Fluids are stored in Fluid Storage Drives and can be viewed through the Fluid Storage Interface.
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet0=Fluids are stored on Fluid Storage Disks placed in Fluid Storage Drives, and can be viewed through the Fluid Storage Interface.
 fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet1=Uses Bedrock Energistics Core fluids.
 fluffyalien_asn.ui.tutorialBook.entry.fluidStorage.bullet2=This add-on does not add any way to generate fluids, you must include another Bedrock Energistics Core powered add-on to generate fluids for your system.
 
 ## fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.targets=fluffyalien_asn:fluid_drive
 ## fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.icon=textures/fluffyalien/asn/block_renders/fluid_drive
 fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.title=Fluid Storage Drive
-fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.bullet0=Provides the network with 6,400 mL of fluid storage.
-fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.bullet1=Drops a Fluid Storage Disk when destroyed that contains the fluids the drive had before it was broken.
+fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.bullet0=Holds up to eight fluid storage disks. Disks are what actually store the network's fluids.
+fluffyalien_asn.ui.tutorialBook.entry.fluidDrive.bullet1=Drops its disks when destroyed.
 
 ## fluffyalien_asn.ui.tutorialBook.entry.fluidInterface.targets=fluffyalien_asn:fluid_interface
 ## fluffyalien_asn.ui.tutorialBook.entry.fluidInterface.icon=textures/fluffyalien/asn/block_renders/fluid_interface
@@ -304,7 +301,7 @@ fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.bullet2=Exports up to 10 mL
 fluffyalien_asn.ui.tutorialBook.entry.fluidExportBus.bullet3=Interact with an empty hand to configure.
 
 ## fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.icon=textures/fluffyalien/asn/items/fluid_storage_disk
-fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.title=Fluid Storage Disk
-fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.bullet0=A crafting item.
-fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.bullet1=Can contain data.
-fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.bullet2=Interact with an empty fluid storage drive while holding a disk with data to deposit the fluids inside of the disk into the drive.
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.title=Fluid Storage Disks
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.bullet0=A standard fluid storage disk stores up to 6,400 mL of fluid across up to 4 types. A high capacity fluid storage disk stores up to 12,800 mL across up to 8 types.
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.bullet1=Put fluid storage disks in a fluid storage drive.
+fluffyalien_asn.ui.tutorialBook.entry.fluidStorageDisk.bullet2=Upgrade a standard fluid storage disk into a high capacity one with the Disk Upgrader, keeping its stored fluids.

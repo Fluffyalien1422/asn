@@ -17,6 +17,11 @@
             "$screen_bg_content": "common.screen_background"
           },
           {
+            "requires": "($new_container_title = 'fluffyalien_asn:fluid_drive')",
+            "$screen_content": "fluffyalien_asn:fluid_drive.root",
+            "$screen_bg_content": "common.screen_background"
+          },
+          {
             "requires": "($new_container_title = 'fluffyalien_asn:storage_interface')",
             "$screen_content": "fluffyalien_asn:storage_interface.root",
             "$screen_bg_content": "common.screen_background"

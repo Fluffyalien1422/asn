@@ -19,6 +19,7 @@ import {
   clearStorageDriveData,
   dropStorageDriveContents,
 } from "./storage_drive_v3";
+import { clearFluidDriveData } from "./fluid_drive";
 
 interface PersistentEntity {
   /** The persistent entity's type id. */
@@ -65,6 +66,11 @@ const PERSISTENT_ENTITIES: PersistentEntity[] = [
     entityId: "fluffyalien_asn:storage_drive_entity_v3",
     dropUnmanagedContents: dropStorageDriveContents,
     onBreak: clearStorageDriveData,
+  },
+  {
+    entityId: "fluffyalien_asn:fluid_drive",
+    dropUnmanagedContents: dropStorageDriveContents,
+    onBreak: clearFluidDriveData,
   },
   {
     entityId: "fluffyalien_asn:storage_interface_entity",

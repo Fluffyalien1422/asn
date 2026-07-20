@@ -4,6 +4,7 @@ import { fluidInterfaceMachine } from "./fluid_interface";
 import { fluidImportBusMachine } from "./fluid_import_bus";
 import { fluidExportBusMachine } from "./fluid_export_bus";
 import { diskUpgraderMachine } from "./disk_upgrader";
+import { FLUID_DISK_ITEM_IDS, getFluidDiskCapacity } from "./fluid_disk";
 
 world.afterEvents.worldLoad.subscribe(() => {
   bec.init("fluffyalien_asn");
@@ -41,6 +42,23 @@ world.afterEvents.worldLoad.subscribe(() => {
       },
     },
   });
+
+  // Register each fluid disk tier as an item machine so BEC persists its fluids
+  // on the item. The disk's fluids are driven by the storage network (see
+  // fluid_disk.ts / storage_network.ts), which also keeps the disk lore in sync;
+  // maxStorage caps each fluid type at the disk's total capacity, and the
+  // fluid+gas IO lets the disk accept non-energy storage when used elsewhere.
+  for (const id of FLUID_DISK_ITEM_IDS) {
+    bec.registerItemMachine({
+      description: {
+        id,
+        maxStorage: getFluidDiskCapacity(id)!.maxTotal,
+        defaultIo: {
+          categories: ["fluid", "gas"],
+        },
+      },
+    });
+  }
 
   bec.registerMachine(fluidInterfaceMachine);
   bec.registerMachine(fluidImportBusMachine);

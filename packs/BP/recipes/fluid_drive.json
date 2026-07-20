@@ -5,13 +5,18 @@
       "identifier": "fluffyalien_asn:fluid_drive"
     },
     "tags": ["crafting_table"],
-    "pattern": ["INI", "SSS", "INI"],
+    // prettier-ignore
+    "pattern": [
+      "INI",
+      "SSS",
+      "INI"
+    ],
     "key": {
       "I": {
         "item": "iron_block"
       },
       "S": {
-        "item": "fluffyalien_asn:fluid_storage_disk"
+        "item": "lapis_lazuli"
       },
       "N": {
         "item": "smooth_stone"

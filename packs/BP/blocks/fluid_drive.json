@@ -31,11 +31,12 @@
         "down": "up"
       },
       "minecraft:destructible_by_explosion": false,
-      "minecraft:destructible_by_mining": {
-        "seconds_to_destroy": 1
-      },
+      "minecraft:destructible_by_mining": false,
       "minecraft:movable": {
         "movement_type": "immovable"
+      },
+      "minecraft:tick": {
+        "interval_range": [10, 10]
       }
     },
     "permutations": [
