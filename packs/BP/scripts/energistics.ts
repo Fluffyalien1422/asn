@@ -47,7 +47,7 @@ world.afterEvents.worldLoad.subscribe(() => {
   // on the item. The disk's fluids are driven by the storage network (see
   // fluid_disk.ts / storage_network.ts), which also keeps the disk lore in sync;
   // maxStorage caps each fluid type at the disk's total capacity, and the
-  // fluid+gas IO lets the disk accept non-energy storage when used elsewhere.
+  // fluid+gas IO lets the disk accept fluid and gas storage types.
   for (const id of FLUID_DISK_ITEM_IDS) {
     bec.registerItemMachine({
       description: {

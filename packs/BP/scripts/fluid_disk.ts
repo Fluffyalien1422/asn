@@ -116,8 +116,7 @@ export function getFluidDiskSignature(disk: ContainerSlot): string {
 
 /**
  * Gets the ids of every registered storage type that a fluid disk may hold, i.e.
- * every registered type except `energy`. Fetched fresh because add-ons may
- * register storage types after world load.
+ * every registered type except `energy`.
  */
 export async function getFluidStorageTypeIds(): Promise<string[]> {
   const ids = await RegisteredStorageType.getAllIds();
