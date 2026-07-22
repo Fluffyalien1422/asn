@@ -1,5 +1,6 @@
 import { Vector3Utils } from "@minecraft/math";
 import { Entity, ItemStack, system } from "@minecraft/server";
+import { MACHINE_ENTITY_NO_UPDATE_UI_TAG } from "bedrock-energistics-core-api";
 
 /** Number of storage items shown on a single page. */
 export const ITEMS_PER_PAGE = 50;
@@ -52,13 +53,13 @@ export async function forceCloseStorageViewerInventory(
   entity: Entity,
 ): Promise<void> {
   entity.addTag(STORAGE_VIEWER_FORCE_CLOSE_TAG);
-  entity.addTag("fluffyalien_energisticscore:no_update_ui");
+  entity.addTag(MACHINE_ENTITY_NO_UPDATE_UI_TAG);
 
   const ogLocation = { ...entity.location };
   entity.teleport(Vector3Utils.add(entity.location, { y: 99 }));
   await system.waitTicks(4);
   entity.teleport(ogLocation);
 
-  entity.removeTag("fluffyalien_energisticscore:no_update_ui");
+  entity.removeTag(MACHINE_ENTITY_NO_UPDATE_UI_TAG);
   entity.removeTag(STORAGE_VIEWER_FORCE_CLOSE_TAG);
 }
