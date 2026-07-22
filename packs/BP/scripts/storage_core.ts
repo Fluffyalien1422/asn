@@ -1,4 +1,3 @@
-import { Vector3Utils } from "@minecraft/math";
 import {
   STORAGE_NETWORK_STANDARD_TICK_INTERVAL,
   StorageNetwork,
@@ -21,7 +20,11 @@ import { ActionFormData, ActionFormResponse } from "@minecraft/server-ui";
 import { getPlayerMainhandSlot } from "./utils/item";
 import { useEnergyRule } from "./addon_rules/addon_rules";
 import { RegisteredStorageType } from "bedrock-energistics-core-api";
-import { getEntitiesAtBlockLocation } from "./utils/location";
+import {
+  getEntitiesAtBlockLocation,
+  vector3AsDimensionLocation,
+} from "./utils/location";
+import { stringifyDimensionLocation } from "./utils/string";
 
 const ENTITY_ID = "fluffyalien_asn:storage_core_entity";
 
@@ -212,14 +215,11 @@ world.afterEvents.entityLoad.subscribe((e) => {
   if (e.entity.typeId !== ENTITY_ID) return;
 
   const entity = e.entity;
-
   system.runTimeout(() => {
     const block = entity.dimension.getBlock(entity.location);
     if (!block) {
       logWarn(
-        `couldn't establish network (storage core loaded): couldn't get storage core block at (${Vector3Utils.toString(
-          entity.location,
-        )}) in ${entity.dimension.id}`,
+        `Failed to establish network (on storage core loaded): Failed to get storage core block at ${stringifyDimensionLocation(vector3AsDimensionLocation(entity.location, entity.dimension))}.`,
       );
       return;
     }

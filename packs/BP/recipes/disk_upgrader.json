@@ -9,7 +9,7 @@
     "pattern": [
       "D#R",
       "AHA",
-      "CAD"
+      "CFD"
     ],
     "key": {
       "R": {
@@ -23,6 +23,9 @@
       },
       "#": {
         "item": "fluffyalien_asn:storage_disk_core"
+      },
+      "F": {
+        "item": "fluffyalien_asn:fluid_storage_disk_core"
       },
       "A": {
         "item": "fluffyalien_asn:storage_disk_casing"

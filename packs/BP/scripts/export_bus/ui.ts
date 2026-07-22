@@ -51,13 +51,10 @@ export async function showExportBusUi(
 
   const mcItemStackr = createItemStack(exportItemId);
   if (mcItemStackr.isErr()) {
-    return void showForm(
-      createErrorMessageForm({
-        translate: "fluffyalien_asn.ui.storageInterface.error.unknownError",
-        with: { rawtext: [{ text: mcItemStackr.error.message }] },
-      }),
-      player,
-    );
+    return void createErrorMessageForm({
+      translate: "fluffyalien_asn.ui.storageInterface.error.unknownError",
+      with: { rawtext: [{ text: mcItemStackr.error.toString() }] },
+    }).show(player);
   }
   const mcItemStack = mcItemStackr.value;
   const enchantable = !!mcItemStack.getComponent("enchantable");

@@ -756,7 +756,7 @@ export class StorageNetwork extends StorageSystem {
       const saveResult = await saveItemsToDisk(disk, diskItems, capacity);
       if (saveResult.isErr()) {
         // leave this disk's snapshot unchanged so it is retried next save
-        logWarn(`Failed to save item data: ${saveResult.error.message}`);
+        logWarn(`Failed to save item data: ${saveResult.error}`);
         continue;
       }
 

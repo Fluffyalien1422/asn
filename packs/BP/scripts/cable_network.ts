@@ -16,9 +16,13 @@ import {
 } from "./utils/tickingarea";
 import { directionToVector3 } from "./utils/direction";
 import { createErrorMessageForm } from "./utils/ui";
-import { getEntityAtBlockLocation } from "./utils/location";
+import {
+  getEntityAtBlockLocation,
+  vector3AsDimensionLocation,
+} from "./utils/location";
 import { relayNamespaceId } from "./relay";
 import { getEntitiesInAllDimensions } from "./utils/dimension";
+import { stringifyDimensionLocation } from "./utils/string";
 
 export interface CableNetworkConnections {
   cables: Block[];
@@ -51,7 +55,7 @@ export async function tryForceGetBlock(
 
     if (!nextBlock) {
       logWarn(
-        `failed to follow the storage network into unloaded chunks at ${Vector3Utils.toString(location)} in ${dimension.id}. some parts of the network may be unloaded`,
+        `Failed to follow the storage network into unloaded chunks at ${stringifyDimensionLocation(vector3AsDimensionLocation(location, dimension))}. Some parts of the network may be unloaded.`,
       );
       return;
     }
@@ -168,7 +172,7 @@ export async function discoverCableNetworkConnections(
         );
         if (!entity) {
           logWarn(
-            `couldn't add matching relays to discovery stack: couldn't get relay entity at ${Vector3Utils.toString(block.location)} in ${block.dimension.id}`,
+            `Failed to add matching relays to discovery stack: Couldn't get relay entity at ${stringifyDimensionLocation(block)}.`,
           );
           return ok();
         }

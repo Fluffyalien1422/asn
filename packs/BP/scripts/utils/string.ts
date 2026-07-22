@@ -1,3 +1,5 @@
+import { DimensionLocation } from "@minecraft/server";
+
 export function truncateNumber(num: number, decPlaces: number): string {
   const [beforeDec, afterDec] = num.toString().split(".");
 
@@ -22,4 +24,12 @@ export function abbreviateNumber(num: number): string {
   }
 
   return num.toString();
+}
+
+/**
+ * Converts a `DimensionLocation` to a human-readable string for debug output.
+ * @param loc The `DimensionLocation` to stringify.
+ */
+export function stringifyDimensionLocation(loc: DimensionLocation): string {
+  return `DimensionLocation {${loc.dimension.id} (${loc.x.toString()}, ${loc.y.toString()}, ${loc.z.toString()})}`;
 }

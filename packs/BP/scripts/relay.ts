@@ -13,7 +13,6 @@ import {
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { createErrorMessageForm } from "./utils/ui";
 import { logWarn } from "./log";
-import { Vector3Utils } from "@minecraft/math";
 import { DynamicPropertyAccessor } from "./utils/dynamic_property_v3";
 import { getEntitiesInAllDimensions } from "./utils/dimension";
 import {
@@ -35,6 +34,7 @@ import {
   relayMaxNamespaceNameCharsRule,
   relayMaxNamespacePlayerListCountRule,
 } from "./addon_rules/addon_rules";
+import { stringifyDimensionLocation } from "./utils/string";
 
 const BLOCK_ID = "fluffyalien_asn:storage_relay";
 const ENTITY_ID = "fluffyalien_asn:relay_entity";
@@ -571,7 +571,7 @@ export const storageRelayComponent: BlockCustomComponent = {
     const entity = getEntityAtBlockLocation(block, ENTITY_ID);
     if (!entity) {
       logWarn(
-        `Failed to get relay entity at ${Vector3Utils.toString(block.location)} in ${block.dimension.id} to process interaction.`,
+        `Failed to get relay entity at ${stringifyDimensionLocation(block)} to process interaction.`,
       );
       return;
     }

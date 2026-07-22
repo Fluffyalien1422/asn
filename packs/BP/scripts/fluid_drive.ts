@@ -59,9 +59,7 @@ export function getFluidDisksInDrive(
   const entity = getFluidDriveEntity(location);
   if (!entity) {
     return err(
-      new Error(
-        "Failed to get disks in fluid drive: Associated entity not found.",
-      ),
+      new Error("Failed to get disks in fluid drive: Entity not found."),
     );
   }
 
@@ -117,7 +115,7 @@ export const fluidDriveComponent: BlockCustomComponent = {
     const uid = getBlockUid(e.block);
     const entity = getFluidDriveEntity(e.block);
     if (!entity) {
-      logWarn(`Failed to tick fluid drive (uid: '${uid}'): entity not found.`);
+      logWarn(`Failed to tick fluid drive (uid: '${uid}'): Entity not found.`);
       return;
     }
     const diskSignatures = getDriveDiskSignatures(entity);

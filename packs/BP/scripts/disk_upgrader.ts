@@ -191,7 +191,7 @@ async function finalizeUpgrade(
 
   const resultr = await upgradeDisk(sourceDisk, recipe.result);
   if (resultr.isErr()) {
-    logWarn(resultr.error.message);
+    logWarn(resultr.error.toString());
     return;
   }
 
@@ -236,7 +236,7 @@ async function finalizeFluidDiskUpgrade(
 
   const resultr = createItemStack(recipe.result);
   if (resultr.isErr()) {
-    logWarn(`Failed to create upgraded fluid disk: ${resultr.error.message}`);
+    logWarn(`Failed to create upgraded fluid disk: ${resultr.error}`);
     return;
   }
 

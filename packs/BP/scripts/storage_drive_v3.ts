@@ -60,9 +60,7 @@ export function getDisksInDrive(
 ): Result<(ContainerSlot | null)[], Error> {
   const entity = getStorageDriveEntity(location);
   if (!entity) {
-    return err(
-      new Error("Failed to get disks in drive: Associated entity not found."),
-    );
+    return err(new Error("Failed to get disks in drive: Entity not found."));
   }
 
   const container = entity.getComponent("inventory")!.container;
@@ -101,7 +99,7 @@ export const storageDriveV3Component: BlockCustomComponent = {
     const disksr = getDisksInDrive(e.block, true);
     if (disksr.isErr()) {
       logWarn(
-        `Failed to get disks in drive (uid: '${uid}') during tick: ${disksr.error.message}`,
+        `Failed to get disks in drive (uid: '${uid}') during tick: ${disksr.error}`,
       );
       return;
     }

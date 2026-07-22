@@ -75,13 +75,10 @@ export async function showLevelEmitterUi(
 
   const itemStackr = createItemStack(itemId);
   if (itemStackr.isErr()) {
-    return void showForm(
-      createErrorMessageForm({
-        translate: "fluffyalien_asn.ui.storageInterface.error.unknownError",
-        with: { rawtext: [{ text: itemStackr.error.message }] },
-      }),
-      player,
-    );
+    return void createErrorMessageForm({
+      translate: "fluffyalien_asn.ui.storageInterface.error.unknownError",
+      with: { rawtext: [{ text: itemStackr.error.toString() }] },
+    }).show(player);
   }
   const itemStack = itemStackr.value;
   const enchantable = itemStack.hasComponent("enchantable");

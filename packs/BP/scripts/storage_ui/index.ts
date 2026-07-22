@@ -95,7 +95,7 @@ async function craft(
 
   const resultStackr = createItemStack(typeId);
   if (resultStackr.isErr()) {
-    logWarn(`Failed to craft item: ${resultStackr.error.message}`);
+    logWarn(`Failed to craft item: ${resultStackr.error}`);
     refresh();
     return;
   }
