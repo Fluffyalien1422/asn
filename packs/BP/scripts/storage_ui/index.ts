@@ -1,4 +1,4 @@
-import { getEntitiesInAllDimensions } from "../utils/dimension";
+import { getEntitiesInAllDimensions } from "../dimension_tracker";
 import { showSearchForm } from "./form";
 import { Entity, EntityQueryOptions, system, world } from "@minecraft/server";
 import {

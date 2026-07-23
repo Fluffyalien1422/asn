@@ -14,7 +14,7 @@ import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { createErrorMessageForm } from "./utils/ui";
 import { logWarn } from "./log";
 import { DynamicPropertyAccessor } from "./utils/dynamic_property_v3";
-import { getEntitiesInAllDimensions } from "./utils/dimension";
+import { getEntitiesInAllDimensions } from "./dimension_tracker";
 import {
   DiscoverCableNetworkConnectionsError,
   showEstablishNetworkError,

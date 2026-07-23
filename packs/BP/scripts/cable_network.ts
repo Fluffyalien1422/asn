@@ -21,7 +21,7 @@ import {
   vector3AsDimensionLocation,
 } from "./utils/location";
 import { relayNamespaceId } from "./relay";
-import { getEntitiesInAllDimensions } from "./utils/dimension";
+import { getEntitiesInAllDimensions } from "./dimension_tracker";
 import { stringifyDimensionLocation } from "./utils/string";
 
 export interface CableNetworkConnections {
