@@ -8,8 +8,10 @@
  * - Each entry also links to its related entries (as icon + title buttons),
  *   like the in-game book.
  *
- * View switching is done entirely with CSS `:target` (no JavaScript), so each
- * entry is deep-linkable at `#entry-<id>`.
+ * View switching is driven by a small script: entry links use `?entry=<id>`
+ * query strings updated via `history.pushState`, so following a link shows the
+ * matching entry without ever scrolling the page. Each entry is deep-linkable
+ * at `?entry=<id>`, and the browser's back/forward buttons work.
  *
  * Content comes from the same sources as the in-game book:
  * - `RP/texts/en_US.lang`, parsed by the shared `tutorial_book_lang` module (the
@@ -31,6 +33,7 @@ import {
 
 interface SimpleManifest {
   version: [number, number, number];
+  minEngineVersion: [number, number, number];
 }
 
 interface OnlineEntry {
@@ -44,6 +47,20 @@ interface OnlineEntry {
    */
   icon?: string;
   bullets: string[];
+}
+
+interface DownloadLink {
+  /** Display name for the button, e.g. "Download from CurseForge". */
+  name: string;
+  /** URL the button links to. */
+  url: string;
+}
+
+interface Dependency {
+  /** Display name, including version, e.g. "Bedrock Energistics Core v0.12.0". */
+  name: string;
+  /** URL to download the dependency. */
+  url: string;
 }
 
 interface SiteConfig {
@@ -61,6 +78,18 @@ interface SiteConfig {
   repoUrl?: string;
   /** Optional link to the issue tracker. */
   issueTrackerUrl?: string;
+  /**
+   * Optional dependencies, each with a display name (including version) and a
+   * download link. Shown above the add-on download links.
+   */
+  dependencies?: Dependency[];
+  /**
+   * Optional download links, each with its own display name. Shown as buttons
+   * in the footer in the order listed.
+   */
+  downloadLinks?: DownloadLink[];
+  /** Optional link to all changelogs. */
+  changelogsUrl?: string;
   /**
    * Extra entries shown only on the online tutorial book (not in-game).
    * Appended after the in-game entries in the order listed.
@@ -144,7 +173,7 @@ function iconSrc(entry: TutorialBookEntry): string {
 function renderListRow(entry: TutorialBookEntry): string {
   const icon =
     entry.icon !== "" ? `<img src="${esc(iconSrc(entry))}" alt="" />` : "";
-  return `<a class="row" href="#entry-${esc(entry.id)}">
+  return `<a class="row" href="?entry=${esc(encodeURIComponent(entry.id))}" data-entry="${esc(entry.id)}">
         <span class="icon-cell">${icon}</span>
         <span class="btn">${esc(entry.title)}</span>
       </a>`;
@@ -176,7 +205,7 @@ function renderEntry(
         <h1>${esc(entry.title)}</h1>
         ${bullets}
         ${related}
-        <a class="close-btn" href="#list">Close</a>
+        <a class="close-btn" href="?" data-entry="">Close</a>
       </article>`;
 }
 
@@ -362,12 +391,12 @@ img {
   color: #fff;
 }
 
-.entry:target {
+.entry.active {
   display: block;
 }
 
 /* Hide the list while an entry is open (modal, like in-game). */
-.entry:target ~ #list {
+.body.entry-open #list {
   display: none;
 }
 
@@ -454,6 +483,22 @@ footer p {
 footer a {
   color: var(--theme);
 }
+
+/* Requirements block: grouped between thin lines to stand out. */
+.requirements {
+  margin: 15px 0;
+  padding: 12px 0;
+  border-top: 1px solid #bbb;
+  border-bottom: 1px solid #bbb;
+}
+
+.requirements p {
+  margin: 4px 0;
+}
+
+.download-links {
+  margin: 15px 0;
+}
 `;
 
 function buildHtml(entries: TutorialBookEntry[]): string {
@@ -468,12 +513,27 @@ function buildHtml(entries: TutorialBookEntry[]): string {
       .map((id) => entriesById.get(id))
       .filter((related): related is TutorialBookEntry => related !== undefined);
 
+  // Drop the leading number; it's internal-only and Mojang never shows it
+  // publicly (e.g. `1.26.30` is displayed as `26.30`).
+  const minecraftVersion = manifest.minEngineVersion.slice(1).join(".");
+
+  const dependencyLinks = (config.dependencies ?? []).map(
+    (dep) => `<a href="${esc(dep.url)}">${esc(dep.name)}</a>`,
+  );
+
+  const downloadLinks = (config.downloadLinks ?? []).map(
+    (link) => `<a href="${esc(link.url)}">${esc(link.name)}</a>`,
+  );
+
   const links: string[] = [];
   if (config.repoUrl !== undefined) {
     links.push(`<a href="${esc(config.repoUrl)}">GitHub</a>`);
   }
   if (config.issueTrackerUrl !== undefined) {
     links.push(`<a href="${esc(config.issueTrackerUrl)}">Report an issue</a>`);
+  }
+  if (config.changelogsUrl !== undefined) {
+    links.push(`<a href="${esc(config.changelogsUrl)}">Changelogs</a>`);
   }
 
   return `<!doctype html>
@@ -492,14 +552,14 @@ function buildHtml(entries: TutorialBookEntry[]): string {
   <body>
     <header class="topnote">
       <p>
-        Tutorial book for ${esc(config.siteTitle)} ${version}. Refer to the
+        Tutorial book for <strong>${esc(config.siteTitle)} ${version}</strong>. Refer to the
         in-game tutorial book if this is not the version you're looking for.
       </p>
     </header>
     <main class="window">
       <div class="titlebar">
         Tutorial Book
-        <a class="close-x" href="#list" aria-label="Back to entry list">&times;</a>
+        <a class="close-x" href="?" data-entry="" aria-label="Back to entry list">&times;</a>
       </div>
       <div class="body">
         ${entries
@@ -512,8 +572,74 @@ function buildHtml(entries: TutorialBookEntry[]): string {
     </main>
     <footer>
       <p>${esc(config.description)}</p>
+      <div class="requirements">
+        <p><strong>Requires Minecraft ${esc(minecraftVersion)} or later.</strong></p>${
+          dependencyLinks.length > 0
+            ? `\n<p><strong>Required Dependencies:</strong> ${dependencyLinks.join(" &middot; ")}</p>`
+            : ""
+        }
+      </div>
+      ${downloadLinks.length > 0 ? `<p class="download-links">${downloadLinks.join(" &middot; ")}</p>` : ""}
       ${links.length > 0 ? `<p>${links.join(" &middot; ")}</p>` : ""}
     </footer>
+    <script>
+      // View switching. Entry links carry \`data-entry="<id>"\` (empty means the
+      // list); we intercept them, update the URL to \`?entry=<id>\` via
+      // \`history.pushState\`, and show the matching entry. Using a query string
+      // updated with pushState — rather than a \`#entry-<id>\` fragment — means
+      // following a link never scrolls the page. Deep links (\`?entry=<id>\` on
+      // load) and the browser's back/forward buttons are handled too.
+      (function () {
+        var book = document.querySelector(".body");
+
+        function show(id) {
+          var open = document.querySelector(".entry.active");
+          if (open) open.classList.remove("active");
+          var entry = id ? document.getElementById("entry-" + id) : null;
+          if (entry) {
+            entry.classList.add("active");
+            entry.scrollTop = 0;
+            book.classList.add("entry-open");
+          } else {
+            book.classList.remove("entry-open");
+          }
+        }
+
+        function currentEntry() {
+          return new URLSearchParams(window.location.search).get("entry");
+        }
+
+        document.addEventListener("click", function (event) {
+          // Let the browser handle modified or non-primary clicks natively, so
+          // "open in new tab/window" on an entry link still works.
+          if (
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey ||
+            event.altKey ||
+            event.button !== 0
+          ) {
+            return;
+          }
+          var link = event.target.closest("a[data-entry]");
+          if (!link) return;
+          event.preventDefault();
+          var id = link.getAttribute("data-entry") || null;
+          if (id === currentEntry()) return;
+          var url = id
+            ? "?entry=" + encodeURIComponent(id)
+            : window.location.pathname;
+          window.history.pushState(null, "", url);
+          show(id);
+        });
+
+        window.addEventListener("popstate", function () {
+          show(currentEntry());
+        });
+
+        show(currentEntry());
+      })();
+    </script>
   </body>
 </html>
 `;

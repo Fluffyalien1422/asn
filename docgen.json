@@ -5,5 +5,18 @@
   "themeColor": "#007f46",
   "accentColor": "#00aa00",
   "repoUrl": "https://github.com/Fluffyalien1422/asn",
-  "issueTrackerUrl": "https://github.com/Fluffyalien1422/asn/issues"
+  "issueTrackerUrl": "https://github.com/Fluffyalien1422/asn/issues",
+  "changelogsUrl": "https://github.com/Fluffyalien1422/asn/releases",
+  "downloadLinks": [
+    {
+      "name": "Download from CurseForge",
+      "url": "https://www.curseforge.com/minecraft-bedrock/addons/advanced-storage-network-2"
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "Bedrock Energistics Core v0.12.0",
+      "url": "https://www.curseforge.com/minecraft-bedrock/addons/bedrock-energistics-core"
+    }
+  ]
 }
