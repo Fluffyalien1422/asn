@@ -16,6 +16,12 @@
 - Items are now stored on the disks themselves instead of on the Storage Drive.
 - The **Storage Drive** is now a container that holds up to eight disks.
 
+**Reworked fluid disks and drives**
+
+- The old fluid storage disk has been replaced by two tiers: the **Standard Fluid Storage Disk** (6,400 mL across up to 4 fluid types) and the **High Capacity Fluid Storage Disk** (12,800 mL across up to 8 fluid types).
+- Fluids are now stored on the disks themselves instead of on the Fluid Storage Drive.
+- The **Fluid Storage Drive** is now a container that holds up to eight fluid disks.
+
 **Craft from your network**
 
 - Craft items directly from the ingredients in your network through the **Storage Interface** or **Wireless Storage Interface**.
@@ -23,7 +29,7 @@
 **New devices**
 
 - **Autocrafter** — automatically crafts items using ingredients in the storage network.
-- **Disk Upgrader** — upgrades a Standard Storage Disk into a High Capacity Storage Disk.
+- **Disk Upgrader** — upgrades a Standard Storage Disk or Standard Fluid Storage Disk into its High Capacity version, keeping its stored contents.
 
 **Rebuilt Storage Relay**
 
