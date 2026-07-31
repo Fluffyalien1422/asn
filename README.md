@@ -6,7 +6,7 @@ Advanced Storage Network finally fixes your storage problem. Build a storage net
 
 Configure the add-on by editing `scripts/__config.js` in the behavior pack with any text editor.
 
-Every option is optional and is documented with a comment in the file. Remove an option to use its default. If an option is missing or set to the wrong type, its default is used and a warning is logged to the content log — a mistake in this file will never crash the add-on.
+Every option is optional and is documented with a comment in the file. Remove an option to use its default. If an option is missing or set to the wrong type, its default is used and a warning is logged to the content log.
 
 ## Bundling in Modpacks
 
