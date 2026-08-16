@@ -21,6 +21,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          # docgen.ts is run directly by Node, which needs to strip its types.
+          node-version: 24
+      # docgen only uses the Node standard library, so there is nothing to install.
+      - name: Generate site
+        run: npm run docgen
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

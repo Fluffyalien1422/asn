@@ -3,8 +3,8 @@
  *
  * The site recreates the in-game tutorial book:
  * - A "book" window with a list of entries, each with its icon and title.
- * - Selecting an entry shows its content (green title, white bullets), exactly
- *   like the in-game `ActionFormData` message form.
+ * - Selecting an entry shows its content (accent-colored title, white bullets),
+ *   exactly like the in-game `ActionFormData` message form.
  * - Each entry also links to its related entries (as icon + title buttons),
  *   like the in-game book.
  *
@@ -14,9 +14,9 @@
  * at `?entry=<id>`, and the browser's back/forward buttons work.
  *
  * Content comes from the same sources as the in-game book:
- * - `RP/texts/en_US.lang`, parsed by the shared `tutorial_book_lang` module (the
- *   same one the `tutorial_entries` filter uses), including the `##`-comment icon
- *   and targets definitions and the derived related entries.
+ * - `RP/texts/en_US.lang`, parsed by the shared `tutorial_book_lang_parser`
+ *   module (the same one the `tutorial_entries` filter uses), including the
+ *   `##`-comment icon and targets definitions and the derived related entries.
  * - Icon textures are copied out of `RP/textures/` into `site/icons/`.
  *
  * Config lives in `docgen.json` (see the `SiteConfig` interface).
@@ -42,7 +42,7 @@ interface OnlineEntry {
   title: string;
   /**
    * Icon texture path relative to the resource pack (same convention as the
-   * in-game entries), e.g. `textures/fluffyalien/asn/block_renders/storage_core`.
+   * in-game entries), e.g. `textures/<addon>/ui/tutorial_book/<entry>`.
    * Omit for no icon.
    */
   icon?: string;
@@ -57,7 +57,7 @@ interface DownloadLink {
 }
 
 interface Dependency {
-  /** Display name, including version, e.g. "Bedrock Energistics Core v0.12.0". */
+  /** Display name, including version, e.g. "Example Core v1.0.0". */
   name: string;
   /** URL to download the dependency. */
   url: string;
@@ -68,6 +68,11 @@ interface SiteConfig {
   namespace: string;
   /** Browser tab title and footer heading. */
   siteTitle: string;
+  /**
+   * What the add-on calls its book. Shown on the window's title bar and in the
+   * version note above it. Defaults to "Tutorial Book".
+   */
+  bookTitle?: string;
   /** Plain-text blurb shown in the footer. */
   description: string;
   /** Link/browser theme color (any CSS color). Used for footer links and `theme-color`. */
@@ -103,6 +108,7 @@ const LANG_FILE_PATH = "packs/RP/texts/en_US.lang";
 const RP_DIR_PATH = "packs/RP";
 const OUTPUT_DIR_PATH = "site";
 const ICONS_OUTPUT_DIR_NAME = "icons";
+const DEFAULT_BOOK_TITLE = "Tutorial Book";
 
 const config = JSON.parse(
   fs.readFileSync(CONFIG_FILE_PATH, "utf8"),
@@ -110,6 +116,8 @@ const config = JSON.parse(
 const manifest = JSON.parse(
   fs.readFileSync(MANIFEST_FILE_PATH, "utf8"),
 ) as SimpleManifest;
+
+const bookTitle = config.bookTitle ?? DEFAULT_BOOK_TITLE;
 
 /** Builds the online-only entries defined in the config. */
 function buildOnlineEntries(
@@ -552,13 +560,13 @@ function buildHtml(entries: TutorialBookEntry[]): string {
   <body>
     <header class="topnote">
       <p>
-        Tutorial book for <strong>${esc(config.siteTitle)} ${version}</strong>. Refer to the
-        in-game tutorial book if this is not the version you're looking for.
+        ${esc(bookTitle)} for <strong>${esc(config.siteTitle)} ${version}</strong>. Refer to the
+        in-game ${esc(bookTitle.toLowerCase())} if this is not the version you're looking for.
       </p>
     </header>
     <main class="window">
       <div class="titlebar">
-        Tutorial Book
+        ${esc(bookTitle)}
         <a class="close-x" href="?" data-entry="" aria-label="Back to entry list">&times;</a>
       </div>
       <div class="body">

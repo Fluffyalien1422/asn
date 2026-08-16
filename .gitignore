@@ -1,4 +1,5 @@
 /build
 /.regolith
+/site
 node_modules
 *.tgz

@@ -19,7 +19,7 @@ export interface TutorialBookEntry {
   title: string;
   /**
    * Icon texture path as written in the lang file, e.g.
-   * `textures/fluffyalien/asn/block_renders/storage_core`. Empty if none.
+   * `textures/<addon>/ui/tutorial_book/<entry>`. Empty if none.
    */
   icon: string;
   /** Block/entity identifiers this entry documents (from its `.targets` comment). */
@@ -46,7 +46,14 @@ export function parseTutorialBookEntries(
   function getOrCreate(id: string): TutorialBookEntry {
     let entry = entries.get(id);
     if (entry === undefined) {
-      entry = { id, title: id, icon: "", targets: [], bullets: [], related: [] };
+      entry = {
+        id,
+        title: id,
+        icon: "",
+        targets: [],
+        bullets: [],
+        related: [],
+      };
       entries.set(id, entry);
     }
     return entry;
@@ -87,8 +94,8 @@ function escapeRegExp(text: string): string {
 }
 
 // Matches an entry title as a whole word/phrase, case-insensitively, tolerating
-// a trailing plural "s" on either side (so the "Storage Drive" entry is found in
-// "storage drives", and the "Storage Disks" entry is found in "storage disk").
+// a trailing plural "s" on either side (so an entry titled "Item Pipe" is found
+// in "item pipes", and one titled "Filters" is found in "filter").
 function titlePattern(title: string): RegExp {
   const base = escapeRegExp(title.toLowerCase().replace(/s$/, ""));
   return new RegExp(`\\b${base}s?\\b`, "g");
@@ -100,8 +107,8 @@ function titlePattern(title: string): RegExp {
  */
 function computeRelated(entries: TutorialBookEntry[]): void {
   // Every entry paired with its mention pattern, longest title first so a longer
-  // name (e.g. "Wireless Storage Interface") claims its span before a shorter
-  // name nested inside it (e.g. "Storage Interface") is matched.
+  // name (e.g. "Advanced Item Pipe") claims its span before a shorter name
+  // nested inside it (e.g. "Item Pipe") is matched.
   const candidates = entries
     .map((entry) => ({
       id: entry.id,
