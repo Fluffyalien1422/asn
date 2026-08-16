@@ -95,7 +95,9 @@ body:
         - A multiplayer world (LAN, or joining a friend)
         - A Realm
         - A dedicated or third-party server
-        - Not sure
+        - Other or unsure
+    validations:
+      required: true
 
   - type: textarea
     id: config
