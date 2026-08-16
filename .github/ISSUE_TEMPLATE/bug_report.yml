@@ -50,7 +50,7 @@ body:
         - Energy use
         - The tutorial book
         - The config file or add-on rules
-        - Not sure
+        - Other or unsure
     validations:
       required: true
 
