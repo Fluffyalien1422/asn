@@ -1,0 +1,36 @@
+name: Feature request
+description: Suggest an idea for Advanced Storage Network
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check that it isn't [already suggested](https://github.com/Fluffyalien1422/asn/issues?q=is%3Aissue).
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like added or changed?
+      description: A new device, a change to one that exists, a recipe, a config option or add-on rule — whatever it is, describe it as you'd want to use it in game.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: What problem does it solve?
+      description: What are you trying to build, and what makes it awkward or impossible today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: How do you do it now?
+      description: Any setup you're using to work around it, or other ideas you considered and why they fall short.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Screenshots, examples from other add-ons, or anything else that helps.

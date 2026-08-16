@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or help
+    url: https://discord.gg/vQuFe77
+    about: Ask in the Vatonage Discord server. Issues are for bugs and feature requests.
+  - name: Releases and changelogs
+    url: https://github.com/Fluffyalien1422/asn/releases
+    about: What changed in each version, and which Minecraft and Bedrock Energistics Core versions it supports.
