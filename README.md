@@ -14,10 +14,8 @@ One network holds every item you own, and you reach all of it through a single s
 
 ## Requirements
 
-- Minecraft: Bedrock Edition, stable.
-- [Bedrock Energistics Core](https://github.com/Fluffyalien1422/bedrock-energistics-core).
-
-Each release notes the Minecraft and Bedrock Energistics Core versions it supports. See [releases](https://github.com/Fluffyalien1422/asn/releases).
+- Minecraft: Bedrock Edition v26.30 or later.
+- [Bedrock Energistics Core](https://github.com/Fluffyalien1422/bedrock-energistics-core) v0.12.0.
 
 ## Version Support
 
