@@ -1,124 +1,66 @@
 {
   "namespace": "fluffyalien_asn:storage_interface",
-  "root": {
-    "type": "panel",
-    "controls": [
-      {
-        "container_gamepad_helpers@common.container_gamepad_helpers": {}
-      },
-      {
-        "flying_item_renderer@common.flying_item_renderer": {
-          "layer": 14
-        }
-      },
-      {
-        "selected_item_details_factory@common.selected_item_details_factory": {}
-      },
-      {
-        "item_lock_notification_factory@common.item_lock_notification_factory": {}
-      },
-      {
-        "root_panel@common.root_panel": {
-          "layer": 1,
-          "size": [198, 216],
-          "controls": [
-            {
-              "common_panel@common.common_panel": {}
-            },
-            {
-              "chest_panel": {
-                "type": "panel",
-                "layer": 5,
-                "offset": [0, -0.5],
-                "controls": [
-                  {
-                    "small_chest_panel_top_half@fluffyalien_asn:storage_interface.top_half": {}
-                  },
-                  {
-                    "inventory_panel_bottom_half_with_label@common.inventory_panel_bottom_half_with_label": {}
-                  },
-                  {
-                    "hotbar_grid@common.hotbar_grid_template": {}
-                  },
-                  {
-                    "inventory_take_progress_icon_button@common.inventory_take_progress_icon_button": {}
-                  }
-                ]
-              }
-            },
-            {
-              "inventory_selected_icon_button@common.inventory_selected_icon_button": {}
-            },
-            {
-              "gamepad_cursor@common.gamepad_cursor_button": {}
-            }
-          ]
-        }
-      }
-    ]
+  "root@fluffyalien_energisticscore:common_v2.screen_template": {
+    "$content_ref": "fluffyalien_asn:storage_interface.content",
+    "$root_panel_size": [198, 216]
   },
-  "top_half": {
-    "type": "panel",
-    "size": ["100%", "50% - 12px"],
-    "offset": [0, 7],
-    "anchor_to": "top_left",
-    "anchor_from": "top_left",
+  "content@fluffyalien_energisticscore:common_v2.content_template": {
     "controls": [
       {
-        "title@fluffyalien_energisticscore:common.container_title": {
-          "text": "Storage Interface"
+        "title@fluffyalien_energisticscore:common_v2.container_title": {
+          "text": "tile.fluffyalien_asn:storage_interface.name"
         }
       },
       {
-        "input_slot@fluffyalien_energisticscore:common.container_item_slot": {
+        "input_slot@fluffyalien_energisticscore:common_v2.container_slot_item": {
           "$index": 50,
           "offset": [9, 8]
         }
       },
       {
-        "back_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
+        "back_btn_slot@fluffyalien_energisticscore:common_v2.container_slot_item": {
           "$index": 51,
           "offset": [36, 8]
         }
       },
       {
-        "page_num_digit1_slot@fluffyalien_energisticscore:common.container_slot_icon": {
+        "page_num_digit1_slot@fluffyalien_energisticscore:common_v2.container_slot_nobg_nohover": {
           "$index": 53,
-          "offset": [66, 22.5]
+          "offset": [58, 14.5]
         }
       },
       {
-        "page_num_digit2_slot@fluffyalien_energisticscore:common.container_slot_icon": {
+        "page_num_digit2_slot@fluffyalien_energisticscore:common_v2.container_slot_nobg_nohover": {
           "$index": 54,
-          "offset": [70, 22.5]
+          "offset": [62, 14.5]
         }
       },
       {
-        "next_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
+        "next_btn_slot@fluffyalien_energisticscore:common_v2.container_slot_item": {
           "$index": 52,
           "offset": [69, 8]
         }
       },
       {
-        "search_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
+        "search_btn_slot@fluffyalien_energisticscore:common_v2.container_slot_item": {
           "$index": 58,
           "offset": [99, 8]
         }
       },
       {
-        "crafting_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
+        "crafting_btn_slot@fluffyalien_energisticscore:common_v2.container_slot_item": {
           "$index": 55,
           "offset": [117, 8]
         }
       },
       {
-        "sort_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
+        "sort_btn_slot@fluffyalien_energisticscore:common_v2.container_slot_item": {
           "$index": 56,
           "offset": [135, 8]
         }
       },
       {
-        "stack_size_btn_slot@fluffyalien_energisticscore:common.container_item_slot": {
+        "stack_size_btn_slot@fluffyalien_energisticscore:common_v2.container_slot_item": {
           "$index": 57,
           "offset": [153, 8]
         }

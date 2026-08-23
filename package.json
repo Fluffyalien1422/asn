@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@minecraft/math": "^2.4.0",
-    "bedrock-energistics-core-api": "file:bedrock-energistics-core-api-0.11.0.tgz",
+    "bedrock-energistics-core-api": "file:bedrock-energistics-core-api-0.12.0.tgz",
     "neverthrow": "^8.2.0"
   },
   "allowScripts": {
