@@ -11,9 +11,9 @@ export default {
   giveTutorialBookOnSpawn: true,
 
   // Namespace for this add-on's custom commands. For example, 'fluffyalien_asn'
-  // makes the command '/fluffyalien_asn:asnrule'. This is intended to be used when
-  // bundling in a modpack, as a single add-on cannot have multiple custom command
-  // namespaces.
+  // makes the command '/fluffyalien_asn:asnrule'. This is intended to be changed
+  // when Advanced Storage Network is merged into a single add-on with other
+  // content, as one add-on cannot have multiple custom command namespaces.
   customCommandNamespace: "fluffyalien_asn",
 
   // Add-on rules. Each rule is an object with two options:

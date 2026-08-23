@@ -11,8 +11,8 @@
  *   0. Vanilla recipes path    (required) Vanilla crafting recipe JSON files.
  *   1. ASN recipes path        (required) This add-on's recipe JSON files.
  *   2. Additional recipes path (optional) Extra recipe JSON files to include,
- *      e.g. when bundling ASN in a modpack (see the "Bundling in Modpacks"
- *      section of the README).
+ *      e.g. when bundling ASN with other add-ons (see the "Bundling With Other
+ *      Add-Ons" section of the README).
  *
  * Recipes from every provided directory are merged into a single output. Legacy
  * item references with data values are resolved to flattened IDs via OVERRIDES.
