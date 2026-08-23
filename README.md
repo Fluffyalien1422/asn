@@ -60,6 +60,7 @@ node scripts/recipegen.ts <vanilla recipes> <asn recipes> [additional recipes]
 
 - [Online tutorial book](https://fluffyalien1422.github.io/asn/)
 - [CurseForge](https://www.curseforge.com/minecraft-bedrock/addons/advanced-storage-network-2)
+- [MCPEDL](https://mcpedl.com/advanced-storage-network-2/)
 - [Releases and changelogs](https://github.com/Fluffyalien1422/asn/releases)
 - [Bedrock Energistics Core](https://github.com/Fluffyalien1422/bedrock-energistics-core)
 - [Vatonage Discord](https://discord.gg/vQuFe77)
