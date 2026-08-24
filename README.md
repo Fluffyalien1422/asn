@@ -1,4 +1,4 @@
-![Advanced Storage Network banner](keyart/banners/banner2.png)
+![Advanced Storage Network banner](keyart/banners/banner.png)
 
 Advanced Storage Network finally fixes your storage problem.
 
