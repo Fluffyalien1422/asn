@@ -7,6 +7,22 @@ import { forceCloseStorageViewerInventory } from "./shared";
 import { sortStoredItems } from "./items";
 import { fillViewerInventory } from "./render";
 import { StoredItem, ViewerData, viewerData } from "./state";
+import { isUiItem } from "./ui_item";
+
+/**
+ * Gives an item back to the player in the viewer. Used when an item taken out of
+ * the viewer's container can't be stored.
+ */
+function returnItemToPlayer(data: ViewerData, itemStack: ItemStack): void {
+  if (!data.playerInUi.isValid) {
+    logWarn(
+      `Failed to return '${itemStack.typeId}' to the player: the player is no longer valid.`,
+    );
+    return;
+  }
+
+  data.playerInUi.dimension.spawnItem(itemStack, data.playerInUi.location);
+}
 
 /**
  * Adds the item to storage. On failure, closes the viewer and shows an error
@@ -54,7 +70,7 @@ async function addItemToStorageOrShowError(
 }
 
 /**
- * add an item to the storage or show the appropriate error. automatically refreshes the interface if the item was added.
+ * add the item in `slotIndex` to the storage or show the appropriate error. automatically refreshes the interface if the item was added.
  * if the item was not added then the item will be given back to the player.
  *
  * the viewer is disabled while the (possibly asynchronous) add is in progress
@@ -64,8 +80,15 @@ async function addItemToStorageOrShowError(
 export function addItemToStorage(
   interfaceEntity: Entity,
   data: ViewerData,
+  slotIndex: number,
   itemStack: ItemStack,
 ): void {
+  // Empty the slot in the same tick the item is read so this add owns the stack:
+  // nothing else inspecting the container while the asynchronous add is in
+  // flight can see it (and add it a second time), and a failed add can hand it
+  // back to the player without leaving a copy in the container.
+  interfaceEntity.getComponent("inventory")!.container.setItem(slotIndex);
+
   // disable the viewer until the add finishes so it isn't processed again while
   // the asynchronous add/save is in progress
   data.enabled = false;
@@ -73,10 +96,7 @@ export function addItemToStorage(
   void addItemToStorageOrShowError(interfaceEntity, data, itemStack).then(
     (added) => {
       if (!added) {
-        data.playerInUi.dimension.spawnItem(
-          itemStack,
-          data.playerInUi.location,
-        );
+        returnItemToPlayer(data, itemStack);
         return;
       }
 
@@ -88,6 +108,39 @@ export function addItemToStorage(
       );
     },
   );
+}
+
+/**
+ * Moves any real (non-UI) items left in the viewer's container into storage,
+ * returning them to the player if they can't be stored.
+ *
+ * The viewer has no input events, so deposits are only noticed by the
+ * interaction poll. Anything deposited in the few ticks between one poll and the
+ * viewer no longer being polled - the player closing the interface, or the
+ * wireless interface entity being removed - would otherwise be stranded in the
+ * container and destroyed by the next `clearAll` in `fillViewerInventory`. Call
+ * this whenever the viewer stops being polled.
+ *
+ * Unlike {@link addItemToStorage} this never refreshes the viewer, since it runs
+ * when the container is closing or the entity is about to be removed.
+ */
+export function drainStorageViewerInput(interfaceEntity: Entity): void {
+  const data = viewerData.get(interfaceEntity.id);
+  if (!data) return;
+
+  const inventory = interfaceEntity.getComponent("inventory")!.container;
+
+  for (let i = 0; i < inventory.size; i++) {
+    const itemStack = inventory.getItem(i);
+    if (!itemStack || isUiItem(itemStack)) continue;
+
+    inventory.setItem(i);
+
+    void (async (): Promise<void> => {
+      const res = await data.storageSystem.addItemStack(itemStack);
+      if (res.isErr()) returnItemToPlayer(data, itemStack);
+    })();
+  }
 }
 
 /**

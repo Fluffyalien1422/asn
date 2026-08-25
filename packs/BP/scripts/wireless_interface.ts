@@ -14,6 +14,7 @@ import {
 import { StorageNetwork } from "./storage_network";
 import { VECTOR3_UP, Vector3Utils } from "@minecraft/math";
 import { refreshStorageViewerOrLog } from "./storage_ui";
+import { drainStorageViewerInput } from "./storage_ui/storage";
 import { ItemMachine, StandardStorageType } from "bedrock-energistics-core-api";
 import { STORAGE_VIEWER_FORCE_CLOSE_TAG } from "./storage_ui/shared";
 import { DynamicPropertyAccessor } from "./utils/dynamic_property_v3";
@@ -35,6 +36,10 @@ export const wirelessInterfaceLinkDimensionProperty =
   );
 
 function removeWirelessInterfaceEntity(player: Player, entity: Entity): void {
+  // Deposits are only noticed by the interaction poll, so anything deposited
+  // since the last poll must be stored before the entity - and with it, its
+  // container - is destroyed.
+  drainStorageViewerInput(entity);
   wirelessInterfaceEntities.delete(player.id);
   entity.remove();
 }

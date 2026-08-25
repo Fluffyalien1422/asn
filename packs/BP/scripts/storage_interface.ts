@@ -12,7 +12,10 @@ import {
   showForm,
 } from "./utils/ui";
 import { forceCloseStorageViewerInventory } from "./storage_ui/shared";
-import { disableStorageViewer } from "./storage_ui/storage";
+import {
+  disableStorageViewer,
+  drainStorageViewerInput,
+} from "./storage_ui/storage";
 
 export const storageInterfaceComponent: BlockCustomComponent = {
   onPlace(e) {
@@ -92,6 +95,11 @@ world.afterEvents.entityContainerOpened.subscribe(
 
 world.afterEvents.entityContainerClosed.subscribe(
   (e) => {
+    // Deposits are only noticed by the interaction poll, and disabling the
+    // viewer stops it, so store anything deposited since the last poll now.
+    // Otherwise it is stranded in the container and destroyed the next time the
+    // viewer is filled.
+    drainStorageViewerInput(e.entity);
     disableStorageViewer(e.entity);
     e.entity.triggerEvent("fluffyalien_asn:allow_interactions");
   },

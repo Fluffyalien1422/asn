@@ -196,7 +196,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): boolean {
       return true;
     }
 
-    addItemToStorage(entity, data, inputSlotItem);
+    addItemToStorage(entity, data, INPUT_SLOT_INDEX, inputSlotItem);
     return true;
   }
 
@@ -316,7 +316,7 @@ function processStorageViewerEntity(entity: Entity, data: ViewerData): boolean {
     if (!storageEntry) {
       // Empty display slot: a real item here was deposited by the player.
       if (inventoryItem && !isUiItem(inventoryItem)) {
-        addItemToStorage(entity, data, inventoryItem);
+        addItemToStorage(entity, data, i, inventoryItem);
         return true;
       }
 
@@ -409,6 +409,22 @@ world.afterEvents.entitySpawn.subscribe((e) => {
     e.entity.remove();
   }
 });
+
+// Viewer state is keyed by entity id, so discard it once the entity is gone.
+//
+// `entityRemove` cannot filter by type family, so this list must name every
+// entity type in the `fluffyalien_asn:storage_viewer` family.
+world.afterEvents.entityRemove.subscribe(
+  (e) => {
+    viewerData.delete(e.removedEntityId);
+  },
+  {
+    entityTypes: [
+      "fluffyalien_asn:storage_interface_entity",
+      "fluffyalien_asn:wireless_interface_entity",
+    ],
+  },
+);
 
 // Poll every storage viewer for player interaction. The viewer is only
 // processed while enabled and while a player is nearby.
