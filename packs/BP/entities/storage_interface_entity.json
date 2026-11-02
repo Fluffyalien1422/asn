@@ -15,8 +15,8 @@
     "component_groups": {
       "fluffyalien_asn:interactable": {
         "minecraft:collision_box": {
-          "width": 1,
-          "height": 1
+          "width": 1.1,
+          "height": 1.1
         }
       },
       "fluffyalien_asn:not_interactable": {
