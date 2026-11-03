@@ -1,6 +1,6 @@
 {
   "version": [3, 0, 1],
-  "minEngineVersion": [1, 26, 30],
+  "minEngineVersion": [1, 26, 60],
   "scriptModules": [
     {
       "name": "@minecraft/server",
